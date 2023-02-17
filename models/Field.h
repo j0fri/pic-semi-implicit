@@ -1,4 +1,5 @@
 #include <fstream>
+#include <vector>
 
 class Species;
 
@@ -13,9 +14,9 @@ public:
 	const T e0; //Permittivity
 	
 	Field() = delete;
-	Field( int Nx, T Lx, T c, T e0);
-	Field(const Field<T>& other); 
-	~Species();
+	Field(int Nx, T Lx, T c, T e0);
+	Field(const Field<T>& other);
+	~Field();
 	
 	virtual void initialize(const std::vector<Species>& species) = 0;
 	virtual void advanceField(const std::vector<Species>& species) = 0;

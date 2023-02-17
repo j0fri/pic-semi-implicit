@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
-#include "Species.h"
+#include "models/Species.h"
 
 namespace po = boost::program_options;
 
