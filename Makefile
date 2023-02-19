@@ -1,27 +1,22 @@
 default: sim
+all: sim
 
 CXX = g++
-
 CXXFLAGS = -std=c++20 -Wall -O0 -g -I ./
 
-SIMHDRS = Species.h Distribution.h helpers/math_helper.h
-
-
-SIMOBJS = main.o Species.o Distribution.o
+SIMHDRS = models/Species.h models/Field.h models/Distribution.h
+SIMOBJS = models/Species.o models/Field.o models/Distribution.o
 SIMLIBS = -lboost_program_options -lblas -llapack
-SIMDEPS = math_helper.cpp
 
-VISHDRS = 
-VISOBJS = vis.o
-VISLIBS = 
 
 HDRS = $(SIMHDRS) $(VISHDRS)
 OBJS = $(SIMOBJS) $(VISOBJS)
 
-%.o : %.cpp $(HDRS) $(SIMDEPS)
+
+%.o : %.cpp $(HDRS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-sim: $(SIMOBJS)
+sim: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 vis: $(VISOBJS)
@@ -29,7 +24,7 @@ vis: $(VISOBJS)
 
 .PHONY: clean
 clean:
-	-rm -f **/*.o sim vis test
+	-rm -f *.o **/*.o sim vis test
 
 .PHONY: profiler
 profiler: sim
@@ -39,10 +34,10 @@ profiler: sim
 	-analyzer profiling.er
 
 .PHONY: distributionTests
-distributionTests: tests/distributionTests.o Distribution.o
+distributionTests: tests/distributionTests.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o test $^
 	
-.PHONY: helperTests $(SIMDEPS)
+.PHONY: helperTests
 helperTests: tests/helperTests.o
 	$(CXX) $(CXXFLAGS) -o test $^
 
