@@ -1,35 +1,34 @@
 #include <fstream>
 
-class Distribution;
+#include "Distribution.h"
+
+template <typename T, unsigned int Nd, unsigned int Nv>
 class Field;
 
-template <typename T>
+template <typename T, unsigned int Nd, unsigned int Nv>
 class Species{
 public:
-	const int Nd; //Dimensionality of space
-	const int Nv; //Dimensionality of velocity
-	
-	const int Np;
+	const unsigned int Np;
 	const T m;
 	const T q;
 	
 	Species() = delete;
-	Species(int Np, T m, T q);
-	Species(const Species<T>& other); 
+	Species(unsigned int Np, T m, T q);
+	Species(const Species<T,Nd,Nv>& other);
 	~Species();
 
-	virtual void initializePositions(const Distribution& dist) = 0;
-	virtual void initializeVelocities(const Distribution& dist) = 0;
+	virtual void initializePositions(const Distribution<T,Nd>& dist) = 0;
+	virtual void initializeVelocities(const Distribution<T,Nv>& dist) = 0;
 	virtual void initializeFromFile(const std::ofstream& file) = 0;
 	
-	virtual void advancePositions(T dt, const Field& field) = 0;
-	virtual void advanceVelocities(T dt, const Field& field) = 0;
-	virtual void updateAlphaAndWeights(const Field& field) = 0;
+	virtual void advancePositions(T dt, const Field<T,Nd,Nv>& field) = 0;
+	virtual void advanceVelocities(T dt, const Field<T,Nd,Nv>& field) = 0;
+	virtual void updateAlphaAndWeights(const Field<T,Nd,Nv>& field) = 0;
 	
 	virtual void savePositions(std::ofstream& outputFile) const = 0;
 	virtual void saveVelocities(std::ofstream& outputFile) const = 0;
 		
 private:
-	virtual void computeAlphas(const Field& field) = 0;
-	virtual void computeWeights(const Field& field) = 0;
+	virtual void computeAlphas(const Field<T,Nd,Nv>& field) = 0;
+	virtual void computeWeights(const Field<T,Nd,Nv>& field) = 0;
 };

@@ -12,17 +12,6 @@
 
 
 template <typename T, unsigned int Nd>
-std::array<T,Nd> Distribution<T,Nd>::Config::getSpacings() const{
-    std::array<T,Nd> out{};
-    for(unsigned int i = 0; i < Nd; ++i){
-        const auto& dim = dimensions[i];
-        out[i] = (dim.max-dim.min)/dim.Nc;
-    }
-    return out;
-}
-
-
-template <typename T, unsigned int Nd>
 std::array<T,Nd> Distribution<T,Nd>::Cell::getCentre() const{
 	std::array<T,Nd> centre{};
 	for(unsigned int i = 0; i < Nd; ++i){
@@ -37,11 +26,11 @@ Distribution<T,Nd>::Distribution(const std::function<T(std::array<T,Nd>)>& f) : 
 
 
 template <typename T, unsigned int Nd>
-std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Config& config) const{
+std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Grid<T,Nd>& grid) const{
     //TODO: move seeding to Simulation class
     static auto randEngine = std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()); //Only seed once
 
-    auto cells = this->generateMesh(config);
+    auto cells = this->generateMesh(grid);
     int Nc = cells.size();
 
     //Calculate sum of density function to normalize
@@ -97,11 +86,11 @@ std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Config
 
 
 template <typename T, unsigned int Nd>
-std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(const Distribution<T,Nd>::Config &config) const {
-    std::array<T,Nd> spacings = config.getSpacings();
+std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(const Grid<T,Nd>& grid) const {
+    std::array<T,Nd> spacings = grid.getSpacings();
     std::vector<std::vector<T>> linspaces{Nd};
     for(unsigned int i = 0; i < Nd; ++i){
-        const auto& dim = config.dimensions[i];
+        const auto& dim = grid.dimensions[i];
         linspaces[i] = math_helper::linspace(dim.min, dim.max-spacings[i], dim.Nc);
     }
     std::vector<std::vector<T>> gridPoints = math_helper::repeatedCartesian(linspaces);
@@ -122,5 +111,7 @@ std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(
 
 template class Distribution<double,1>;
 template class Distribution<double,2>;
+template class Distribution<double,3>;
 template class Distribution<float,1>;
 template class Distribution<float,2>;
+template class Distribution<float,3>;

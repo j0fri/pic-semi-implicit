@@ -17,10 +17,10 @@ void outputMatrix(const T1& matrix, std::ostream& output){
 }
 
 int main(){
-    Distribution<double,1>::Config config1{{{{-1,1,100}}}};
-    Distribution<double,1>::Config config2{{{{-1,1,100}}}};
-    Distribution<double,2>::Config config3{{{{-1,1,100},{-2,2,100}}}};
-    Distribution<double,1>::Config config4{{{{-1,1,2}}}};
+    Grid<double,1> grid1{{{{-1,1,100}}}};
+    Grid<double,1> grid2{{{{-1,1,100}}}};
+    Grid<double,2> grid3{{{{-1,1,100},{-2,2,100}}}};
+    Grid<double,1> grid4{{{{-1,1,2}}}};
 
     std::function f1([](std::array<double,1> input) {return std::exp(-10*input[0]*input[0]);});
     std::function f2([=](std::array<double,1> input) {return (input[0]>0)*f1(input);});
@@ -35,8 +35,8 @@ int main(){
     std::ofstream output3("./outputs/distributionTest3");
     std::ofstream output4("./outputs/distributionTest4");
 
-    outputMatrix(dist1.generate(1000,config1),output1);
-    outputMatrix(dist2.generate(1000,config2),output2);
-    outputMatrix(dist3.generate(1000,config3),output3);
-    outputMatrix(dist1.generate(1000,config4),output4);
+    outputMatrix(dist1.generate(1000,grid1),output1);
+    outputMatrix(dist2.generate(1000,grid2),output2);
+    outputMatrix(dist3.generate(1000,grid3),output3);
+    outputMatrix(dist1.generate(1000,grid4),output4);
 }
