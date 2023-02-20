@@ -7,6 +7,7 @@
 #include <functional>
 #include <chrono>
 #include <random>
+#include <stdexcept>
 
 #define PARTICLE_GENERATION_INCREASE_FACTOR 1.05
 
@@ -106,6 +107,34 @@ std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(
         cells[i] = {left, right, 0, 0};
     }
     return cells;
+}
+
+
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator+(const Distribution<T, Nd> &other) const {
+    std::function<T(std::array<T,Nd>)> newFun([=,*this](const std::array<T,Nd>& arr){return this->f(arr) + other.f(arr);});
+    return Distribution<T, Nd>(newFun);
+}
+
+
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator-(const Distribution<T, Nd> &other) const {
+    std::function<T(std::array<T,Nd>)> newFun([=,*this](const std::array<T,Nd>& arr){return this->f(arr) - other.f(arr);});
+    return Distribution<T, Nd>(newFun);
+}
+
+
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator*(const Distribution<T, Nd> &other) const {
+    std::function<T(std::array<T,Nd>)> newFun([=,*this](const std::array<T,Nd>& arr){return this->f(arr) * other.f(arr);});
+    return Distribution<T, Nd>(newFun);
+}
+
+
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator/(const Distribution<T, Nd> &other) const {
+    std::function<T(std::array<T,Nd>)> newFun([=,*this](const std::array<T,Nd>& arr){return this->f(arr) / other.f(arr);});
+    return Distribution<T, Nd>(newFun);
 }
 
 

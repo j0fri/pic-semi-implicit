@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <math.h>
+#include <cmath>
 
 template <typename T1>
 void outputMatrix(const T1& matrix, std::ostream& output){

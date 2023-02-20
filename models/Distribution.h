@@ -11,10 +11,14 @@ template <typename T, unsigned int Nd>
 class Distribution
 {
 public:
-    const std::function<T(std::array<T,Nd>)> f;
+    const std::function<T(const std::array<T,Nd>&)> f;
 	Distribution() = delete;
 	Distribution(const std::function<T(std::array<T,Nd>)>& f);
 	std::vector<std::array<T, Nd>> generate(int Np, const Grid<T,Nd>& config) const;
+    Distribution<T,Nd> operator+(const Distribution<T,Nd>& other) const;
+    Distribution<T,Nd> operator-(const Distribution<T,Nd>& other) const;
+    Distribution<T,Nd> operator*(const Distribution<T,Nd>& other) const;
+    Distribution<T,Nd> operator/(const Distribution<T,Nd>& other) const;
 private:
 	struct Cell {
 		std::array<T,Nd> left;

@@ -1,6 +1,3 @@
-#include "../helpers/math_helper.h"
-#include <ostream>
-
 template <typename T>
 std::vector<std::vector<T>> math_helper::cartesian(const std::vector<std::vector<T>>& s1, const std::vector<T>& s2){
 	int height1 = s1.size();

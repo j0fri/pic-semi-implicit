@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <iostream>
 
 namespace math_helper{
 	template <typename T>
@@ -14,4 +13,4 @@ namespace math_helper{
 	std::vector<T> linspace(T x1, T x2, unsigned int n);
 }
 
-#include "./math_helper.cpp"
+#include "math_helper.cpp"
