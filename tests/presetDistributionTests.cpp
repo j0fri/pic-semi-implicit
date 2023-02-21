@@ -17,9 +17,8 @@ void outputMatrix(const T1& matrix, std::ostream& output){
     }
 }
 
-//TODO: test graphically
 int main(){
-    int Nt = 4;
+    int Nt = 6;
 
     Grid<double,1> grid1D{{{{-1,1,100}}}};
     Grid<double,2> grid2D{{{{-1,1,100},{-2,2,100}}}};
@@ -30,9 +29,9 @@ int main(){
     //3D boltzmann
     auto dist2 = preset_distributions::Boltzmann<double,3>(10,1,1);
     //2D step
-    auto dist3 = preset_distributions::Step<double,2>(0,0.5,false);
+    auto dist3 = preset_distributions::Step<double,2>(0,0,false);
     //Sine+uniform with step
-    auto dist4 = dist3*(preset_distributions::Sin<double,2>(1,1,M_PI,0) + preset_distributions::Uniform<double,2>(1));
+    auto dist4 = dist3*preset_distributions::Sin<double,2>(1,1,M_PI,0) + preset_distributions::Uniform<double,2>(1);
 
     std::vector<std::ofstream> outputs(Nt);
     for(int i = 0; i < Nt; ++i){
@@ -40,7 +39,9 @@ int main(){
     }
 
     outputMatrix(dist1.generate(1000,grid1D),outputs[0]);
-    outputMatrix(dist2.generate(1000,grid3D),outputs[1]);
-    outputMatrix(dist3.generate(1000,grid2D),outputs[2]);
-    outputMatrix(dist4.generate(1000,grid2D),outputs[3]);
+	outputMatrix(dist1.generate(10000,grid1D),outputs[1]);
+    outputMatrix(dist2.generate(1000,grid3D),outputs[2]);
+	outputMatrix(dist2.generate(10000,grid3D),outputs[3]);
+    outputMatrix(dist3.generate(1000,grid2D),outputs[4]);
+    outputMatrix(dist4.generate(10000,grid2D),outputs[5]);
 }
