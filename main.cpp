@@ -2,6 +2,7 @@
 #include <boost/program_options.hpp>
 
 #include "models/Species.h"
+#include "models/Config.h"
 
 namespace po = boost::program_options;
 
