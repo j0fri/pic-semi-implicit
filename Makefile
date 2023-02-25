@@ -4,8 +4,8 @@ all: sim
 CXX = g++
 CXXFLAGS = -std=c++20 -Wall -O0 -g -I ./
 
-SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h
-SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o
+SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h models/Simulation.h
+SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o models/Simulation.o
 SIMLIBS = -lboost_program_options -lblas -llapack
 
 

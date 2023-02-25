@@ -1,5 +1,5 @@
-#ifndef DISTRIBUTION_H
-#define DISTRIBUTION_H
+#ifndef PIC_SEMI_IMPLICIT_DISTRIBUTION_H
+#define PIC_SEMI_IMPLICIT_DISTRIBUTION_H
 
 #include <functional>
 #include <array>
@@ -31,5 +31,5 @@ private:
 };
 
 
-#endif // DISTRIBUTION_H
+#endif // PIC_SEMI_IMPLICIT_DISTRIBUTION_H
 

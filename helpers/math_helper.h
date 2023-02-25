@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PIC_SEMI_IMPLICIT_MATH_HELPER_H
+#define PIC_SEMI_IMPLICIT_MATH_HELPER_H
 
 #include <vector>
 
@@ -14,3 +15,5 @@ namespace math_helper{
 }
 
 #include "math_helper.cpp"
+
+#endif //PIC_SEMI_IMPLICIT_MATH_HELPER_H
