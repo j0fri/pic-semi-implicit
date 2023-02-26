@@ -138,6 +138,34 @@ Distribution<T, Nd> Distribution<T, Nd>::operator/(const Distribution<T, Nd> &ot
 }
 
 
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator+=(const Distribution<T, Nd> &other) {
+    f = std::function<T(std::array<T,Nd>)> ([=,*this](const std::array<T,Nd>& arr){return this->f(arr) + other.f(arr);});
+    return *this;
+}
+
+
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator-=(const Distribution<T, Nd> &other) {
+    f = std::function<T(std::array<T,Nd>)> ([=,*this](const std::array<T,Nd>& arr){return this->f(arr) - other.f(arr);});
+    return *this;
+}
+
+
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator*=(const Distribution<T, Nd> &other) {
+    f = std::function<T(std::array<T,Nd>)> ([=,*this](const std::array<T,Nd>& arr){return this->f(arr) * other.f(arr);});
+    return *this;
+}
+
+
+template<typename T, unsigned int Nd>
+Distribution<T, Nd> Distribution<T, Nd>::operator/=(const Distribution<T, Nd> &other) {
+    f = std::function<T(std::array<T,Nd>)> ([=,*this](const std::array<T,Nd>& arr){return this->f(arr) / other.f(arr);});
+    return *this;
+}
+
+
 template class Distribution<double,1>;
 template class Distribution<double,2>;
 template class Distribution<double,3>;
