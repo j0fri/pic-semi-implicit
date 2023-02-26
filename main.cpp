@@ -3,6 +3,7 @@
 
 #include "models/Config.h"
 #include "models/Simulation.h"
+#include "helpers/preset_configs.h"
 
 namespace po = boost::program_options;
 
@@ -34,7 +35,9 @@ int main(int argc, char* argv[]){
 		("ue", po::value<float>()->default_value(0.0), "Electron average velocity")
 		("ui", po::value<float>()->default_value(0.0), "Ion average velocity")
 		("rho0", po::value<float>()->default_value(1.0), "Initial unperturbed charge density");
-	
+
+    auto config = preset_configs::landau1D1V<double>();
+
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, opts), vm);
 }

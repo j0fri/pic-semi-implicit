@@ -12,7 +12,9 @@ struct Config{
         T m; //Mass of super-particles
         T q; //Charge of super-particles
         Distribution<T,Nd> xDist;
+        Grid<T,Nd> initialXGrid;
         Distribution<T,Nv> vDist;
+        Grid<T,Nv> initialVGrid;
         //TODO: add file for each species
         bool initialisePositionFromFile{};
         std::string initialPositionFileName;
