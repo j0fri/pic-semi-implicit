@@ -3,11 +3,25 @@
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
-    species = std::vector<Species<T,Nd,Nv>>(config.speciesConfig.size());
+    species = std::vector<Species<T,Nd,Nv>*>(config.speciesConfig.size());
     for(int i = 0; i < (int)species.size(); ++i){
-        species[i] = Species<T,Nd,Nv>(config.species[i]);
+        if(Nd == 1 && Nv == 1){
+            species[i] = new Species1D1V(config.species[i]);
+//        }else if(Nd == 2 && Nv == 3){
+//            species[i] = new Species2D3V(config.species[i]);
+        }else{
+            state = State::InitialisationError;
+            throw std::runtime_error("Nd and Nv combination not supported.");
+        }
     }
-    field = Field<T,Nd,Nv>(config.fieldConfig);
+    if(Nd == 1 && Nv == 1){
+        field = new Field1D1V(config.fieldConfig);
+//    }else if(Nd == 2 && Nv == 3){
+//        field = new Field2D3V(config.fieldConfig);
+    }else{
+        state = State::InitialisationError;
+        throw std::runtime_error("Nd and Nv combination not supported.");
+    }
     state = State::Uninitialised;
     timeConfig = config.timeConfig;
     saveConfig = config.saveConfig;
@@ -15,16 +29,21 @@ Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
 
 
 template <typename T, unsigned int Nd, unsigned int Nv>
-Simulation<T,Nd,Nv>::~Simulation() = default;
+Simulation<T,Nd,Nv>::~Simulation(){
+    delete field;
+    for(Species<T,Nd,Nv>* sPtr: species){
+        delete sPtr;
+    }
+}
 
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T, Nd, Nv>::initialise() {
     try{
         for(int i = 0; i < (int)species.size(); ++i){
-            species.initialise();
+            species[i]->initialise();
         }
-        field.initialise(species);
+        field->initialise(species);
         this->clearOutputFiles();
         state = State::Initialised;
     }catch(const std::exception& exception){
@@ -60,12 +79,12 @@ void Simulation<T,Nd,Nv>::run() {
                 this->save();
                 nextSave += saveConfig.saveInterval;
             }
-            for (auto& s : species){
-                s.advancePositions(timeConfig.step, field);
+            for(Species<T,Nd,Nv>* sPtr: species){
+                sPtr->advancePositions(timeConfig.step, field);
             }
-            field.advanceField(species);
-            for(auto& s: species){
-                s.advanceVelocities(timeConfig.step, field);
+            field->advanceField(species);
+            for(Species<T,Nd,Nv>* sPtr: species){
+                sPtr->advanceVelocities(timeConfig.step, field);
             }
             t += timeConfig.step;
         }
@@ -83,7 +102,7 @@ void Simulation<T,Nd,Nv>::save(){
         throw std::runtime_error("Could not open species output file.");
     }
     for(int i = 0; i < (int)species.size(); ++i){
-        species[i].save(speciesOutputFile,saveConfig);
+        species[i]->save(speciesOutputFile,saveConfig);
     }
     speciesOutputFile.close();
 
@@ -91,7 +110,7 @@ void Simulation<T,Nd,Nv>::save(){
     if(!speciesOutputFile.is_open()){
         throw std::runtime_error("Could not open field output file.");
     }
-    field.save(fieldOutputFile,saveConfig);
+    field->save(fieldOutputFile,saveConfig);
     fieldOutputFile.close();
 }
 

@@ -12,8 +12,8 @@ public:
     enum State{Uninitialised, Initialised, InitialisationError, Finalised, RuntimeError};
 private:
     State state;
-    std::vector<Species<T,Nd,Nv>> species;
-    Field<T,Nd,Nv> field;
+    std::vector<Species<T,Nd,Nv>*> species;
+    Field<T,Nd,Nv>* field;
     Config<T,Nd,Nv>::TimeConfig timeConfig;
     Config<T,Nd,Nv>::SaveConfig saveConfig;
 
