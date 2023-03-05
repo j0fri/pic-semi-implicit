@@ -3,7 +3,9 @@
 
 #include "Config.h"
 #include "Species.h"
+#include "Species1D1V.h"
 #include "Field.h"
+#include "Field1D1V.h"
 
 
 template <typename T, unsigned int Nd, unsigned int Nv>
@@ -16,6 +18,7 @@ private:
     Field<T,Nd,Nv>* field;
     Config<T,Nd,Nv>::TimeConfig timeConfig;
     Config<T,Nd,Nv>::SaveConfig saveConfig;
+    bool verbose;
 
 public:
     Simulation() = delete;

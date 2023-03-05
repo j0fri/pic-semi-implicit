@@ -8,6 +8,7 @@
 #include "Grid.h"
 #include "Distribution.h"
 #include "Config.h"
+#include "Species.h"
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 class Species;
@@ -25,13 +26,25 @@ public:
     const bool initialiseFromSpecies;
 
 	Field() = delete;
-	Field(const Config<T,Nd,Nv>::FieldConfig& fieldConfig);
+	explicit Field(const Config<T,Nd,Nv>::FieldConfig& fieldConfig);
 	Field(const Field<T,Nd,Nv>& other);
-	~Field();
+	virtual ~Field();
 	
-	virtual void initialise(const std::vector<Species<T,Nd,Nv>>& species) = 0;
-	virtual void advanceField(const std::vector<Species<T,Nd,Nv>>& species) = 0;
-	virtual void save(std::ofstream& outputFile, const Config<T,Nd,Nv>& saveConfig) const = 0;
+	virtual void initialise(const std::vector<Species<T,Nd,Nv>*>& species) = 0;
+	virtual void advanceField(const std::vector<Species<T,Nd,Nv>*>& species, T dt);
+
+	virtual void saveElectricField(std::ofstream& outputFile) const = 0;
+    virtual void saveMagneticField(std::ofstream& outputFile) const = 0;
+    virtual void saveEnergy(std::ofstream& outputFile) const = 0;
+    virtual void saveVoltage(std::ofstream& outputFile) const = 0;
+
+    //TODO: remove this
+    virtual const T* getEt() const = 0;
+private:
+    virtual void accumulateJ(const std::vector<Species<T,Nd,Nv>*>& species) = 0;
+    virtual void accumulateM(const std::vector<Species<T,Nd,Nv>*>& species, T dt) = 0;
+    virtual void solveAndAdvance(T dt) = 0;
 };
+
 
 #endif //PIC_SEMI_IMPLICIT_FIELD_H
