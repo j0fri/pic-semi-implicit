@@ -36,8 +36,12 @@ int main(int argc, char* argv[]){
 		("ui", po::value<float>()->default_value(0.0), "Ion average velocity")
 		("rho0", po::value<float>()->default_value(1.0), "Initial unperturbed charge density");
 
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, opts), vm);
+
     auto config = preset_configs::landau1D1V<double>();
 
-	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, opts), vm);
+	Simulation<double,1,1> sim(config);
+    sim.initialise();
+    sim.run();
 }

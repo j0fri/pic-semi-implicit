@@ -46,15 +46,29 @@ struct Config{
         bool savePositionDistribution{};
         bool saveVelocity{};
         bool saveVelocityDistribution{};
-        bool saveEnergies{};
+        bool saveSpeciesEnergy{};
         bool saveElectricField{};
         bool saveMagneticField{};
+        bool saveFieldEnergy{};
         bool saveVoltage{};
         T saveInterval;
-        std::string speciesOutputFileName;
-        std::string fieldOutputFileName;
+        std::string outputFilesDirectory{"outputs/"};
+        std::string outputFilesSubscript{}; //Will be appended to every output file
+
+        //Default file values:
+        std::string speciesPositionFileName{"speciesPosition.txt"};
+        std::string speciesPositionDistributionFileName{"speciesPositionDistribution.txt"};
+        std::string speciesVelocityFileName{"speciesVelocity.txt"};
+        std::string speciesVelocityDistributionFileName{"speciesVelocityDistribution.txt"};
+        std::string speciesEnergyFileName{"speciesEnergy.txt"};
+        std::string electricFieldFileName{"electricField.txt"};
+        std::string magneticFieldFileName{"magneticField.txt"};
+        std::string fieldEnergyFileName{"fieldEnergy.txt"};
+        std::string voltageFileName{"voltage.txt"};
     };
     SaveConfig saveConfig;
+
+    bool verbose; //Prints time during simulation
 };
 
 #endif //PIC_SEMI_IMPLICIT_CONFIG_H
