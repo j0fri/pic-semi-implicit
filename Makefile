@@ -5,9 +5,9 @@ CXX = g++
 CXXFLAGS = -std=c++20 -Wall -O0 -g -I ./
 
 SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h models/Simulation.h models/Species1D1V.h\
-		  models/Field1D1V.h
+		  models/Field1D1V.h models/Species2D3V.h models/Field2D3V.h models/Vector2.h models/Vector3.h
 SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o models/Simulation.o models/Species1D1V.o\
-		  models/Field1D1V.o
+		  models/Field1D1V.o models/Species2D3V.o models/Field2D3V.o models/Vector2.o models/Vector3.o
 SIMLIBS = -lboost_program_options -lblas -llapack
 
 
@@ -17,11 +17,8 @@ OBJS = $(SIMOBJS) $(VISOBJS)
 %.o : %.cpp $(HDRS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-sim: main.o $(SIMOBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
-
-vis: $(VISOBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(VISLIBS)
+sim: $(SIMOBJS)
+	$(CXX) $(CXXFLAGS) -o sim $^ $(SIMLIBS)
 
 .PHONY: clean
 clean:
@@ -40,15 +37,19 @@ profiler: sim
 	
 .PHONY: helperTests
 helperTests: tests/helperTests.o
-	$(CXX) $(CXXFLAGS) -o test $^
+	$(CXX) $(CXXFLAGS) -o test $^ $(SIMLIBS)
 
 .PHONY: distributionTests
 distributionTests: tests/distributionTests.o $(SIMOBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 .PHONY: presetDistributionTests
 presetDistributionTests: tests/presetDistributionTests.o $(SIMOBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: vectorTests
+vectorTests: tests/vectorTests.o $(SIMOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 .PHONY: landauFile
 landauFile: sim
