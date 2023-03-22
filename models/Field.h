@@ -38,8 +38,6 @@ public:
     virtual void saveEnergy(std::ofstream& outputFile) const = 0;
     virtual void saveVoltage(std::ofstream& outputFile) const = 0;
 
-    //TODO: remove this
-    virtual const T* getEt() const = 0;
 private:
     virtual void accumulateJ(const std::vector<Species<T,Nd,Nv>*>& species) = 0;
     virtual void accumulateM(const std::vector<Species<T,Nd,Nv>*>& species, T dt) = 0;

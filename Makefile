@@ -17,7 +17,7 @@ OBJS = $(SIMOBJS) $(VISOBJS)
 %.o : %.cpp $(HDRS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-sim: $(SIMOBJS)
+sim: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o sim $^ $(SIMLIBS)
 
 .PHONY: clean

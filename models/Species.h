@@ -43,13 +43,6 @@ public:
     virtual void saveEnergy(std::ofstream& outputFile) const = 0;
 
 
-    //TODO: GET RID OF THESE
-    virtual const T* getV() const = 0;
-    virtual const int* getG() const = 0;
-    virtual const int* getGp() const = 0;
-    virtual const T* getWg() const = 0;
-    virtual const T* getWgp() const = 0;
-
 private:
 	virtual void initialisePositions() = 0;
 	virtual void initialiseVelocities() = 0;

@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include "Species1D1V.h"
+#include "Field1D1V.h"
 
 //TODO: handle null ptrs
 template<typename T>
@@ -99,7 +100,7 @@ void Species1D1V<T>::advancePositions(T dt, const Field<T, 1, 1>* field) {
 
 template <typename T>
 void Species1D1V<T>::advanceVelocities(T dt, const Field<T, 1, 1>* field) {
-    const T* Et = field->getEt();
+    const T* Et = ((Field1D1V<T>*)field)->getEt();
     T beta = this->q/this->m*dt/2;
     for(int i = 0; i < this->Np; ++i){
         v[i] += 2*beta*(Et[g[i]]*wg[i]+Et[gp[i]]*wgp[i]);

@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include "Field1D1V.h"
+#include "Species1D1V.h"
 
 #define F77NAME(x) x##_
 extern "C" {
@@ -54,7 +55,7 @@ void Field1D1V<T>::initialise(const std::vector<Species<T, 1, 1> *> &species) {
 
     for(Species<T,1,1>* s: species){
         s->advancePositions((T)0, this);
-        const int* g = s->getG();
+        const int* g = ((Species1D1V<T>*)s)->getG();
         for(int i = 0; i < s->Np; ++i){
             rhoDist[g[i]] += s->q/dx;
         }
@@ -130,10 +131,10 @@ void Field1D1V<T>::accumulateM(const std::vector<Species<T, 1, 1> *> &species, T
         m = species[s]->m;
         q = species[s]->q;
         beta = q/m*dt/2;
-        g = species[s]->getG();
-        gp = species[s]->getGp();
-        wg = species[s]->getWg();
-        wgp = species[s]->getWgp();
+        g = ((Species1D1V<T>*)species[s])->getG();
+        gp = ((Species1D1V<T>*)species[s])->getGp();
+        wg = ((Species1D1V<T>*)species[s])->getWg();
+        wgp = ((Species1D1V<T>*)species[s])->getWgp();
         for (unsigned int p = 0; p < Np; ++p){
             Mgg[g[p]] += q*beta*wg[p]*wg[p]/dx;
             Mgg[gp[p]] += q*beta*wgp[p]*wgp[p]/dx;
@@ -159,11 +160,11 @@ void Field1D1V<T>::accumulateJ(const std::vector<Species<T, 1, 1> *> &species) {
     for (unsigned int s = 0; s < (unsigned int)species.size(); ++s){
         Np = species[s]->Np;
         q = species[s]->q;
-        v = species[s]->getV();
-        g = species[s]->getG();
-        gp = species[s]->getGp();
-        wg = species[s]->getWg();
-        wgp = species[s]->getWgp();
+        v = ((Species1D1V<T>*)species[s])->getV();
+        g = ((Species1D1V<T>*)species[s])->getG();
+        gp = ((Species1D1V<T>*)species[s])->getGp();
+        wg = ((Species1D1V<T>*)species[s])->getWg();
+        wgp = ((Species1D1V<T>*)species[s])->getWgp();
         for (unsigned int p = 0; p < Np; ++p){
             J[g[p]] += q*v[p]*wg[p]/dx;
             J[gp[p]] += q*v[p]*wgp[p]/dx;
