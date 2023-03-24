@@ -4,9 +4,9 @@
 #include "Species1D1V.h"
 #include "Field1D1V.h"
 
-//TODO: handle null ptrs
 template<typename T>
-Species1D1V<T>::Species1D1V(const Config<T, 1, 1>::SpeciesConfig &speciesConfig): Species<T,1,1>(speciesConfig) {}
+Species1D1V<T>::Species1D1V(const Config<T, 1, 1>::SpeciesConfig &speciesConfig, const Config<T,1,1>::BCConfig& bcConfig):
+    Species<T,1,1>(speciesConfig, bcConfig), g{nullptr}, gp{nullptr} {}
 
 //TODO: handle null ptrs
 template<typename T>

@@ -8,6 +8,7 @@ Config<T,1,1> preset_configs::landau1D1V(){
         preset_fields::Default1D1V<T>(4*M_PI,30,1,1),
         {10,0.01},
         {false, true, false, false, true, false, false, true, false, 0.1, "outputs/",""},
+        {{true},{}}, //Only periodic boundary conditions
         true
     };
     //Add perturbation in electrons

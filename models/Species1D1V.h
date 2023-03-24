@@ -18,7 +18,7 @@ public:
     //TODO: add move constructor and assignment operator
     //TODO: actually implement these
     Species1D1V() = delete;
-    explicit Species1D1V(const Config<T,1,1>::SpeciesConfig& speciesConfig);
+    explicit Species1D1V(const Config<T,1,1>::SpeciesConfig& speciesConfig, const Config<T,1,1>::BCConfig& bcConfig);
     Species1D1V(const Species1D1V<T>& other);
     ~Species1D1V();
 

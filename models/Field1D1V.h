@@ -23,7 +23,7 @@ public:
     //TODO: add move constructor and assignment operator
     //TODO: actually implement these
     Field1D1V() = delete;
-    explicit Field1D1V(const Config<T,1,1>::FieldConfig& fieldConfig);
+    explicit Field1D1V(const Config<T,1,1>::FieldConfig& fieldConfig, const Config<T,1,1>::BCConfig& bcConfig);
     Field1D1V(const Field1D1V& other);
     ~Field1D1V();
 

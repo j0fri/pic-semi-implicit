@@ -24,9 +24,10 @@ public:
     const std::string initialPositionFileName;
     const bool initialiseVelocityFromFile;
     const std::string initialVelocityFileName;
-	
+    const Config<T,Nd,Nv>::BCConfig bcConfig;
+
 	Species() = delete;
-	explicit Species(const Config<T,Nd,Nv>::SpeciesConfig& speciesConfig);
+	explicit Species(const Config<T,Nd,Nv>::SpeciesConfig& speciesConfig, const Config<T,Nd,Nv>::BCConfig& bcConfig);
 	Species(const Species<T,Nd,Nv>& other);
 	virtual ~Species();
 
