@@ -4,6 +4,7 @@
 #define PIC_SEMI_IMPLICIT_CONFIG_H
 
 #include <istream>
+#include <optional>
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 struct Config{
@@ -67,6 +68,14 @@ struct Config{
         std::string voltageFileName{"voltage.txt"};
     };
     SaveConfig saveConfig;
+
+    struct BCConfig{
+        std::array<bool,Nd> periodic; //for each dimension, if true the boundary will be periodic
+        std::array<std::optional<Distribution<T,Nd-1>>, 2*Nd> generators; /*for each dimension, optional generator of
+        new particles, order of boundaries is x=minx, x=maxx, y=miny, ..., ignored if periodic in given dimension,
+        magnitude/frequency of generator not relevant as created number will correspond to deleted particles*/
+    };
+    BCConfig bcConfig;
 
     bool verbose; //Prints time during simulation
 };

@@ -24,9 +24,10 @@ public:
     const bool onlyForcedE; //If true, electric field is only forcedE, if false, forcedE is added to PDE sol
     const bool onlyForcedB; //If true, magnetic field is only forcedB, if false, forcedB is added to PDE sol
     const bool initialiseFromSpecies;
+    const Config<T,Nd,Nv>::BCConfig bcConfig;
 
 	Field() = delete;
-	explicit Field(const Config<T,Nd,Nv>::FieldConfig& fieldConfig);
+	explicit Field(const Config<T,Nd,Nv>::FieldConfig& fieldConfig, const Config<T,Nd,Nv>::BCConfig& bcConfig);
 	Field(const Field<T,Nd,Nv>& other);
 	virtual ~Field();
 	

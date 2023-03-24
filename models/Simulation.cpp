@@ -7,7 +7,7 @@ Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
     species = std::vector<Species<T,Nd,Nv>*>(config.speciesConfig.size());
     for(int i = 0; i < (int)species.size(); ++i){
         if(Nd == 1 && Nv == 1){
-            species[i] = new Species1D1V<T>(config.speciesConfig[i]);
+            species[i] = new Species1D1V<T>(config.speciesConfig[i], config.bcConfig);
 //        }else if(Nd == 2 && Nv == 3){
 //            species[i] = new Species2D3V<T>(config.species[i]);
         }else{
@@ -16,7 +16,7 @@ Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
         }
     }
     if(Nd == 1 && Nv == 1){
-        field = new Field1D1V<T>(config.fieldConfig);
+        field = new Field1D1V<T>(config.fieldConfig, config.bcConfig);
 //    }else if(Nd == 2 && Nv == 3){
 //        field = new Field2D3V<T>(config.fieldConfig);
     }else{
@@ -26,6 +26,7 @@ Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
     state = State::Uninitialised;
     timeConfig = config.timeConfig;
     saveConfig = config.saveConfig;
+    bcConfig = config.bcConfig;
     verbose = config.verbose;
 }
 
