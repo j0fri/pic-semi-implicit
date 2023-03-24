@@ -5,6 +5,7 @@
 #ifndef PIC_SEMI_IMPLICIT_VECTOR2_H
 #define PIC_SEMI_IMPLICIT_VECTOR2_H
 
+#include "Vector3.h"
 
 template<typename T>
 struct Vector2 {
@@ -20,9 +21,12 @@ struct Vector2 {
     Vector2& operator=(Vector2 other);
 
     Vector2<T> operator+(const Vector2<T>& other) const;
+    Vector2<T> operator+(const Vector3<T>& other) const; //Third column is ignored
     Vector2<T> operator-(const Vector2<T>& other) const;
+    Vector2<T> operator-(const Vector3<T>& other) const; //Third column is ignored
     Vector2<T> operator*(double c) const;
     Vector2<T>& operator+=(const Vector2<T>& other);
+    Vector2<T>& operator+=(const Vector3<T>& other); //Third column is ignored
 };
 
 

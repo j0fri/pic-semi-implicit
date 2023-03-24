@@ -69,7 +69,37 @@ Vector2<T> Vector2<T>::operator+(const Vector2 &other) const {
 }
 
 template<typename T>
+Vector2<T> Vector2<T>::operator+(const Vector3<T> &other) const {
+    if(this->n != other.n){
+        throw std::runtime_error("Can only operate on vectors with the same length.");
+    }
+    Vector2<T> out(n);
+    for(unsigned int i = 0; i < n; ++i){
+        out.x[i] = this->x[i] + other.x[i];
+    }
+    for(unsigned int i = 0; i < n; ++i){
+        out.y[i] = this->y[i] + other.y[i];
+    }
+    return out;
+}
+
+template<typename T>
 Vector2<T> Vector2<T>::operator-(const Vector2 &other) const {
+    if(this->n != other.n){
+        throw std::runtime_error("Can only operate on vectors with the same length.");
+    }
+    Vector2<T> out(n);
+    for(unsigned int i = 0; i < n; ++i){
+        out.x[i] = this->x[i] - other.x[i];
+    }
+    for(unsigned int i = 0; i < n; ++i){
+        out.y[i] = this->y[i] - other.y[i];
+    }
+    return out;
+}
+
+template<typename T>
+Vector2<T> Vector2<T>::operator-(const Vector3<T> &other) const {
     if(this->n != other.n){
         throw std::runtime_error("Can only operate on vectors with the same length.");
     }
@@ -97,6 +127,17 @@ Vector2<T> Vector2<T>::operator*(double c) const{
 
 template<typename T>
 Vector2<T> &Vector2<T>::operator+=(const Vector2<T> &other) {
+    for(unsigned int i = 0; i < n; ++i){
+        x[i] += other.x[i];
+    }
+    for(unsigned int i = 0; i < n; ++i){
+        y[i] += other.y[i];
+    }
+    return *this;
+}
+
+template<typename T>
+Vector2<T> &Vector2<T>::operator+=(const Vector3<T> &other) {
     for(unsigned int i = 0; i < n; ++i){
         x[i] += other.x[i];
     }

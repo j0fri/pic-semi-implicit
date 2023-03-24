@@ -65,4 +65,25 @@ int main(){
         std::cout << "z+=y, z: " << std::endl;
         printVector3(v3,n);
     }
+    {
+        int n = 5;
+        Vector2<double> v1(n);
+        for (int i = 0; i < n; ++i){
+            v1.x[i] = i;
+            v1.y[i] = n-i;
+            //v1.z[i] = 36;
+        }
+        Vector3<double> v2(n);
+        for (int i = 0; i < n; ++i){
+            v2.x[i] = 1;
+            v2.y[i] = 2+i;
+            v2.z[i] = 36;
+        }
+        std::cout << "x: " << std::endl;
+        printVector2(v1,n);
+        std::cout << "y: " << std::endl;
+        printVector3(v2,n);
+        std::cout << "x + y: " << std::endl;
+        printVector2(v1 + v2, n);
+    }
 }
