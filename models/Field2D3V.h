@@ -18,6 +18,7 @@ private:
     T* fieldT; //Field at half time step
     T* J; //Current is an array of length Nx*Ny*3, same structure as field with Jx,Jy,Jz
 
+    //TODO: mass matrices and current are assumed to be centred at the electric field locations, not magnetic
     T* Mgg; //Mass matrix for cell with itself
     T* Mgpg; //Mass matrix for cell with cell + dx
     T* Mggp; //Mass matrix for cell with cell + dy
@@ -30,7 +31,7 @@ private:
 
 public:
     Field2D3V() = delete;
-    explicit Field2D3V(const Config<T,2,3>::FieldConfig& fieldConfig);
+    explicit Field2D3V(const typename Config<T,2,3>::FieldConfig& fieldConfig);
     Field2D3V(const Field2D3V& other);
     ~Field2D3V();
 

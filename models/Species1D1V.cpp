@@ -131,7 +131,7 @@ void Species1D1V<T>::computeWeights(const Field<T, 1, 1> *field) {
     for(int i = 0; i < this->Np; ++i){
         g[i] = std::floor(x[i]/dx);
         gp[i] = (g[i]+1) % Nx;
-        wg[i] = std::fmod(x[i], dx)/dx;
+        wg[i] = std::fmod(x[i], dx)/dx; //TODO: check it's not 1-this
         wgp[i] = 1-wg[i];
         if(g[i]<0 || g[i]>=Nx || gp[i]<0 || gp[i]>=Nx){
             throw std::runtime_error("Problem"); //TODO: clean or ignore
