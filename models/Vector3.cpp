@@ -124,6 +124,30 @@ Vector3<T> &Vector3<T>::operator+=(const Vector3<T> &other) {
     return *this;
 }
 
+template<typename T>
+T* Vector3<T>::operator[](const unsigned int &dim){
+    if(dim == 0){
+        return x;
+    }else if(dim == 1){
+        return y;
+    }else if(dim == 2){
+        return z;
+    }
+    throw std::invalid_argument("Vector 3 only has dimensions 0, 1 and 2");
+}
+
+template<typename T>
+const T *Vector3<T>::operator[](const unsigned int &dim) const {
+    if(dim == 0){
+        return static_cast<const T*>(x);
+    }else if(dim == 1){
+        return static_cast<const T*>(y);
+    }else if(dim == 2){
+        return static_cast<const T*>(z);
+    }
+    throw std::invalid_argument("Vector 3 only has dimensions 0, 1 and 2");
+}
+
 template struct Vector3<float>;
 template struct Vector3<double>;
 template struct Vector3<int>;

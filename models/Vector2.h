@@ -27,6 +27,9 @@ struct Vector2 {
     Vector2<T> operator*(double c) const;
     Vector2<T>& operator+=(const Vector2<T>& other);
     Vector2<T>& operator+=(const Vector3<T>& other); //Third column is ignored
+
+    T* operator[](const unsigned int& dim); //Returns pointer to the numbered dimension
+    const T* operator[](const unsigned int& dim) const; //Read-only version
 };
 
 

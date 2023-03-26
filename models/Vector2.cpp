@@ -147,6 +147,26 @@ Vector2<T> &Vector2<T>::operator+=(const Vector3<T> &other) {
     return *this;
 }
 
+template<typename T>
+T* Vector2<T>::operator[](const unsigned int &dim){
+    if(dim == 0){
+        return x;
+    }else if(dim == 1){
+        return y;
+    }
+    throw std::invalid_argument("Vector 2 only has dimensions 0 and 1");
+}
+
+template<typename T>
+const T *Vector2<T>::operator[](const unsigned int &dim) const {
+    if(dim == 0){
+        return static_cast<const T*>(x);
+    }else if(dim == 1){
+        return static_cast<const T*>(y);
+    }
+    throw std::invalid_argument("Vector 2 only has dimensions 0 and 1");
+}
+
 template struct Vector2<float>;
 template struct Vector2<double>;
 template struct Vector2<int>;
