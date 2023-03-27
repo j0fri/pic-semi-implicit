@@ -12,6 +12,12 @@ namespace math_helper{
 	
 	template <typename T>
 	std::vector<T> linspace(T x1, T x2, unsigned int n);
+
+    //y = A*x, where a is matrix in column-major format
+    template <typename T>
+    void gemv(unsigned int M, unsigned int N, T alpha, T* A, unsigned int lda, T* x,
+              unsigned int incx, T* y, unsigned int incy);
+
 }
 
 #include "math_helper.cpp"
