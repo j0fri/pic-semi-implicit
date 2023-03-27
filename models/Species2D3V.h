@@ -27,6 +27,7 @@ private:
     Vector2<T> wgpB;
     Vector3<T> Ep; //Electric field at particle at time n+theta
     Vector3<T> Bp; //Magnetic field at particle at time n
+    T* alpha; //Np*9 array, where every alpha is stored in column major format sequentially for every particles
 
 public:
     //TODO: add move constructor and assignment operator
@@ -59,13 +60,11 @@ private:
     void initialisePositions(const std::ifstream& file);
     void initialiseVelocities(const std::ifstream& file);
 
-    void computeAlphas(const Field<T,2,3>* field);
+    void computeAlphas(const Field<T,2,3>* field, T dt);
     void computeWeights(const Field<T,2,3>* field);
     void computeLocalB(const Field<T,2,3>* field);
     void computeLocalE(const Field<T,2,3>* field);
 };
-
-
 
 
 #endif //PIC_SEMI_IMPLICIT_SPECIES2D3V_H

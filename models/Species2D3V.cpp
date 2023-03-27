@@ -14,14 +14,17 @@ Species2D3V<T>::Species2D3V(const Config<T,2,3>::SpeciesConfig &speciesConfig, c
         gB{Vector2<unsigned int>(this->Np)}, gpB{Vector2<unsigned int>(this->Np)},
         wg{Vector2<T>(this->Np)}, wgp{Vector2<T>(this->Np)},
         wgB{Vector2<T>(this->Np)}, wgpB{Vector2<T>(this->Np)},
-        Ep{Vector3<T>(this->Np)}, Bp{Vector3<T>(this->Np)}{
+        Ep{Vector3<T>(this->Np)}, Bp{Vector3<T>(this->Np)},
+        alpha{new T[9*this->Np]}{
 }
 
 template<typename T>
 Species2D3V<T>::Species2D3V(const Species2D3V<T> &other)=default;
 
 template<typename T>
-Species2D3V<T>::~Species2D3V()=default;
+Species2D3V<T>::~Species2D3V(){
+    delete[] alpha;
+};
 
 template<typename T>
 const Vector3<T>& Species2D3V<T>::getVel() const {
@@ -79,7 +82,7 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T, 2, 3> *field) {
     }
     this->computeWeights(field);
     this->computeLocalB(field);
-    this->computeAlphas(field);
+    this->computeAlphas(field, dt);
 }
 
 template<typename T>
@@ -139,6 +142,41 @@ void Species2D3V<T>::computeLocalB(const Field<T, 2, 3> *field) {
         T w4 = wgp.x[i]*wgp.y[i];
         for(unsigned int dim = 0; dim < 3; ++dim){
             Bp[dim][i] = w1*f[6*i1+3+dim] + w2*f[6*i2+3+dim] + w3*f[6*i3+3+dim] + w4*f[6*i4+3+dim];
+        }
+    }
+}
+
+template<typename T>
+void Species2D3V<T>::computeAlphas(const Field<T, 2, 3> *field, T dt) {
+    //From Giovanni Lapenta:
+    //    function alpha = alpha(beta,Bx,By,Bz )
+    //                     %B=[Bx By Bz];
+    //    %I=diag([1 1 1]);
+    //    %IcB=[cross(I(1,:),B); cross(I(2,:),B); cross(I(3,:),B)];
+    //
+    //    %alpha=(I-beta*IcB+beta^2*B'*B)/(1+beta^2*B*B');
+    //
+    //    sx=Bx*beta;sy=By*beta;sz=Bz*beta;
+    //    alpha=[1+sx*sx  sz+sx*sy   -sy+sx*sz;
+    //    -sz+sx*sy  1+sy*sy   sx+sy*sz;
+    //    sy+sx*sz   -sx+sy*sz    1+sz*sz]/(1+sx*sx+sy*sy+sz*sz);
+    //    end
+    for(unsigned int i = 0; i < this->Np; ++i){
+        T sx = Bp.x[i] * dt;
+        T sy = Bp.y[i] * dt;
+        T sz = Bp.z[i] * dt;
+        alpha[i]=1+sx*sx;
+        alpha[i+1]=-sz+sx*sy;
+        alpha[i+2]=sy+sx*sz;
+        alpha[i+3]=sz+sx*sy;
+        alpha[i+4]=1+sy*sy;
+        alpha[i+5]=-sx+sy*sz;
+        alpha[i+6]=-sy+sx*sz;
+        alpha[i+7]=sx+sy*sz;
+        alpha[i+8]=1+sz*sz;
+        T norm = (T)1/(1+sx*sx+sy*sy+sz*sz);
+        for(unsigned int j = 0; j < 9; ++j){
+            alpha[i+j]*=norm;
         }
     }
 }

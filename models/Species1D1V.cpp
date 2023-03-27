@@ -120,7 +120,7 @@ void Species1D1V<T>::initialiseVelocities(const std::ifstream &file) {
 }
 
 template<typename T>
-void Species1D1V<T>::computeAlphas(const Field<T, 1, 1> *field) {
+void Species1D1V<T>::computeAlphas(const Field<T, 1, 1> *field, T dt) {
     //TODO: tidy as it's not needed
 }
 

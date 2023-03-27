@@ -45,7 +45,7 @@ private:
     void initialisePositions(const std::ifstream& file);
     void initialiseVelocities(const std::ifstream& file);
 
-    void computeAlphas(const Field<T,1,1>* field);
+    void computeAlphas(const Field<T,1,1>* field, T dt);
     void computeWeights(const Field<T,1,1>* field);
 };
 

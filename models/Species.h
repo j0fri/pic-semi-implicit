@@ -50,7 +50,7 @@ private:
 	virtual void initialisePositions(const std::ifstream& file) = 0;
     virtual void initialiseVelocities(const std::ifstream& file) = 0;
 
-	virtual void computeAlphas(const Field<T,Nd,Nv>* field) = 0;
+	virtual void computeAlphas(const Field<T,Nd,Nv>* field, T dt) = 0;
 	virtual void computeWeights(const Field<T,Nd,Nv>* field) = 0;
 };
 
