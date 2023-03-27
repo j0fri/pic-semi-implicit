@@ -10,7 +10,7 @@
 template<typename T>
 struct Vector2 {
     const unsigned int n;
-    T* x;
+    T* x; //x and y are contiguous in memory, so an increment of n leads to the next dimension.
     T* y;
     Vector2() = delete;
     explicit Vector2(unsigned int n);

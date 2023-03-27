@@ -22,7 +22,7 @@ sim: main.o $(SIMOBJS)
 
 .PHONY: clean
 clean:
-	-rm -f *.o **/*.o sim vis *Test*
+	-rm -f *.o **/*.o sim vis *Test* test
 
 .PHONY: cleanOutput
 cleanOutput:
@@ -48,7 +48,7 @@ presetDistributionTests: tests/presetDistributionTests.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 .PHONY: vectorTests
-vectorTests: tests/vectorTests.o $(SIMOBJS)
+vectorTests: tests/vectorTests.o models/Vector2.o models/Vector3.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 .PHONY: landauFile

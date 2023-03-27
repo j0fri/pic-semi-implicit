@@ -3,13 +3,14 @@
 //
 
 #include <algorithm>
+#include <stdexcept>
 #include "Vector2.h"
 
 
 template<typename T>
 Vector2<T>::Vector2(unsigned int n): n{n} {
-    x = new T[n];
-    y = new T[n];
+    x = new T[2*n];
+    y = x + n;
 }
 
 template<typename T>
@@ -29,7 +30,6 @@ Vector2<T>::Vector2(Vector2 &&other) noexcept : n{other.n}{
 template<typename T>
 Vector2<T>::~Vector2() {
     delete[] x;
-    delete[] y;
 }
 
 template<typename T>

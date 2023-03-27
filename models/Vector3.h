@@ -9,7 +9,7 @@
 template<typename T>
 struct Vector3 {
     const unsigned int n;
-    T* x;
+    T* x; //x, y and z are contiguous in memory, so an increase in n leads to the next dimension
     T* y;
     T* z;
     Vector3() = delete;

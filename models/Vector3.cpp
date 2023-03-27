@@ -3,14 +3,15 @@
 //
 
 #include <algorithm>
+#include <stdexcept>
 #include "Vector3.h"
 
 
 template<typename T>
 Vector3<T>::Vector3(unsigned int n): n{n} {
-    x = new T[n];
-    y = new T[n];
-    z = new T[n];
+    x = new T[3*n];
+    y = x+n;
+    z = y+n;
 }
 
 template<typename T>
@@ -33,8 +34,6 @@ Vector3<T>::Vector3(Vector3 &&other) noexcept : n{other.n}{
 template<typename T>
 Vector3<T>::~Vector3() {
     delete[] x;
-    delete[] y;
-    delete[] z;
 }
 
 template<typename T>
