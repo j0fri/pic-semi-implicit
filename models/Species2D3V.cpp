@@ -98,6 +98,67 @@ void Species2D3V<T>::advanceVelocities(T dt, const Field<T, 2, 3> *field) {
 }
 
 template<typename T>
+void Species2D3V<T>::savePosition(std::ofstream &outputFile) const {
+    //TODO: implement
+    throw std::runtime_error("Not implemented yet.");
+}
+
+template<typename T>
+void Species2D3V<T>::savePositionDistribution(std::ofstream &outputFile, const Field<T, 2, 3> *field) const {
+    //TODO: implement
+    throw std::runtime_error("Not implemented yet.");
+}
+
+template<typename T>
+void Species2D3V<T>::saveVelocity(std::ofstream &outputFile) const {
+    //TODO: implement
+    throw std::runtime_error("Not implemented yet.");
+}
+
+template<typename T>
+void Species2D3V<T>::saveVelocityDistribution(std::ofstream &outputFile) const {
+    //TODO: implement
+    throw std::runtime_error("Not implemented yet.");
+}
+
+template<typename T>
+void Species2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
+    //TODO: implement
+    throw std::runtime_error("Not implemented yet.");
+}
+
+template<typename T>
+void Species2D3V<T>::initialisePositions() {
+    std::vector<std::array<T, 2>> tempPos = this->initialXDist.generate(this->Np, this->initialXGrid);
+    for(unsigned int i = 0; i < (unsigned int) tempPos.size(); ++i){
+        pos.x[i] = tempPos[i][0];
+        pos.y[i] = tempPos[i][1];
+    }
+}
+
+template<typename T>
+void Species2D3V<T>::initialiseVelocities() {
+    std::vector<std::array<T, 3>> tempVel = this->initialVDist.generate(this->Np, this->initialVGrid);
+    for(unsigned int i = 0; i < (unsigned int) tempVel.size(); ++i){
+        vel.x[i] = tempVel[i][0];
+        vel.y[i] = tempVel[i][1];
+        vel.z[i] = tempVel[i][2];
+    }
+}
+
+template<typename T>
+void Species2D3V<T>::initialisePositions(const std::ifstream &file) {
+    //TODO: initialisation from file
+    throw std::runtime_error("");
+}
+
+template<typename T>
+void Species2D3V<T>::initialiseVelocities(const std::ifstream &file) {
+    //TODO: initialisation from file
+    throw std::runtime_error("");
+}
+
+template<typename T>
 void Species2D3V<T>::computeWeights(const Field<T, 2, 3> *field) {
     for(unsigned int dim = 0; dim < 2; ++dim){
         T min = field->grid.dimensions[dim].min;
