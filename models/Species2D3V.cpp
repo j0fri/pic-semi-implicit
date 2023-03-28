@@ -5,9 +5,11 @@
 #include <cmath>
 #include "Species2D3V.h"
 #include "Field2D3V.h"
+#include "../helpers/math_helper.h"
 
 template<typename T>
-Species2D3V<T>::Species2D3V(const Config<T,2,3>::SpeciesConfig &speciesConfig, const Config<T,2,3>::BCConfig& bcConfig)
+Species2D3V<T>::Species2D3V(const typename Config<T,2,3>::SpeciesConfig &speciesConfig,
+                            const  typename Config<T,2,3>::BCConfig& bcConfig)
         :Species<T,2,3>(speciesConfig, bcConfig),
         pos{Vector2<T>(this->Np)}, vel{Vector3<T>(this->Np)},
         g{Vector2<unsigned int>(this->Np)}, gp{Vector2<unsigned int>(this->Np)},
@@ -15,7 +17,7 @@ Species2D3V<T>::Species2D3V(const Config<T,2,3>::SpeciesConfig &speciesConfig, c
         wg{Vector2<T>(this->Np)}, wgp{Vector2<T>(this->Np)},
         wgB{Vector2<T>(this->Np)}, wgpB{Vector2<T>(this->Np)},
         Ep{Vector3<T>(this->Np)}, Bp{Vector3<T>(this->Np)},
-        alpha{new T[9*this->Np]}{
+        alpha{new T[9*this->Np]}, vBar{Vector3<T>(this->Np)}{
 }
 
 template<typename T>
@@ -86,6 +88,16 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T, 2, 3> *field) {
 }
 
 template<typename T>
+void Species2D3V<T>::advanceVelocities(T dt, const Field<T, 2, 3> *field) {
+    this->computeLocalE(field);
+    Vector3<T> temp = vel + Ep*(this->q*dt/(2*this->m));
+    for(unsigned int i = 0; i < this->Np; ++i){
+        math_helper::gemv(3,3,(T)1.0,alpha+9*i,3,temp.x+i,temp.n,vBar.x+i,vBar.n);
+    }
+    vel = vBar*((T)2.0) - vel;
+}
+
+template<typename T>
 void Species2D3V<T>::computeWeights(const Field<T, 2, 3> *field) {
     for(unsigned int dim = 0; dim < 2; ++dim){
         T min = field->grid.dimensions[dim].min;
@@ -132,14 +144,14 @@ template<typename T>
 void Species2D3V<T>::computeLocalB(const Field<T, 2, 3> *field) {
     const T* f = ((Field2D3V<T>*)field)->getField();
     for(unsigned int i = 0; i < this->Np; ++i){
-        unsigned int i1 = g.x[i] + field->grid.dimensions[0].Nc * g.y[i];
-        unsigned int i2 = gp.x[i] + field->grid.dimensions[0].Nc * g.y[i];
-        unsigned int i3 = g.x[i] + field->grid.dimensions[0].Nc * gp.y[i];
-        unsigned int i4 = gp.x[i] + field->grid.dimensions[0].Nc * gp.y[i];
-        T w1 = wg.x[i]*wg.y[i];
-        T w2 = wgp.x[i]*wg.y[i];
-        T w3 = wg.x[i]*wgp.y[i];
-        T w4 = wgp.x[i]*wgp.y[i];
+        unsigned int i1 = gB.x[i] + field->grid.dimensions[0].Nc * gB.y[i];
+        unsigned int i2 = gpB.x[i] + field->grid.dimensions[0].Nc * gB.y[i];
+        unsigned int i3 = gB.x[i] + field->grid.dimensions[0].Nc * gpB.y[i];
+        unsigned int i4 = gpB.x[i] + field->grid.dimensions[0].Nc * gpB.y[i];
+        T w1 = wgB.x[i]*wgB.y[i];
+        T w2 = wgpB.x[i]*wgB.y[i];
+        T w3 = wgB.x[i]*wgpB.y[i];
+        T w4 = wgpB.x[i]*wgpB.y[i];
         for(unsigned int dim = 0; dim < 3; ++dim){
             Bp[dim][i] = w1*f[6*i1+3+dim] + w2*f[6*i2+3+dim] + w3*f[6*i3+3+dim] + w4*f[6*i4+3+dim];
         }
@@ -180,6 +192,25 @@ void Species2D3V<T>::computeAlphas(const Field<T, 2, 3> *field, T dt) {
         }
     }
 }
+
+template<typename T>
+void Species2D3V<T>::computeLocalE(const Field<T, 2, 3> *field) {
+    const T* f = ((Field2D3V<T>*)field)->getField();
+    for(unsigned int i = 0; i < this->Np; ++i){
+        unsigned int i1 = g.x[i] + field->grid.dimensions[0].Nc * g.y[i];
+        unsigned int i2 = gp.x[i] + field->grid.dimensions[0].Nc * g.y[i];
+        unsigned int i3 = g.x[i] + field->grid.dimensions[0].Nc * gp.y[i];
+        unsigned int i4 = gp.x[i] + field->grid.dimensions[0].Nc * gp.y[i];
+        T w1 = wg.x[i]*wg.y[i];
+        T w2 = wgp.x[i]*wg.y[i];
+        T w3 = wg.x[i]*wgp.y[i];
+        T w4 = wgp.x[i]*wgp.y[i];
+        for(unsigned int dim = 0; dim < 3; ++dim){
+            Ep[dim][i] = w1*f[6*i1+dim] + w2*f[6*i2+dim] + w3*f[6*i3+dim] + w4*f[6*i4+dim];
+        }
+    }
+}
+
 
 template class Species2D3V<float>;
 template class Species2D3V<double>;

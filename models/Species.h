@@ -13,6 +13,7 @@ class Field;
 template <typename T, unsigned int Nd, unsigned int Nv>
 class Species{
 public:
+    //TODO: consider making beta an attribute at construction
 	const unsigned int Np;
 	const T m;
 	const T q;
@@ -24,10 +25,11 @@ public:
     const std::string initialPositionFileName;
     const bool initialiseVelocityFromFile;
     const std::string initialVelocityFileName;
-    const Config<T,Nd,Nv>::BCConfig bcConfig;
+    const typename Config<T,Nd,Nv>::BCConfig bcConfig;
 
 	Species() = delete;
-	explicit Species(const Config<T,Nd,Nv>::SpeciesConfig& speciesConfig, const Config<T,Nd,Nv>::BCConfig& bcConfig);
+	explicit Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speciesConfig,
+                     const typename Config<T,Nd,Nv>::BCConfig& bcConfig);
 	Species(const Species<T,Nd,Nv>& other);
 	virtual ~Species();
 

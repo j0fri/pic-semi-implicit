@@ -28,12 +28,14 @@ private:
     Vector3<T> Ep; //Electric field at particle at time n+theta
     Vector3<T> Bp; //Magnetic field at particle at time n
     T* alpha; //Np*9 array, where every alpha is stored in column major format sequentially for every particles
+    Vector3<T> vBar;
 
 public:
     //TODO: add move constructor and assignment operator
     //TODO: actually implement these
     Species2D3V() = delete;
-    explicit Species2D3V(const typename Config<T,2,3>::SpeciesConfig& speciesConfig, const Config<T,2,3>::BCConfig& bcConfig);
+    explicit Species2D3V(const typename Config<T,2,3>::SpeciesConfig& speciesConfig,
+                         const typename Config<T,2,3>::BCConfig& bcConfig);
     Species2D3V(const Species2D3V<T>& other);
     ~Species2D3V();
 

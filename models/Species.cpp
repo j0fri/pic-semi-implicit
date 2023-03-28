@@ -1,7 +1,8 @@
 #include "Species.h"
 
 template<typename T, unsigned int Nd, unsigned int Nv>
-Species<T, Nd, Nv>::Species(const Config<T,Nd,Nv>::SpeciesConfig& speciesConfig, const Config<T,Nd,Nv>::BCConfig& bcConfig)
+Species<T, Nd, Nv>::Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speciesConfig,
+                            const typename Config<T,Nd,Nv>::BCConfig& bcConfig)
     : Np(speciesConfig.Np), m(speciesConfig.m/speciesConfig.Np), q(speciesConfig.m/speciesConfig.Np),
     initialXDist(speciesConfig.xDist), initialXGrid(speciesConfig.initialXGrid), initialVDist(speciesConfig.vDist),
     initialVGrid(speciesConfig.initialVGrid), initialisePositionFromFile(speciesConfig.initialisePositionFromFile),

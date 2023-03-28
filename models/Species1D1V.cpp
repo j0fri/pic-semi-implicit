@@ -5,7 +5,8 @@
 #include "Field1D1V.h"
 
 template<typename T>
-Species1D1V<T>::Species1D1V(const Config<T, 1, 1>::SpeciesConfig &speciesConfig, const Config<T,1,1>::BCConfig& bcConfig):
+Species1D1V<T>::Species1D1V(const typename Config<T, 1, 1>::SpeciesConfig &speciesConfig,
+                            const typename Config<T,1,1>::BCConfig& bcConfig):
     Species<T,1,1>(speciesConfig, bcConfig), g{nullptr}, gp{nullptr} {}
 
 //TODO: handle null ptrs

@@ -27,7 +27,8 @@ public:
     const Config<T,Nd,Nv>::BCConfig bcConfig;
 
 	Field() = delete;
-	explicit Field(const Config<T,Nd,Nv>::FieldConfig& fieldConfig, const Config<T,Nd,Nv>::BCConfig& bcConfig);
+	explicit Field(const typename Config<T,Nd,Nv>::FieldConfig& fieldConfig,
+                   const typename Config<T,Nd,Nv>::BCConfig& bcConfig);
 	Field(const Field<T,Nd,Nv>& other);
 	virtual ~Field();
 	

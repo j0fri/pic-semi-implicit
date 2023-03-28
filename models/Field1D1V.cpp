@@ -16,7 +16,8 @@ void F77NAME(sgesv)(const int& n, const int& nrhs, const float * A,
 
 //TODO: tidy initialisation of nullptrs
 template <typename T>
-Field1D1V<T>::Field1D1V(const typename Config<T,1,1>::FieldConfig& fieldConfig, const Config<T,1,1>::BCConfig& bcConfig)
+Field1D1V<T>::Field1D1V(const typename Config<T,1,1>::FieldConfig& fieldConfig,
+                        const typename Config<T,1,1>::BCConfig& bcConfig)
  : Field<T,1,1>(fieldConfig, bcConfig){
     Nx = fieldConfig.grid.dimensions[0].Nc;
     dx = fieldConfig.grid.getSpacings()[0];
