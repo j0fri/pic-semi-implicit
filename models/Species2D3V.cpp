@@ -53,6 +53,11 @@ const Vector2<T>& Species2D3V<T>::getWgp() const {
     return wgp;
 }
 
+template<typename T>
+const T *Species2D3V<T>::getAlpha() const {
+    return static_cast<const T*>(alpha);
+}
+
 //TODO: ADD KINETIC ENERGY
 template<typename T>
 T Species2D3V<T>::getTotalKineticEnergy() const {

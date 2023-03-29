@@ -15,7 +15,7 @@ namespace math_helper{
 
     //y = A*x, where a is matrix in column-major format
     template <typename T>
-    void gemv(unsigned int M, unsigned int N, T alpha, T* A, unsigned int lda, T* x,
+    void gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsigned int lda, const T* x,
               unsigned int incx, T* y, unsigned int incy);
 
 }

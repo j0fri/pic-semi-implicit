@@ -44,6 +44,7 @@ public:
     const Vector2<unsigned int>& getGp() const;
     const Vector2<T>& getWg() const;
     const Vector2<T>& getWgp() const;
+    const T* getAlpha() const;
     T getTotalKineticEnergy() const;
 
     void advancePositions(T dt, const Field<T,2,3>* field);

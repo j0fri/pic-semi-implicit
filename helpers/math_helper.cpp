@@ -43,7 +43,7 @@ std::vector<T> math_helper::linspace(T x1, T x2, unsigned int n){
 
 //TODO: consider matrix multiplication as addition of columns, might improve cache locality
 template<typename T>
-void math_helper::gemv(unsigned int M, unsigned int N, T alpha, T* A, unsigned int lda, T* x,
+void math_helper::gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsigned int lda, const T* x,
                        unsigned int incx, T* y, unsigned int incy){
     T temp;
     for(unsigned int i = 0; i < M; ++i){

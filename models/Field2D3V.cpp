@@ -3,6 +3,8 @@
 //
 
 #include "Field2D3V.h"
+#include "Species2D3V.h"
+#include "../helpers/math_helper.h"
 
 template<typename T>
 Field2D3V<T>::Field2D3V(const typename Config<T, 2, 3>::FieldConfig &fieldConfig,
@@ -87,6 +89,45 @@ const T *Field2D3V<T>::getFieldT() const {
     return static_cast<const T*>(fieldT);
 }
 
+template<typename T>
+void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
+    std::fill(J,J+3*Ng,(T)0.0);
+    for(auto sPtr: species){
+        T dJ[3];
+        const Vector2<unsigned int> g = ((Species2D3V<T>*)sPtr)->getG();
+        const Vector2<unsigned int> gp = ((Species2D3V<T>*)sPtr)->getGp();
+        const Vector2<T> wg = ((Species2D3V<T>*)sPtr)->getWg();
+        const Vector2<T> wgp = ((Species2D3V<T>*)sPtr)->getWgp();
+        const Vector3<T> vel = ((Species2D3V<T>*)sPtr)->getVel();
+        const T* alpha = ((Species2D3V<T>*)sPtr)->getAlpha();
+        for(unsigned int p; p < sPtr->Np; ++p){
+            //Bottom-left cell
+            unsigned int gi = g.x[p]+g.y[p]*Nx;
+            math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wg.y[p]),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            for(unsigned int dim = 0; dim < 3; ++dim){
+                J[3*gi+dim] +=dJ[dim];
+            }
+            //Bottom-right cell (dx)
+            gi = gp.x[p]+g.y[p]*Nx;
+            math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wg.y[p]),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            for(unsigned int dim = 0; dim < 3; ++dim){
+                J[3*gi+dim] +=dJ[dim];
+            }
+            //Top-left cell (dy)
+            gi = g.x[p]+gp.y[p]*Nx;
+            math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wgp.y[p]),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            for(unsigned int dim = 0; dim < 3; ++dim){
+                J[3*gi+dim] +=dJ[dim];
+            }
+            //Top-right cell (dx, dy)
+            gi = gp.x[p]+gp.y[p]*Nx;
+            math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wgp.y[p]),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            for(unsigned int dim = 0; dim < 3; ++dim){
+                J[3*gi+dim] +=dJ[dim];
+            }
+        }
+    }
+}
 
 template class Field2D3V<float>;
 template class Field2D3V<double>;
