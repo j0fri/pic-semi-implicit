@@ -96,7 +96,7 @@ void Species1D1V<T>::advancePositions(T dt, const Field<T, 1, 1>* field) {
         }
     }
     this->computeWeights(field);
-    this->computeAlphas(field);
+    this->computeAlphas(field, dt);
 }
 
 template <typename T>
@@ -151,7 +151,7 @@ void Species1D1V<T>::savePosition(std::ofstream &outputFile) const {
 template<typename T>
 void Species1D1V<T>::savePositionDistribution(std::ofstream &outputFile, const Field<T, 1, 1> *field) const {
     unsigned int Nx = field->grid.dimensions[0].Nc;
-    unsigned int* freqs = new unsigned int[Nx];
+    auto* freqs = new unsigned int[Nx];
     std::fill(freqs, freqs+Nx, 0);
     for(unsigned int i = 0; i < this->Np; ++i){
         ++freqs[g[i]];

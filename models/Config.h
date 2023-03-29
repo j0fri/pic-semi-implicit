@@ -28,8 +28,8 @@ struct Config{
         Grid<T,Nd> grid;
         T c;
         T e0;
-        Distribution<T,Nd> forcedE;
-        Distribution<T,Nd> forcedB;
+        std::array<Distribution<T,Nd>,Nv> forcedE;
+        std::array<Distribution<T,Nd>,Nv> forcedB;
         bool onlyForcedE; //If true, electric field is only forcedE, if false, forcedE is added to PDE sol
         bool onlyForcedB; //If true, magnetic field is only forcedB, if false, forcedB is added to PDE sol
         bool initialiseFromSpecies; //If true, fields are initialised to satisfy divergence laws.

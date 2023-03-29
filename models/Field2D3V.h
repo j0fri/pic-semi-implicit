@@ -7,22 +7,27 @@
 
 #include <vector>
 #include <fstream>
+#include "Field.h"
 #include "Config.h"
 #include "Species.h"
 
 template<typename T>
-class Field2D3V {
+class Field2D3V: public Field<T,2,3> {
 private:
+    const unsigned int Ng;
+    const unsigned int Nx;
+    const unsigned int Ny;
     T* field; /*Field is an array of length Nx*Ny*6, where Ex,Ey,Ez,Bx,By,Bz are stored successively for each grid point
-    an increment of 6 is an increment in x value, and an increment of Nx is an increment in y value*/
+    an increment of 6 is an increment in x value, and an increment of 6*Nx is an increment in y value*/
     T* fieldT; //Field at half time step
     T* J; //Current is an array of length Nx*Ny*3, same structure as field with Jx,Jy,Jz
 
     //TODO: mass matrices and current are assumed to be centred at the electric field locations, not magnetic
-    T* Mgg; //Mass matrix for cell with itself
-    T* Mgpg; //Mass matrix for cell with cell + dx
-    T* Mggp; //Mass matrix for cell with cell + dy
-    T* Mgpgp; //Mass matrix for cell with cell + dx + dy
+    T* Mg; //Mass matrix for cell with itself
+    T* Mgdx; //Mass matrix for cell with cell + dx
+    T* Mgdy; //Mass matrix for cell with cell + dy
+    T* Mgdxdy; //Mass matrix for cell with cell + dx + dy
+    T* Mgmdxdy; //Mass matrix for cell with cell - dx + dy
     /*All the previous matrices are arrays of length Nx*Ny*9, same structure as field, with all 9 components of the
     matrix are stored in column-major format (increment of 1 is in x) for each grid value*/
 
@@ -31,8 +36,9 @@ private:
 
 public:
     Field2D3V() = delete;
-    explicit Field2D3V(const typename Config<T,2,3>::FieldConfig& fieldConfig);
-    Field2D3V(const Field2D3V& other);
+    explicit Field2D3V(const typename Config<T,2,3>::FieldConfig& fieldConfig,
+                       const typename Config<T,2,3>::BCConfig& bcConfig);
+    Field2D3V(const Field2D3V& other) = delete;
     ~Field2D3V();
 
     void initialise(const std::vector<Species<T,2,3>*>& species);

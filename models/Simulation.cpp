@@ -277,7 +277,7 @@ void Simulation<T,Nd,Nv>::checkValidState() const{
 
 
 template<typename T, unsigned int Nd, unsigned int Nv>
-Simulation<T,Nd,Nv>::State Simulation<T,Nd,Nv>::getState() const {
+typename Simulation<T,Nd,Nv>::State Simulation<T,Nd,Nv>::getState() const {
     return state;
 }
 

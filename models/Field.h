@@ -19,12 +19,12 @@ public:
     const Grid<T,Nd> grid; //Grid (including length and spacing)
 	const T c; //Speed of light
 	const T e0; //Permittivity
-    const Distribution<T,Nd> forcedE;
-    const Distribution<T,Nd> forcedB;
+    const std::array<Distribution<T,Nd>,Nv> forcedE;
+    const std::array<Distribution<T,Nd>,Nv> forcedB;
     const bool onlyForcedE; //If true, electric field is only forcedE, if false, forcedE is added to PDE sol
     const bool onlyForcedB; //If true, magnetic field is only forcedB, if false, forcedB is added to PDE sol
     const bool initialiseFromSpecies;
-    const Config<T,Nd,Nv>::BCConfig bcConfig;
+    const typename Config<T,Nd,Nv>::BCConfig bcConfig;
 
 	Field() = delete;
 	explicit Field(const typename Config<T,Nd,Nv>::FieldConfig& fieldConfig,

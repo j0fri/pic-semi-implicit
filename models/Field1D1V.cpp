@@ -115,7 +115,7 @@ void Field1D1V<T>::solveAndAdvance(T dt) {
 //TODO: clean
 template<typename T>
 void Field1D1V<T>::accumulateM(const std::vector<Species<T, 1, 1> *> &species, T dt) {
-    //Clear Mgg and Mggp
+    //Clear Mg and Mgdy
     std::fill(this->Mgg, this->Mgg + Nx, 0);
     std::fill(this->Mggp, this->Mggp + Nx, 0);
 

@@ -4,8 +4,8 @@ typename Config<T,1,1>::FieldConfig preset_fields::Default1D1V(T Lx, unsigned in
         Grid<T,1>{std::array<typename Grid<T,1>::Dim,1>{{{0,Lx,Nx}}}},
         c,
         e0,
-        preset_distributions::Uniform<T,1>(0),
-        preset_distributions::Uniform<T,1>(0),
+        {preset_distributions::Uniform<T,1>(0)},
+        {preset_distributions::Uniform<T,1>(0)},
         false,
         false,
         true

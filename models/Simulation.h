@@ -18,9 +18,9 @@ private:
     State state;
     std::vector<Species<T,Nd,Nv>*> species;
     Field<T,Nd,Nv>* field;
-    Config<T,Nd,Nv>::TimeConfig timeConfig;
-    Config<T,Nd,Nv>::SaveConfig saveConfig;
-    Config<T,Nd,Nv>::BCConfig bcConfig;
+    typename Config<T,Nd,Nv>::TimeConfig timeConfig;
+    typename Config<T,Nd,Nv>::SaveConfig saveConfig;
+    typename Config<T,Nd,Nv>::BCConfig bcConfig;
     bool verbose;
 
 public:
