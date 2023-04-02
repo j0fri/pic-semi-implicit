@@ -1,24 +1,33 @@
 #include <iostream>
-#include "Simulation.h"
+#include <vector>
+#include <array>
+#include <string>
 
+#include "Simulation.h"
+#include "../helpers/string_helper.h"
+#include <iostream>
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
     species = std::vector<Species<T,Nd,Nv>*>(config.speciesConfig.size());
     for(int i = 0; i < (int)species.size(); ++i){
-        if(Nd == 1 && Nv == 1){
+        if constexpr (Nd == 1 && Nv == 1) {
             species[i] = new Species1D1V<T>(config.speciesConfig[i], config.bcConfig);
 //        }else if(Nd == 2 && Nv == 3){
 //            species[i] = new Species2D3V<T>(config.species[i]);
+        }else if constexpr(Nd == 2 && Nv == 3){
+            species[i] = new Species2D3V<T>(config.speciesConfig[i], config.bcConfig);
         }else{
             state = State::InitialisationError;
             throw std::runtime_error("Nd and Nv combination not supported.");
         }
     }
-    if(Nd == 1 && Nv == 1){
+    if constexpr (Nd == 1 && Nv == 1) {
         field = new Field1D1V<T>(config.fieldConfig, config.bcConfig);
 //    }else if(Nd == 2 && Nv == 3){
 //        field = new Field2D3V<T>(config.fieldConfig);
+    } else if constexpr (Nd == 2 && Nv == 3){
+        field = new Field2D3V<T>(config.fieldConfig, config.bcConfig);
     }else{
         state = State::InitialisationError;
         throw std::runtime_error("Nd and Nv combination not supported.");
@@ -28,6 +37,10 @@ Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
     saveConfig = config.saveConfig;
     bcConfig = config.bcConfig;
     verbose = config.verbose;
+
+    if(config.outputConfig){
+        this->outputConfig(config);
+    }
 }
 
 
@@ -45,6 +58,7 @@ void Simulation<T, Nd, Nv>::initialise() {
     try{
         for(int i = 0; i < (int)species.size(); ++i){
             species[i]->initialise();
+            species[i]->advancePositions(0, field); //Important for weight calculations
         }
         field->initialise(species);
         this->clearOutputFiles();
@@ -122,12 +136,12 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
         fieldEnergyFile.close();
     }
 
-    if(saveConfig.saveVoltage){
-        std::ofstream voltageFile(saveConfig.outputFilesDirectory + saveConfig.voltageFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!voltageFile.is_open()){
-            throw std::runtime_error("Could not open voltage file.");
+    if(saveConfig.saveElectrostaticPotential){
+        std::ofstream electrostaticPotentialFile(saveConfig.outputFilesDirectory + saveConfig.electrostaticPotentialFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+        if(!electrostaticPotentialFile.is_open()){
+            throw std::runtime_error("Could not open electrostatic potential file.");
         }
-        voltageFile.close();
+        electrostaticPotentialFile.close();
     }
 }
 
@@ -183,7 +197,7 @@ void Simulation<T,Nd,Nv>::save(){
             throw std::runtime_error("Could not open species position distribution output file.");
         }
         for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
-            species[i]->savePositionDistribution(speciesPositionDistributionFile, field);
+            species[i]->savePositionDistribution(speciesPositionDistributionFile);
         }
         speciesPositionDistributionFile.close();
     }
@@ -248,13 +262,13 @@ void Simulation<T,Nd,Nv>::save(){
         fieldEnergyFile.close();
     }
 
-    if(saveConfig.saveVoltage){
-        std::ofstream voltageFile(saveConfig.outputFilesDirectory + saveConfig.voltageFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!voltageFile.is_open()){
-            throw std::runtime_error("Could not open voltage file.");
+    if(saveConfig.saveElectrostaticPotential){
+        std::ofstream electrostaticPotentialFile(saveConfig.outputFilesDirectory + saveConfig.electrostaticPotentialFileName + saveConfig.outputFilesSubscript, std::ios::app);
+        if(!electrostaticPotentialFile.is_open()){
+            throw std::runtime_error("Could not open electrostatic potential file.");
         }
-        field->saveVoltage(voltageFile);
-        voltageFile.close();
+        field->saveElectrostaticPotential(electrostaticPotentialFile, species);
+        electrostaticPotentialFile.close();
     }
 }
 
@@ -281,6 +295,41 @@ typename Simulation<T,Nd,Nv>::State Simulation<T,Nd,Nv>::getState() const {
     return state;
 }
 
+template<typename T, unsigned int Nd, unsigned int Nv>
+void Simulation<T, Nd, Nv>::outputConfig(const Config<T, Nd, Nv> &config) const {
+    if constexpr (!(Nd==2&&Nv==3)){
+        throw std::invalid_argument("Config output is only available for 2D3V simulations.");
+    }
+    std::ofstream configFile(saveConfig.outputFilesDirectory + "config" + saveConfig.outputFilesSubscript, std::ios::trunc);
+    if(!configFile.is_open()){
+        throw std::runtime_error("Could not open config file.");
+    }
+
+    std::vector<std::array<std::string,2>> saveQueue{};
+    saveQueue.emplace_back(std::array<std::string,2>{"T", string_helper::toString(config.timeConfig.total)});
+    saveQueue.emplace_back(std::array<std::string,2>{"dt", string_helper::toString(config.timeConfig.step)});
+    saveQueue.emplace_back(std::array<std::string,2>{"saveInterval", string_helper::toString(config.saveConfig.saveInterval)});
+    saveQueue.emplace_back(std::array<std::string,2>{"xmin", string_helper::toString(config.fieldConfig.grid.dimensions[0].min)});
+    saveQueue.emplace_back(std::array<std::string,2>{"xmax", string_helper::toString(config.fieldConfig.grid.dimensions[0].max)});
+    saveQueue.emplace_back(std::array<std::string,2>{"Nx", string_helper::toString(config.fieldConfig.grid.dimensions[0].Nc)});
+    saveQueue.emplace_back(std::array<std::string,2>{"ymin", string_helper::toString(config.fieldConfig.grid.dimensions[1].min)});
+    saveQueue.emplace_back(std::array<std::string,2>{"ymax", string_helper::toString(config.fieldConfig.grid.dimensions[1].max)});
+    saveQueue.emplace_back(std::array<std::string,2>{"Ny", string_helper::toString(config.fieldConfig.grid.dimensions[1].Nc)});
+
+    for(unsigned int row = 0; row < 2; ++row){
+        for(unsigned int i = 0; i < (unsigned int)saveQueue.size(); ++i){
+            configFile << saveQueue[i][row];
+            if(i < (unsigned int)saveQueue.size() - 1){
+                configFile << " ";
+            }
+        }
+        if(row < 1){
+            configFile << std::endl;
+        }
+    }
+}
 
 template class Simulation<double,1,1>;
 template class Simulation<float,1,1>;
+template class Simulation<double,2,3>;
+template class Simulation<float,2,3>;

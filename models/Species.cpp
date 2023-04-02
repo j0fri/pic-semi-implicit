@@ -3,7 +3,7 @@
 template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speciesConfig,
                             const typename Config<T,Nd,Nv>::BCConfig& bcConfig)
-    : Np(speciesConfig.Np), m(speciesConfig.m/speciesConfig.Np), q(speciesConfig.m/speciesConfig.Np),
+    : Np(speciesConfig.Np), m(speciesConfig.m/speciesConfig.Np), q(speciesConfig.q/speciesConfig.Np),
     initialXDist(speciesConfig.xDist), initialXGrid(speciesConfig.initialXGrid), initialVDist(speciesConfig.vDist),
     initialVGrid(speciesConfig.initialVGrid), initialisePositionFromFile(speciesConfig.initialisePositionFromFile),
     initialPositionFileName(speciesConfig.initialPositionFileName), initialiseVelocityFromFile(speciesConfig.initialiseVelocityFromFile),
@@ -42,7 +42,7 @@ void Species<T, Nd, Nv>::initialise(){
 
 template class Species<float,1,1>;
 //template class Species<float,1,3>;
-//template class Species<float,2,3>;
+template class Species<float,2,3>;
 template class Species<double,1,1>;
 //template class Species<double,1,3>;
-//template class Species<double,2,3>;
+template class Species<double,2,3>;

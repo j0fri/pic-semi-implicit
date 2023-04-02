@@ -6,15 +6,25 @@ CXXFLAGS = -std=c++17 -Wall -O0 -g -I ./
 
 SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h models/Simulation.h models/Species1D1V.h\
 		  models/Field1D1V.h models/Species2D3V.h models/Field2D3V.h models/Vector2.h models/Vector3.h
+
 SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o models/Simulation.o models/Species1D1V.o\
 		  models/Field1D1V.o models/Species2D3V.o models/Field2D3V.o models/Vector2.o models/Vector3.o
+
 SIMLIBS = -lboost_program_options -lblas -llapack
 
+HELPERHDRS = helpers/math_helper.h helpers/preset_configs.h helpers/preset_distributions.h helpers/preset_fields.h\
+			 helpers/preset_species.h helpers/string_helper.h helpers/output_helper.h
 
-HDRS = $(SIMHDRS) $(VISHDRS)
-OBJS = $(SIMOBJS) $(VISOBJS)
+HELPERCPPS = helpers/math_helper.cpp helpers/preset_configs.cpp helpers/preset_distributions.cpp helpers/preset_fields.cpp\
+			 helpers/preset_species.cpp helpers/string_helper.cpp helpers/output_helper.cpp
 
-%.o : %.cpp $(HDRS)
+TESTHDRS = testModels/Field2D3VConst.h
+
+TESTOBJS = testModels/Field2D3VConst.o
+
+HDRS = $(SIMHDRS) $(VISHDRS) $(TESTHDRS) $(HELPERHDRS)
+
+%.o : %.cpp $(HDRS) $(HELPERCPPS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 sim: main.o $(SIMOBJS)
@@ -51,6 +61,10 @@ presetDistributionTests: tests/presetDistributionTests.o $(SIMOBJS)
 vectorTests: tests/vectorTests.o models/Vector2.o models/Vector3.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: constFieldTest1
+constFieldTest1: tests/constFieldTest1.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: landauFile
 landauFile: sim
 	./sim  --mode 1
@@ -66,3 +80,5 @@ twoStreamFile: sim
 .PHONY: twoStream
 twoStream: sim
 	./sim  --mode 4
+
+

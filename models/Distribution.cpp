@@ -8,6 +8,7 @@
 #include <chrono>
 #include <random>
 #include <stdexcept>
+#include <iostream>
 
 #define PARTICLE_GENERATION_INCREASE_FACTOR 1.05
 
@@ -94,7 +95,16 @@ std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(
         const auto& dim = grid.dimensions[i];
         linspaces[i] = math_helper::linspace(dim.min, dim.max-spacings[i], dim.Nc);
     }
-    std::vector<std::vector<T>> gridPoints = math_helper::repeatedCartesian(linspaces);
+
+    std::vector<std::vector<T>> gridPoints;
+    try{
+        gridPoints = math_helper::repeatedCartesian(linspaces);
+    }catch(const std::bad_alloc& e){
+        std::cerr << "Memory allocation error during distribution generation. Consider providing a coarser "
+                     "distribution grid."<< std::endl;
+        throw;
+    }
+
 
     std::vector<Cell> cells{gridPoints.size()};
     for(int i = 0; i < (int)gridPoints.size(); ++i){

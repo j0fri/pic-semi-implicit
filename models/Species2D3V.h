@@ -50,9 +50,11 @@ public:
     void advancePositions(T dt, const Field<T,2,3>* field);
     void advanceVelocities(T dt, const Field<T,2,3>* field);
 
-    //TODO: implement these
+    //Outputs mass and charge (per particle) in one row, then all x positions in next row and then all y positions
     void savePosition(std::ofstream& outputFile) const;
-    void savePositionDistribution(std::ofstream& outputFile, const Field<T, 2, 3> *field) const;
+    //Outputs mass and charge (per particle) in one row, then all grid of density. Rows are x direction and cols are y.
+    void savePositionDistribution(std::ofstream& outputFile) const;
+    //Outputs mass and charge (per particle) in one row, then all x velocities in next row and then all y, z
     void saveVelocity(std::ofstream& outputFile) const;
     void saveVelocityDistribution(std::ofstream& outputFile) const;
     void saveEnergy(std::ofstream& outputFile) const;

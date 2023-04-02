@@ -10,12 +10,12 @@ template <typename T, unsigned int Nd, unsigned int Nv>
 struct Config{
     struct SpeciesConfig{
         unsigned int Np{};
-        T m; //Mass of super-particles
-        T q; //Charge of super-particles
+        T m; //Total mass of species
+        T q; //Total charge of species
         Distribution<T,Nd> xDist;
         Grid<T,Nd> initialXGrid;
         Distribution<T,Nv> vDist;
-        Grid<T,Nv> initialVGrid;
+        Grid<T,Nv> initialVGrid; //IMPORTANT: the grid must be appropriate to accurately represent the distribution
         //TODO: add file for each species
         bool initialisePositionFromFile{};
         std::string initialPositionFileName;
@@ -51,7 +51,7 @@ struct Config{
         bool saveElectricField{};
         bool saveMagneticField{};
         bool saveFieldEnergy{};
-        bool saveVoltage{};
+        bool saveElectrostaticPotential{};
         T saveInterval;
         std::string outputFilesDirectory{"outputs/"};
         std::string outputFilesSubscript{}; //Will be appended to every output file
@@ -65,7 +65,7 @@ struct Config{
         std::string electricFieldFileName{"electricField.txt"};
         std::string magneticFieldFileName{"magneticField.txt"};
         std::string fieldEnergyFileName{"fieldEnergy.txt"};
-        std::string voltageFileName{"voltage.txt"};
+        std::string electrostaticPotentialFileName{"electrostaticPotential.txt"};
     };
     SaveConfig saveConfig;
 
@@ -78,6 +78,7 @@ struct Config{
     BCConfig bcConfig;
 
     bool verbose; //Prints time during simulation
+    bool outputConfig; //Outputs main config values
 };
 
 #endif //PIC_SEMI_IMPLICIT_CONFIG_H

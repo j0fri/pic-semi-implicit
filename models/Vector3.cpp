@@ -4,14 +4,20 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <iostream>
 #include "Vector3.h"
 
 
 template<typename T>
 Vector3<T>::Vector3(unsigned int n): n{n} {
-    x = new T[3*n];
-    y = x+n;
-    z = y+n;
+    try{
+        x = new T[3*n];
+        y = x + n;
+        z = y+n;
+    }catch(const std::bad_alloc& e){
+        std::cerr << "Exception thrown in memory allocation in Vector3" << std::endl;
+        throw;
+    }
 }
 
 template<typename T>

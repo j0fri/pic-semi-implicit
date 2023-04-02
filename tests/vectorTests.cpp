@@ -1,6 +1,3 @@
-//
-// Created by jf1519 on 22/03/23.
-//
 #include <iostream>
 #include "../models/Vector2.h"
 #include "../models/Vector3.h"

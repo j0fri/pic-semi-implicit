@@ -38,7 +38,7 @@ public:
 	virtual void saveElectricField(std::ofstream& outputFile) const = 0;
     virtual void saveMagneticField(std::ofstream& outputFile) const = 0;
     virtual void saveEnergy(std::ofstream& outputFile) const = 0;
-    virtual void saveVoltage(std::ofstream& outputFile) const = 0;
+    virtual void saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,Nd,Nv>*>& species) const = 0;
 
 private:
     virtual void accumulateJ(const std::vector<Species<T,Nd,Nv>*>& species) = 0;

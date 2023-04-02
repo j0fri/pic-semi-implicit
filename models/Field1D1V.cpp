@@ -199,7 +199,7 @@ void Field1D1V<T>::saveEnergy(std::ofstream &outputFile) const {
 }
 
 template<typename T>
-void Field1D1V<T>::saveVoltage(std::ofstream &outputFile) const {
+void Field1D1V<T>::saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,1,1>*> &species) const {
     //TODO: implement this
 }
 

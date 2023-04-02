@@ -33,6 +33,9 @@ public:
     void save();
     void checkValidState() const;
     State getState() const;
+
+private:
+    void outputConfig(const Config<T,Nd,Nv>& config) const;
 };
 
 

@@ -3,21 +3,29 @@
 //
 
 #include <cmath>
+#include <iostream>
 #include "Species2D3V.h"
 #include "Field2D3V.h"
 #include "../helpers/math_helper.h"
+#include "../helpers/output_helper.h"
 
 template<typename T>
 Species2D3V<T>::Species2D3V(const typename Config<T,2,3>::SpeciesConfig &speciesConfig,
                             const  typename Config<T,2,3>::BCConfig& bcConfig)
-        :Species<T,2,3>(speciesConfig, bcConfig),
-        pos{Vector2<T>(this->Np)}, vel{Vector3<T>(this->Np)},
-        g{Vector2<unsigned int>(this->Np)}, gp{Vector2<unsigned int>(this->Np)},
-        gB{Vector2<unsigned int>(this->Np)}, gpB{Vector2<unsigned int>(this->Np)},
-        wg{Vector2<T>(this->Np)}, wgp{Vector2<T>(this->Np)},
-        wgB{Vector2<T>(this->Np)}, wgpB{Vector2<T>(this->Np)},
-        Ep{Vector3<T>(this->Np)}, Bp{Vector3<T>(this->Np)},
-        alpha{new T[9*this->Np]}, vBar{Vector3<T>(this->Np)}{
+                            :Species<T,2,3>(speciesConfig, bcConfig),
+                            pos{Vector2<T>(this->Np)}, vel{Vector3<T>(this->Np)},
+                            g{Vector2<unsigned int>(this->Np)}, gp{Vector2<unsigned int>(this->Np)},
+                            gB{Vector2<unsigned int>(this->Np)}, gpB{Vector2<unsigned int>(this->Np)},
+                            wg{Vector2<T>(this->Np)}, wgp{Vector2<T>(this->Np)},
+                            wgB{Vector2<T>(this->Np)}, wgpB{Vector2<T>(this->Np)},
+                            Ep{Vector3<T>(this->Np)}, Bp{Vector3<T>(this->Np)},
+                            alpha{nullptr}, vBar{Vector3<T>(this->Np)}{
+    try{
+        alpha = new T[9*this->Np];
+    }catch(const std::bad_alloc& e){
+        std::cerr << "Exception thrown in species memory allocation O(Np)" << std::endl;
+        throw;
+    }
 }
 
 template<typename T>
@@ -104,20 +112,44 @@ void Species2D3V<T>::advanceVelocities(T dt, const Field<T, 2, 3> *field) {
 
 template<typename T>
 void Species2D3V<T>::savePosition(std::ofstream &outputFile) const {
-    //TODO: implement
-    throw std::runtime_error("Not implemented yet.");
+    if(this->Np > 1000){
+        std::cout << "WARNING: consider disabling savePosition if Np > 1000" << std::endl;
+    }
+    outputFile << this->m << " " << this->q << std::endl;
+    output_helper::outputRowMajorMatrix(this->pos.x,2,this->Np,this->Np,1,outputFile);
 }
 
 template<typename T>
-void Species2D3V<T>::savePositionDistribution(std::ofstream &outputFile, const Field<T, 2, 3> *field) const {
-    //TODO: implement
-    throw std::runtime_error("Not implemented yet.");
+void Species2D3V<T>::savePositionDistribution(std::ofstream &outputFile) const {
+    outputFile << this->m << " " << this->q << std::endl;
+    unsigned int Nx = 0;
+    unsigned int Ny = 0;
+    for(unsigned int p = 0; p < this->Np; ++p){
+        if(g.x[p] > Nx){
+            Nx = g.x[p];
+        }
+        if(g.y[p] > Ny){
+            Ny = g.y[p];
+        }
+    }
+    ++Nx;
+    ++Ny;
+    auto freq = new unsigned int[Nx*Ny];
+    std::fill(freq,freq+Nx*Ny,0);
+    for(unsigned int p = 0; p < this->Np; ++p){
+        ++freq[g.x[p]+g.y[p]*Nx];
+    }
+    output_helper::outputColMajorMatrix(freq,(int)Nx,(int)Ny,(int)Nx,1,outputFile);
+    delete[] freq;
 }
 
 template<typename T>
 void Species2D3V<T>::saveVelocity(std::ofstream &outputFile) const {
-    //TODO: implement
-    throw std::runtime_error("Not implemented yet.");
+    if(this->Np > 1000){
+        std::cout << "WARNING: consider disabling savePosition if Np > 1000" << std::endl;
+    }
+    outputFile << this->m << " " << this->q << std::endl;
+    output_helper::outputRowMajorMatrix(this->vel.x,3,this->Np,this->Np,1,outputFile);
 }
 
 template<typename T>

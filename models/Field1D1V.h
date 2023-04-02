@@ -34,7 +34,7 @@ public:
     void saveElectricField(std::ofstream& outputFile) const ;
     void saveMagneticField(std::ofstream& outputFile) const;
     void saveEnergy(std::ofstream& outputFile) const;
-    void saveVoltage(std::ofstream& outputFile) const;
+    void saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,1,1> *> &species) const;
 
     const T* getEt() const;
 private:

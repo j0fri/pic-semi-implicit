@@ -40,7 +40,7 @@ public:
     virtual void advanceVelocities(T dt, const Field<T,Nd,Nv>* field) = 0;
 
     virtual void savePosition(std::ofstream& outputFile) const = 0;
-    virtual void savePositionDistribution(std::ofstream& outputFile, const Field<T, 1, 1> *field) const = 0;
+    virtual void savePositionDistribution(std::ofstream& outputFile) const = 0;
     virtual void saveVelocity(std::ofstream& outputFile) const = 0;
     virtual void saveVelocityDistribution(std::ofstream& outputFile) const = 0;
     virtual void saveEnergy(std::ofstream& outputFile) const = 0;
@@ -51,9 +51,6 @@ private:
 	virtual void initialiseVelocities() = 0;
 	virtual void initialisePositions(const std::ifstream& file) = 0;
     virtual void initialiseVelocities(const std::ifstream& file) = 0;
-
-	virtual void computeAlphas(const Field<T,Nd,Nv>* field, T dt) = 0;
-	virtual void computeWeights(const Field<T,Nd,Nv>* field) = 0;
 };
 
 #endif //PIC_SEMI_IMPLICIT_SPECIES_H

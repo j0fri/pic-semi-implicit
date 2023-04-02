@@ -2,6 +2,7 @@
 #define PIC_SEMI_IMPLICIT_MATH_HELPER_H
 
 #include <vector>
+#include <cmath>
 
 namespace math_helper{
 	template <typename T>
@@ -17,6 +18,10 @@ namespace math_helper{
     template <typename T>
     void gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsigned int lda, const T* x,
               unsigned int incx, T* y, unsigned int incy);
+
+    //Returns a velocity magnitude which contains 99.99% of the distribution
+    template <typename T>
+    T boltzmannBounds(T m, T Kb, T T0);
 
 }
 

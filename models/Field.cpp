@@ -24,7 +24,7 @@ void Field<T, Nd, Nv>::advanceField(const std::vector<Species<T,Nd,Nv>*>& specie
 
 template class Field<float,1,1>;
 //template class Field<float,1,3>;
-//template class Field<float,2,3>;
+template class Field<float,2,3>;
 template class Field<double,1,1>;
 //template class Field<double,1,3>;
-//template class Field<double,2,3>;
+template class Field<double,2,3>;

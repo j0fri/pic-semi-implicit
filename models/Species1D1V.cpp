@@ -149,18 +149,9 @@ void Species1D1V<T>::savePosition(std::ofstream &outputFile) const {
 }
 
 template<typename T>
-void Species1D1V<T>::savePositionDistribution(std::ofstream &outputFile, const Field<T, 1, 1> *field) const {
-    unsigned int Nx = field->grid.dimensions[0].Nc;
-    auto* freqs = new unsigned int[Nx];
-    std::fill(freqs, freqs+Nx, 0);
-    for(unsigned int i = 0; i < this->Np; ++i){
-        ++freqs[g[i]];
-    }
-    for(unsigned int i = 0; i < Nx; ++i){
-        outputFile << (T)freqs[i]/this->Np << " ";
-    }
-    outputFile << std::endl;
-    delete[] freqs;
+void Species1D1V<T>::savePositionDistribution(std::ofstream &outputFile) const {
+    //TODO: implement this
+    throw std::runtime_error("Not implemented yet.");
 }
 
 template<typename T>

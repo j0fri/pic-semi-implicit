@@ -4,13 +4,19 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <iostream>
 #include "Vector2.h"
 
 
 template<typename T>
 Vector2<T>::Vector2(unsigned int n): n{n} {
-    x = new T[2*n];
-    y = x + n;
+    try{
+        x = new T[2*n];
+        y = x + n;
+    }catch(const std::bad_alloc& e){
+        std::cerr << "Exception thrown in memory allocation in Vector2" << std::endl;
+        throw;
+    }
 }
 
 template<typename T>
