@@ -40,7 +40,7 @@ public:
     virtual void advanceVelocities(T dt, const Field<T,Nd,Nv>* field) = 0;
 
     virtual void savePosition(std::ofstream& outputFile) const = 0;
-    virtual void savePositionDistribution(std::ofstream& outputFile) const = 0;
+    virtual void savePositionDistribution(std::ofstream &outputFile, Field<T,Nd,Nv>* field) const = 0;
     virtual void saveVelocity(std::ofstream& outputFile) const = 0;
     virtual void saveVelocityDistribution(std::ofstream& outputFile) const = 0;
     virtual void saveEnergy(std::ofstream& outputFile) const = 0;

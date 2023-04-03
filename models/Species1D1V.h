@@ -35,7 +35,7 @@ public:
 
     //TODO: implement these
     void savePosition(std::ofstream& outputFile) const;
-    void savePositionDistribution(std::ofstream& outputFile) const;
+    void savePositionDistribution(std::ofstream &outputFile, Field<T,1,1> *field) const;
     void saveVelocity(std::ofstream& outputFile) const;
     void saveVelocityDistribution(std::ofstream& outputFile) const;
     void saveEnergy(std::ofstream& outputFile) const;

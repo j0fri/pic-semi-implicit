@@ -31,6 +31,8 @@ template <typename T, unsigned int Nd>
 std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Grid<T,Nd>& grid) const{
     //TODO: move seeding to Simulation class
     static auto randEngine = std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()); //Only seed once
+    std::uniform_int_distribution<int> distribution(0, RAND_MAX);
+    auto generate = std::bind(distribution, randEngine);
 
     auto cells = this->generateMesh(grid);
     int Nc = cells.size();
@@ -52,7 +54,7 @@ std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Grid<T
         cells[i].objectiveNp *= Np * scaling * PARTICLE_GENERATION_INCREASE_FACTOR;
         cells[i].Np = std::floor(cells[i].objectiveNp); //Always add at least floor(Npdes)
         T remainder = cells[i].objectiveNp - cells[i].Np;
-        if((double)std::rand()/RAND_MAX < remainder){
+        if((double)generate()/RAND_MAX < remainder){
             ++cells[i].Np; //Add 1 particle with remainder (decimal of Npdes) probability
         }
 		totalParticles += cells[i].Np;
@@ -73,7 +75,7 @@ std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Grid<T
         for(unsigned int j = 0; j < cells[i].Np; ++j){
             out[particleCounter] = std::array<T,Nd>();
             for(unsigned int k = 0; k < Nd; ++k){
-                out[particleCounter][k] = (double)std::rand()/RAND_MAX*(right[k]-left[k])+left[k];
+                out[particleCounter][k] = (double)generate()/RAND_MAX*(right[k]-left[k])+left[k];
             }
             ++particleCounter;
         }

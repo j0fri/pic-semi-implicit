@@ -149,7 +149,7 @@ void Species1D1V<T>::savePosition(std::ofstream &outputFile) const {
 }
 
 template<typename T>
-void Species1D1V<T>::savePositionDistribution(std::ofstream &outputFile) const {
+void Species1D1V<T>::savePositionDistribution(std::ofstream &outputFile, Field<T,1,1> *field) const {
     //TODO: implement this
     throw std::runtime_error("Not implemented yet.");
 }

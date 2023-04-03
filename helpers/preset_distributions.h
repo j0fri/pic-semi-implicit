@@ -22,6 +22,9 @@ namespace preset_distributions{
     //rest of values are parameters in a*sin(u*b+c) where u=x,y,.. depending on Id
     template <typename T, unsigned int Nd>
     Distribution<T,Nd> Sin(unsigned int Id, T a, T b, T c);
+
+    template <typename T, unsigned int Nd>
+    Distribution<T,Nd> TopHat(unsigned int Id, T x1, T x2);
 }
 
 #include "preset_distributions.cpp"

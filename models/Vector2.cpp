@@ -1,7 +1,3 @@
-//
-// Created by jf1519 on 22/03/23.
-//
-
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
@@ -21,8 +17,13 @@ Vector2<T>::Vector2(unsigned int n): n{n} {
 
 template<typename T>
 Vector2<T>::Vector2(const Vector2 &other): n{other.n} {
-    x = new T[n];
-    y = new T[n];
+    try{
+        x = new T[2*n];
+        y = x + n;
+    }catch(const std::bad_alloc& e){
+        std::cerr << "Exception thrown in memory allocation in Vector2" << std::endl;
+        throw;
+    }
     std::copy(other.x, other.x+n, x);
     std::copy(other.y, other.y+n, y);
 }
@@ -31,6 +32,8 @@ template<typename T>
 Vector2<T>::Vector2(Vector2 &&other) noexcept : n{other.n}{
     this->x = other.x;
     this->y = other.y;
+    other.x = nullptr;
+    other.y = nullptr;
 }
 
 template<typename T>

@@ -1,7 +1,3 @@
-//
-// Created by jf1519 on 22/03/23.
-//
-
 #ifndef PIC_SEMI_IMPLICIT_FIELD2D3V_H
 #define PIC_SEMI_IMPLICIT_FIELD2D3V_H
 
@@ -70,7 +66,7 @@ public:
 private:
     void accumulateJ(const std::vector<Species<T,2,3>*>& species);
     void accumulateM(const std::vector<Species<T,2,3>*>& species, T dt);
-    void solveAndAdvance(T dt);
+    virtual void solveAndAdvance(T dt);
 };
 
 

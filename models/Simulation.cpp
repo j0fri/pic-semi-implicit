@@ -197,7 +197,7 @@ void Simulation<T,Nd,Nv>::save(){
             throw std::runtime_error("Could not open species position distribution output file.");
         }
         for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
-            species[i]->savePositionDistribution(speciesPositionDistributionFile);
+            species[i]->savePositionDistribution(speciesPositionDistributionFile, field);
         }
         speciesPositionDistributionFile.close();
     }
@@ -315,6 +315,7 @@ void Simulation<T, Nd, Nv>::outputConfig(const Config<T, Nd, Nv> &config) const 
     saveQueue.emplace_back(std::array<std::string,2>{"ymin", string_helper::toString(config.fieldConfig.grid.dimensions[1].min)});
     saveQueue.emplace_back(std::array<std::string,2>{"ymax", string_helper::toString(config.fieldConfig.grid.dimensions[1].max)});
     saveQueue.emplace_back(std::array<std::string,2>{"Ny", string_helper::toString(config.fieldConfig.grid.dimensions[1].Nc)});
+    saveQueue.emplace_back(std::array<std::string,2>{"Ns", string_helper::toString((unsigned int)config.speciesConfig.size())});
 
     for(unsigned int row = 0; row < 2; ++row){
         for(unsigned int i = 0; i < (unsigned int)saveQueue.size(); ++i){

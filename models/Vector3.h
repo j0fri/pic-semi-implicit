@@ -1,7 +1,3 @@
-//
-// Created by jf1519 on 22/03/23.
-//
-
 #ifndef PIC_SEMI_IMPLICIT_VECTOR3_H
 #define PIC_SEMI_IMPLICIT_VECTOR3_H
 

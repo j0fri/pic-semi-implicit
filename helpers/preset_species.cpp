@@ -37,3 +37,23 @@ typename Config<T,2,3>::SpeciesConfig preset_species::Uniform2D3V(unsigned int N
             ""
     };
 }
+
+template <typename T>
+typename Config<T,2,3>::SpeciesConfig preset_species::TopHat2D3VX(unsigned int Np, T m, T q, T x1, T x2, T y1, T y2){
+    return typename Config<T,2,3>::SpeciesConfig{
+            Np,
+            m,
+            q,
+            preset_distributions::Uniform<double,2>(1),
+            Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{x1,x2,1},{y1,y2,1}}}},
+            preset_distributions::Uniform<double,3>(1),
+            Grid<T,3>{std::array<typename Grid<T,3>::Dim,3>{{
+                    {0,0,1},{0,0,1},{0,0,1}
+            }}}, //All velocities are zero
+            false,
+            "",
+            false,
+            ""
+    };
+}
+

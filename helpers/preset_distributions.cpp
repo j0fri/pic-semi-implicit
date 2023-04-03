@@ -68,3 +68,12 @@ Distribution<T,Nd> preset_distributions::Sin(unsigned int Id, T a, T b, T c){
     auto fun = std::function([=](const std::array<T,Nd>& arr){return a*std::sin(b*arr[Id]+c);});
     return Distribution<T,Nd>(fun);
 }
+
+template <typename T, unsigned int Nd>
+Distribution<T,Nd> preset_distributions::TopHat(unsigned int Id, T x1, T x2){
+    if(Id > Nd){
+        throw std::invalid_argument("Id must be smaller than or equal to Nd.");
+    }
+    auto fun = std::function([=](const std::array<T,Nd>& arr){return arr[Id] >= x1 ? (arr[Id] <= x2 ? (T)1 : (T)0) : (T)0;});
+    return Distribution<T,Nd>(fun);
+}

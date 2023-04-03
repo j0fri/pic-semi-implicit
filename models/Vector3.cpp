@@ -1,7 +1,3 @@
-//
-// Created by jf1519 on 33/03/33.
-//
-
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
@@ -13,7 +9,7 @@ Vector3<T>::Vector3(unsigned int n): n{n} {
     try{
         x = new T[3*n];
         y = x + n;
-        z = y+n;
+        z = y + n;
     }catch(const std::bad_alloc& e){
         std::cerr << "Exception thrown in memory allocation in Vector3" << std::endl;
         throw;
@@ -22,9 +18,14 @@ Vector3<T>::Vector3(unsigned int n): n{n} {
 
 template<typename T>
 Vector3<T>::Vector3(const Vector3 &other): n{other.n} {
-    x = new T[n];
-    y = new T[n];
-    z = new T[n];
+    try{
+        x = new T[3*n];
+        y = x + n;
+        z = y + n;
+    }catch(const std::bad_alloc& e){
+        std::cerr << "Exception thrown in memory allocation in Vector3" << std::endl;
+        throw;
+    }
     std::copy(other.x, other.x+n, x);
     std::copy(other.y, other.y+n, y);
     std::copy(other.z, other.z+n, z);
@@ -35,6 +36,9 @@ Vector3<T>::Vector3(Vector3 &&other) noexcept : n{other.n}{
     this->x = other.x;
     this->y = other.y;
     this->z = other.z;
+    other.x = nullptr;
+    other.y = nullptr;
+    other.z = nullptr;
 }
 
 template<typename T>

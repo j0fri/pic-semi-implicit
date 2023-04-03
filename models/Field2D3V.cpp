@@ -374,7 +374,7 @@ void Field2D3V<T>::accumulateM(const std::vector<Species<T,2,3>*> &species, T dt
 template<typename T>
 void Field2D3V<T>::solveAndAdvance(T dt) {
     //TODO: system solve
-
+    std::copy(this->field, this->field+6*this->Ng, this->fieldT);
 }
 
 template class Field2D3V<float>;

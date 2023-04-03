@@ -54,18 +54,18 @@ struct Config{
         bool saveElectrostaticPotential{};
         T saveInterval;
         std::string outputFilesDirectory{"outputs/"};
-        std::string outputFilesSubscript{}; //Will be appended to every output file
+        std::string outputFilesSubscript{".txt"}; //Will be appended to every output file
 
         //Default file values:
-        std::string speciesPositionFileName{"speciesPosition.txt"};
-        std::string speciesPositionDistributionFileName{"speciesPositionDistribution.txt"};
-        std::string speciesVelocityFileName{"speciesVelocity.txt"};
-        std::string speciesVelocityDistributionFileName{"speciesVelocityDistribution.txt"};
-        std::string speciesEnergyFileName{"speciesEnergy.txt"};
-        std::string electricFieldFileName{"electricField.txt"};
-        std::string magneticFieldFileName{"magneticField.txt"};
-        std::string fieldEnergyFileName{"fieldEnergy.txt"};
-        std::string electrostaticPotentialFileName{"electrostaticPotential.txt"};
+        std::string speciesPositionFileName{"speciesPosition"};
+        std::string speciesPositionDistributionFileName{"speciesPositionDistribution"};
+        std::string speciesVelocityFileName{"speciesVelocity"};
+        std::string speciesVelocityDistributionFileName{"speciesVelocityDistribution"};
+        std::string speciesEnergyFileName{"speciesEnergy"};
+        std::string electricFieldFileName{"electricField"};
+        std::string magneticFieldFileName{"magneticField"};
+        std::string fieldEnergyFileName{"fieldEnergy"};
+        std::string electrostaticPotentialFileName{"electrostaticPotential"};
     };
     SaveConfig saveConfig;
 

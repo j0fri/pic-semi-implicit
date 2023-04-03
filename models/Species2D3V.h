@@ -1,7 +1,3 @@
-//
-// Created by jf1519 on 22/03/23.
-//
-
 #ifndef PIC_SEMI_IMPLICIT_SPECIES2D3V_H
 #define PIC_SEMI_IMPLICIT_SPECIES2D3V_H
 
@@ -53,7 +49,7 @@ public:
     //Outputs mass and charge (per particle) in one row, then all x positions in next row and then all y positions
     void savePosition(std::ofstream& outputFile) const;
     //Outputs mass and charge (per particle) in one row, then all grid of density. Rows are x direction and cols are y.
-    void savePositionDistribution(std::ofstream& outputFile) const;
+    void savePositionDistribution(std::ofstream &outputFile, Field<T,2,3> *field) const;
     //Outputs mass and charge (per particle) in one row, then all x velocities in next row and then all y, z
     void saveVelocity(std::ofstream& outputFile) const;
     void saveVelocityDistribution(std::ofstream& outputFile) const;
@@ -65,7 +61,7 @@ private:
     void initialisePositions(const std::ifstream& file);
     void initialiseVelocities(const std::ifstream& file);
 
-    void computeAlphas(const Field<T,2,3>* field, T dt);
+    void computeAlphas(T dt);
     void computeWeights(const Field<T,2,3>* field);
     void computeLocalB(const Field<T,2,3>* field);
     void computeLocalE(const Field<T,2,3>* field);

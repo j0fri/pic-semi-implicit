@@ -1,7 +1,3 @@
-//
-// Created by jf1519 on 22/03/23.
-//
-
 #include <cmath>
 #include <iostream>
 #include "Species2D3V.h"
@@ -73,7 +69,7 @@ T Species2D3V<T>::getTotalKineticEnergy() const {
 }
 
 template<typename T>
-void Species2D3V<T>::advancePositions(T dt, const Field<T, 2, 3> *field) {
+void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
     //Algorithm step 1
     //TODO: non-periodic boundary conditions + optimise
     pos += (vel * dt); //Advance vector
@@ -87,7 +83,7 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T, 2, 3> *field) {
         T max = field->grid.dimensions[dim].max;
         T length = max - min;
         for(unsigned int i = 0; i < this->Np; ++i){
-            while(ptr[i]>max){
+            while(ptr[i]>=max){
                 ptr[i] -= length;
             }
             while(ptr[i]<min){
@@ -97,17 +93,47 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T, 2, 3> *field) {
     }
     this->computeWeights(field);
     this->computeLocalB(field);
-    this->computeAlphas(field, dt);
+    this->computeAlphas(dt);
 }
 
 template<typename T>
 void Species2D3V<T>::advanceVelocities(T dt, const Field<T, 2, 3> *field) {
+//    std::ofstream file1("outputs/vBar.txt", std::ios::app);
+//    file1 << "Begin advanceVelocities: " << std::endl;
+//    output_helper::outputRowMajorMatrix(vel.x, 3, this->Np,this->Np,1,file1);
+
+
     this->computeLocalE(field);
+
+
+//    auto temp2 = (Ep*(this->q*dt/(2*this->m)));
+//    file1 << "Acceleration term: " << std::endl;
+//    output_helper::outputRowMajorMatrix(temp2.x, 3, this->Np,this->Np,1,file1);
+
+
     Vector3<T> temp = vel + Ep*(this->q*dt/(2*this->m));
     for(unsigned int i = 0; i < this->Np; ++i){
         math_helper::gemv(3,3,(T)1.0,alpha+9*i,3,temp.x+i,temp.n,vBar.x+i,vBar.n);
     }
     vel = vBar*((T)2.0) - vel;
+
+//    file1 << "Local magnetic field: " << std::endl;
+//    output_helper::outputRowMajorMatrix(Bp.x,3,this->Np,this->Np,1,file1);
+//    file1 << "alpha1: " << std::endl;
+//    output_helper::outputColMajorMatrix(alpha,3,3,3,1,file1);
+//    file1 << "alpha2: " << std::endl;
+//    output_helper::outputColMajorMatrix(alpha+9,3,3,3,1,file1);
+//    file1 << "alpha3: " << std::endl;
+//    output_helper::outputColMajorMatrix(alpha+18,3,3,3,1,file1);
+//    file1 << "alpha4: " << std::endl;
+//    output_helper::outputColMajorMatrix(alpha+27,3,3,3,1,file1);
+//    file1 << "alpha5: " << std::endl;
+//    output_helper::outputColMajorMatrix(alpha+36,3,3,3,1,file1);
+//    file1 << "vbar: " << std::endl;
+//    output_helper::outputRowMajorMatrix(vBar.x, 3, this->Np,this->Np,1,file1);
+//    file1 << "Finish advanceVelocities: " << std::endl;
+//    output_helper::outputRowMajorMatrix(vel.x, 3, this->Np,this->Np,1,file1);
+//    file1 << std::endl << std::endl << std::endl;
 }
 
 template<typename T>
@@ -120,20 +146,10 @@ void Species2D3V<T>::savePosition(std::ofstream &outputFile) const {
 }
 
 template<typename T>
-void Species2D3V<T>::savePositionDistribution(std::ofstream &outputFile) const {
+void Species2D3V<T>::savePositionDistribution(std::ofstream &outputFile, Field<T,2,3> *field) const {
     outputFile << this->m << " " << this->q << std::endl;
-    unsigned int Nx = 0;
-    unsigned int Ny = 0;
-    for(unsigned int p = 0; p < this->Np; ++p){
-        if(g.x[p] > Nx){
-            Nx = g.x[p];
-        }
-        if(g.y[p] > Ny){
-            Ny = g.y[p];
-        }
-    }
-    ++Nx;
-    ++Ny;
+    unsigned int Nx = field->grid.dimensions[0].Nc;
+    unsigned int Ny = field->grid.dimensions[1].Nc;
     auto freq = new unsigned int[Nx*Ny];
     std::fill(freq,freq+Nx*Ny,0);
     for(unsigned int p = 0; p < this->Np; ++p){
@@ -186,17 +202,17 @@ void Species2D3V<T>::initialiseVelocities() {
 template<typename T>
 void Species2D3V<T>::initialisePositions(const std::ifstream &file) {
     //TODO: initialisation from file
-    throw std::runtime_error("");
+    throw std::runtime_error("Not implemented yet.");
 }
 
 template<typename T>
 void Species2D3V<T>::initialiseVelocities(const std::ifstream &file) {
     //TODO: initialisation from file
-    throw std::runtime_error("");
+    throw std::runtime_error("Not implemented yet.");
 }
 
 template<typename T>
-void Species2D3V<T>::computeWeights(const Field<T, 2, 3> *field) {
+void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
     for(unsigned int dim = 0; dim < 2; ++dim){
         T min = field->grid.dimensions[dim].min;
         T max = field->grid.dimensions[dim].max;
@@ -217,12 +233,12 @@ void Species2D3V<T>::computeWeights(const Field<T, 2, 3> *field) {
             gpPtr[i] = (gPtr[i]+1) % Nc;
             gBPtr[i] = (((unsigned int) std::floor((posPtr[i]-min-spacing/2) / spacing)) + Nc) % Nc;
             gpBPtr[i] = (gBPtr[i]+1) % Nc;
-            wgpPtr[i] = std::fmod(posPtr[i], spacing)/spacing;
-            wgPtr[i] = 1.0-wgpPtr[i];
-            wgpBPtr[i] = std::fmod(posPtr[i]-spacing/2, spacing)/spacing;
-            wgPtr[i] = 1.0-wgBPtr[i];
+            wgpPtr[i] = std::fmod(posPtr[i]+max, spacing)/spacing;
+            wgPtr[i] = (T)1-wgpPtr[i];
+            wgpBPtr[i] = std::fmod(posPtr[i]+max-spacing/2, spacing)/spacing;
+            wgBPtr[i] = (T)1-wgpBPtr[i];
         }
-        if(!field->bcConfig.periodic[dim]){ //Fix non-periodicity
+        if(!field->bcConfig.periodic[dim]){ //Fix non-periodicity //TODO: TEST
             for(unsigned int i = 0; i < this->Np; ++i){
                 if(posPtr[i]-min < spacing/2){
                     wgBPtr[i] = 0;
@@ -257,7 +273,7 @@ void Species2D3V<T>::computeLocalB(const Field<T, 2, 3> *field) {
 }
 
 template<typename T>
-void Species2D3V<T>::computeAlphas(const Field<T, 2, 3> *field, T dt) {
+void Species2D3V<T>::computeAlphas(T dt) {
     //From Giovanni Lapenta:
     //    function alpha = alpha(beta,Bx,By,Bz )
     //                     %B=[Bx By Bz];
@@ -271,22 +287,25 @@ void Species2D3V<T>::computeAlphas(const Field<T, 2, 3> *field, T dt) {
     //    -sz+sx*sy  1+sy*sy   sx+sy*sz;
     //    sy+sx*sz   -sx+sy*sz    1+sz*sz]/(1+sx*sx+sy*sy+sz*sz);
     //    end
+    unsigned int ai;
+    T beta = dt*this->q / (2*this->m);
     for(unsigned int i = 0; i < this->Np; ++i){
-        T sx = Bp.x[i] * dt;
-        T sy = Bp.y[i] * dt;
-        T sz = Bp.z[i] * dt;
-        alpha[i]=1+sx*sx;
-        alpha[i+1]=-sz+sx*sy;
-        alpha[i+2]=sy+sx*sz;
-        alpha[i+3]=sz+sx*sy;
-        alpha[i+4]=1+sy*sy;
-        alpha[i+5]=-sx+sy*sz;
-        alpha[i+6]=-sy+sx*sz;
-        alpha[i+7]=sx+sy*sz;
-        alpha[i+8]=1+sz*sz;
+        ai = 9*i;
+        T sx = Bp.x[i] * beta;
+        T sy = Bp.y[i] * beta;
+        T sz = Bp.z[i] * beta;
+        alpha[ai]=1+sx*sx;
+        alpha[ai+1]=-sz+sx*sy;
+        alpha[ai+2]=sy+sx*sz;
+        alpha[ai+3]=sz+sx*sy;
+        alpha[ai+4]=1+sy*sy;
+        alpha[ai+5]=-sx+sy*sz;
+        alpha[ai+6]=-sy+sx*sz;
+        alpha[ai+7]=sx+sy*sz;
+        alpha[ai+8]=1+sz*sz;
         T norm = (T)1/(1+sx*sx+sy*sy+sz*sz);
         for(unsigned int j = 0; j < 9; ++j){
-            alpha[i+j]*=norm;
+            alpha[ai+j]*=norm;
         }
     }
 }

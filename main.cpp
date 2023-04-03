@@ -39,7 +39,8 @@ int main(int argc, char* argv[]){
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, opts), vm);
 
-    auto config = preset_configs::landau2D3VX<double>(30,5);
+    //auto config = preset_configs::landau2D3VX<double>(30,5);
+    auto config = preset_configs::magneticGyration<double>();
 
 	Simulation<double,2,3> sim(config);
     sim.initialise();

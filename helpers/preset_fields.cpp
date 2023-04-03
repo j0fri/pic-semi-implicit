@@ -28,3 +28,41 @@ typename Config<T,2,3>::FieldConfig preset_fields::Default2D3V(T Lx, T Ly, unsig
 }
 
 
+template <typename T>
+typename Config<T,2,3>::FieldConfig preset_fields::ConstE2D3V(unsigned int Id, T val, unsigned int Nx, unsigned int Ny){
+    if(Id >= 3){
+        throw std::invalid_argument("Id must be either 0 for x, 1 for y or 2 for z.");
+    }
+    typename Config<T,2,3>::FieldConfig fieldConfig{
+            Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{-1,1,Nx},{-1,1,Ny}}}},
+            1,
+            1,
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            true,
+            true,
+            true
+    };
+    fieldConfig.forcedE[Id] = preset_distributions::Uniform<T,2>(val);
+    return fieldConfig;
+}
+
+
+template <typename T>
+typename Config<T,2,3>::FieldConfig preset_fields::ConstB2D3V(unsigned int Id, T val, unsigned int Nx, unsigned int Ny){
+    if(Id >= 3){
+        throw std::invalid_argument("Id must be either 0 for x, 1 for y or 2 for z.");
+    }
+    typename Config<T,2,3>::FieldConfig fieldConfig{
+            Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{-1,1,Nx},{-1,1,Ny}}}},
+            1,
+            1,
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            true,
+            true,
+            true
+    };
+    fieldConfig.forcedB[Id] = preset_distributions::Uniform<T,2>(val);
+    return fieldConfig;
+}
