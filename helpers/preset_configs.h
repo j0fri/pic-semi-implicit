@@ -22,8 +22,17 @@ namespace preset_configs {
     template <typename T>
     Config<T,2,3> constAccelerationX();
 
+    //Constant magnetic field out of plane for constant gyration with radius 0.5
     template <typename T>
     Config<T,2,3> magneticGyration();
+
+    //Same as previous but magnetic field is in X direction so rotation appears as oscillation in y.
+    template <typename T>
+    Config<T,2,3> magneticGyrationX();
+
+    //Constant electric field towards the centre and proportional to the distance from the origin.
+    template <typename T>
+    Config<T,2,3> constPotentialWell();
 }
 
 #include "preset_configs.cpp"

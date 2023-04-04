@@ -86,7 +86,7 @@ void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species) {
 
         std::unique_ptr<const T> phi = this->getElectrostaticPotential(species);
         T minx = this->grid.dimensions[0].min;
-        T miny = this->grid.dimensions[1].max;
+        T miny = this->grid.dimensions[1].min;
 
         unsigned int gdxi, gmdxi, gdyi, gmdyi;
         for(unsigned int i = 0; i < Nx; ++i){
