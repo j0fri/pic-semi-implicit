@@ -15,6 +15,10 @@ namespace output_helper {
     template <typename T>
     void outputRowMajorMatrix(const T* a, unsigned int m, unsigned int n, unsigned int ldx, unsigned int incx,
                               std::ostream& ostream);
+
+    //Tests if two files are the same, only works if files only contain values of type T
+    template <typename T>
+    bool testSameFileContent(std::ifstream& file1, std::ifstream& file2);
 }
 
 #include "output_helper.cpp"

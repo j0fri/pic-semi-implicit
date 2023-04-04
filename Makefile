@@ -38,12 +38,12 @@ clean:
 cleanOutput:
 	-rm -f outputs/*
 
-.PHONY: profiler
-profiler: sim
-	-module load dev-studio
-	-rm -r profiling.er
-	-collect -o profiling.er ./sim
-	-analyzer profiling.er
+#.PHONY: profiler
+#profiler: sim
+#	-module load dev-studio
+#	-rm -r profiling.er
+#	-collect -o profiling.er ./sim
+#	-analyzer profiling.er
 	
 .PHONY: helperTests
 helperTests: tests/helperTests.o
@@ -65,6 +65,10 @@ vectorTests: tests/vectorTests.o models/Vector2.o models/Vector3.o
 constFieldTest1: tests/constFieldTest1.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: samePotentialWellTest
+samePotentialWellTest: tests/samePotentialWellTest.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: landauFile
 landauFile: sim
 	./sim  --mode 1
@@ -80,5 +84,14 @@ twoStreamFile: sim
 .PHONY: twoStream
 twoStream: sim
 	./sim  --mode 4
+
+export PATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86-bin/developerstudio12.5/bin:$(PATH)
+export MANPATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86-bin/developerstudio12.5/man:$(MANPATH)
+
+.PHONY: profiler
+profiler: sim
+	-rm -r profiler.er
+	collect -o profiler.er ./sim
+	analyzer profiler.er
 
 

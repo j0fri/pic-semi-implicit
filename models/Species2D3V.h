@@ -58,8 +58,10 @@ public:
 private:
     void initialisePositions();
     void initialiseVelocities();
-    void initialisePositions(const std::ifstream& file);
-    void initialiseVelocities(const std::ifstream& file);
+    //File must contain two rows with Np numbers each, for x and y positions
+    void initialisePositions(std::ifstream &file);
+    //File must contain three rows with Np numbers each, for x, y and z velocities
+    void initialiseVelocities(std::ifstream &file);
 
     void computeAlphas(T dt);
     void computeWeights(const Field<T,2,3>* field);

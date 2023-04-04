@@ -110,13 +110,13 @@ void Species1D1V<T>::advanceVelocities(T dt, const Field<T, 1, 1>* field) {
 
 //TODO: ADD THIS
 template<typename T>
-void Species1D1V<T>::initialisePositions(const std::ifstream &file) {
+void Species1D1V<T>::initialisePositions(std::ifstream &file) {
 
 }
 
 //TODO: ADD THIS
 template<typename T>
-void Species1D1V<T>::initialiseVelocities(const std::ifstream &file) {
+void Species1D1V<T>::initialiseVelocities(std::ifstream &file) {
 
 }
 

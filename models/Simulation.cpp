@@ -157,7 +157,7 @@ void Simulation<T,Nd,Nv>::run() {
             if(verbose){
                 std::cout << "t: " << t << std::endl;
             }
-            if (t >= nextSave){
+            if (t*1.0000001 >= nextSave){
                 this->save();
                 nextSave += saveConfig.saveInterval;
             }

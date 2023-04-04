@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include "Species2D3V.h"
 #include "Field2D3V.h"
 #include "../helpers/math_helper.h"
@@ -162,7 +163,7 @@ void Species2D3V<T>::savePositionDistribution(std::ofstream &outputFile, Field<T
 template<typename T>
 void Species2D3V<T>::saveVelocity(std::ofstream &outputFile) const {
     if(this->Np > 1000){
-        std::cout << "WARNING: consider disabling savePosition if Np > 1000" << std::endl;
+        std::cout << "WARNING: consider disabling saveVelocity if Np > 1000" << std::endl;
     }
     outputFile << this->m << " " << this->q << std::endl;
     output_helper::outputRowMajorMatrix(this->vel.x,3,this->Np,this->Np,1,outputFile);
@@ -200,15 +201,39 @@ void Species2D3V<T>::initialiseVelocities() {
 }
 
 template<typename T>
-void Species2D3V<T>::initialisePositions(const std::ifstream &file) {
-    //TODO: initialisation from file
-    throw std::runtime_error("Not implemented yet.");
+void Species2D3V<T>::initialisePositions(std::ifstream &file) {
+    try{
+        if(!file.is_open()){
+            throw std::invalid_argument("Initial position file not open.");
+        }
+        for(auto ptr = pos.x; ptr < pos.x + 2*this->Np; ++ptr){
+            if(file.eof()){
+                throw std::invalid_argument("Initial position file contains less columns than Np.");
+            }
+            file >> *ptr;
+        }
+    }catch(const std::exception& e){
+        std::cout << "Initial position file has incorrect format." << std::endl;
+        throw;
+    }
 }
 
 template<typename T>
-void Species2D3V<T>::initialiseVelocities(const std::ifstream &file) {
-    //TODO: initialisation from file
-    throw std::runtime_error("Not implemented yet.");
+void Species2D3V<T>::initialiseVelocities(std::ifstream &file) {
+    try{
+        if(!file.is_open()){
+            throw std::invalid_argument("Initial velocity file not open.");
+        }
+        for(auto ptr = vel.x; ptr < vel.x + 3*this->Np; ++ptr){
+            if(file.eof()){
+                throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+            }
+            file >> *ptr;
+        }
+    }catch(const std::exception& e){
+        std::cout << "Initial velocity file has incorrect format." << std::endl;
+        throw;
+    }
 }
 
 template<typename T>

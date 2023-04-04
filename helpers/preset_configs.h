@@ -33,6 +33,10 @@ namespace preset_configs {
     //Constant electric field towards the centre and proportional to the distance from the origin.
     template <typename T>
     Config<T,2,3> constPotentialWell();
+
+    //Same as previous case but initialised from file
+    template <typename T>
+    Config<T,2,3> constPotentialWellFile();
 }
 
 #include "preset_configs.cpp"

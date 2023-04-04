@@ -12,7 +12,14 @@ namespace preset_species {
 
     //Top-hat distribution, with no velocity
     template <typename T>
-    typename Config<T,2,3>::SpeciesConfig TopHat2D3VX(unsigned int Np, T m, T q, T x1, T x2, T y1, T y2);
+    typename Config<T,2,3>::SpeciesConfig TopHat2D3V(unsigned int Np, T m, T q, T x1, T x2, T y1, T y2);
+
+    //Top-hat distribution, with no velocity
+    template <typename T>
+    typename Config<T,2,3>::SpeciesConfig TopHat2D3VBoltzmann(unsigned int Np, T m, T q, T x1, T x2, T y1, T y2, T Kb, T T0);
+
+    template <typename T>
+    typename Config<T,2,3>::SpeciesConfig fromFile(unsigned int Np, T m, T q, std::string posFileName, std::string velFileName);
 };
 
 #include "preset_species.cpp"

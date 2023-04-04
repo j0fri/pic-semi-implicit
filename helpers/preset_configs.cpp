@@ -41,7 +41,7 @@ template <typename T>
 Config<T,2,3> preset_configs::constAccelerationX(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::TopHat2D3VX<double>(50000,1,1,-0.2,0.2,-0.2,0.2)
+                    preset_species::TopHat2D3V<double>(50000, 1, 1,-0.2, 0.2,-0.2, 0.2)
             }},
             preset_fields::ConstE2D3V<T>(0,(T)1,20,20),
             {10,0.1},
@@ -57,7 +57,7 @@ template <typename T>
 Config<T,2,3> preset_configs::magneticGyration(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::TopHat2D3VX<double>(50000,1,1,-0.2,0.2,0.3,0.7)
+                   preset_species::TopHat2D3V<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7)
            }},
             preset_fields::ConstB2D3V<T>(2,(T)1,20,20),
             {10,0.1},
@@ -74,7 +74,7 @@ template <typename T>
 Config<T,2,3> preset_configs::magneticGyrationX(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::TopHat2D3VX<double>(50000,1,1,-0.2,0.2,0.3,0.7)
+                   preset_species::TopHat2D3V<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7)
             }},
             preset_fields::ConstB2D3V<T>(0,(T)1,20,20),
             {10,0.1},
@@ -91,11 +91,11 @@ template <typename T>
 Config<T,2,3> preset_configs::constPotentialWell(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::TopHat2D3VX<double>(50000,1,1,-0.2,0.2,0.3,0.7)
+                   preset_species::TopHat2D3VBoltzmann<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7,1,0.01)
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
-            {10,0.1},
-            {false, true, false, false, false, true, true, false, true, 0.1, "outputs/"},
+            {0,0.1},
+            {true, true, true, false, false, true, true, false, true, 1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -103,5 +103,24 @@ Config<T,2,3> preset_configs::constPotentialWell(){
     config.fieldConfig.forcedE[0].f = ([](const std::array<T,2>& arr){return -arr[0];}); //Ex = -x
     config.fieldConfig.forcedE[1].f = ([](const std::array<T,2>& arr){return -arr[1];}); //Ey = -y
     config.speciesConfig[0].initialVGrid.dimensions[0] = {0.2,0.2,1}; //Add constant x-velocity
+    return config;
+}
+
+template <typename T>
+Config<T,2,3> preset_configs::constPotentialWellFile(){
+    Config<T,2,3> config{
+            std::vector<typename Config<T,2,3>::SpeciesConfig>{{
+                preset_species::fromFile<double>(50000,1,1,"./inputs/constPotentialWell/speciesPosition.txt",
+                                                 "./inputs/constPotentialWell/speciesVelocity.txt")
+            }},
+            preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
+            {10,0.1},
+            {true, true, true, false, false, true, true, false, true, 10, "outputs/"},
+            {{true,true},{}}, //Only periodic boundary conditions
+            true,
+            true
+    };
+    config.fieldConfig.forcedE[0].f = ([](const std::array<T,2>& arr){return -arr[0];}); //Ex = -x
+    config.fieldConfig.forcedE[1].f = ([](const std::array<T,2>& arr){return -arr[1];}); //Ey = -y
     return config;
 }

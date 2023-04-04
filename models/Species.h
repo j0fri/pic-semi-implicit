@@ -49,8 +49,8 @@ public:
 private:
 	virtual void initialisePositions() = 0;
 	virtual void initialiseVelocities() = 0;
-	virtual void initialisePositions(const std::ifstream& file) = 0;
-    virtual void initialiseVelocities(const std::ifstream& file) = 0;
+	virtual void initialisePositions(std::ifstream &file) = 0;
+    virtual void initialiseVelocities(std::ifstream &file) = 0;
 };
 
 #endif //PIC_SEMI_IMPLICIT_SPECIES_H
