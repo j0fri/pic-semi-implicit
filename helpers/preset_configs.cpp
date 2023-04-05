@@ -94,8 +94,8 @@ Config<T,2,3> preset_configs::constPotentialWell(){
                    preset_species::TopHat2D3VBoltzmann<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7,1,0.01)
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
-            {0,0.1},
-            {true, true, true, false, false, true, true, false, true, 1, "outputs/"},
+            {20,0.1},
+            {false, true, false, false, false, true, true, false, true, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -122,5 +122,6 @@ Config<T,2,3> preset_configs::constPotentialWellFile(){
     };
     config.fieldConfig.forcedE[0].f = ([](const std::array<T,2>& arr){return -arr[0];}); //Ex = -x
     config.fieldConfig.forcedE[1].f = ([](const std::array<T,2>& arr){return -arr[1];}); //Ey = -y
+    config.fieldConfig.forcedB[2].f = ([](const std::array<T,2>& arr){return -0.01*arr[0]-0.01*arr[1];}); //Weak magnetic field
     return config;
 }

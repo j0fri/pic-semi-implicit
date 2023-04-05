@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include "Species2D3V.h"
 #include "Field2D3V.h"
@@ -252,16 +253,41 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
         T* wgBPtr = wgB[dim];
         T* wgpBPtr = wgpB[dim];
         T* posPtr = pos[dim];
+        T invspacing = (T)1/spacing;
+        T halfspacing = spacing/2;
+        T shift1 = max-2*min-halfspacing;
+        T shift2 = max-min;
+        T shift3 = -min-halfspacing;
+        unsigned int temp;
+        T temp2;
         //Periodic base case:
         for(unsigned int i = 0; i < this->Np; ++i){
-            gPtr[i] = (unsigned int) std::floor((posPtr[i]-min) / spacing);
-            gpPtr[i] = (gPtr[i]+1) % Nc;
-            gBPtr[i] = (((unsigned int) std::floor((posPtr[i]-min-spacing/2) / spacing)) + Nc) % Nc;
-            gpBPtr[i] = (gBPtr[i]+1) % Nc;
-            wgpPtr[i] = std::fmod(posPtr[i]+max, spacing)/spacing;
+            //Unoptimised code:
+//            gPtr[i] = (unsigned int) std::floor((posPtr[i]-min) / spacing);
+//            gpPtr[i] = (gPtr[i]+1) % Nc;
+//            gBPtr[i] = (((unsigned int) std::floor((posPtr[i]+max-2*min-spacing/2) / spacing))) % Nc;
+//            gpBPtr[i] = (gBPtr[i]+1) % Nc;
+//            wgpPtr[i] = std::fmod(posPtr[i]+max-2*min, spacing)/spacing;
+//            wgPtr[i] = (T)1-wgpPtr[i];
+//            wgpBPtr[i] = std::fmod(posPtr[i]+max-2*min-spacing/2, spacing)/spacing;
+//            wgBPtr[i] = (T)1-wgpBPtr[i];
+//            std::cout << "pos: " << posPtr[i] << ", g: " << gPtr[i] << ", gp: " << gpPtr[i] << ", gB: " << gBPtr[i] << ", gpB: " << gpBPtr[i] << std::endl;
+
+
+            gPtr[i] = (unsigned int)((posPtr[i]-min) * invspacing);
+            temp = gPtr[i] + 1;
+            gpPtr[i] = temp == Nc ? 0 : temp;
+            temp = (unsigned int) ((posPtr[i]+shift1) * invspacing);
+            gBPtr[i] = temp > Nc ? temp - Nc : temp;
+            gpBPtr[i] = gBPtr[i] == Nc-1 ? 0 : gBPtr[i]+1;
+
+            wgpPtr[i] = (posPtr[i]-(min+gPtr[i]*spacing)) * invspacing;
             wgPtr[i] = (T)1-wgpPtr[i];
-            wgpBPtr[i] = std::fmod(posPtr[i]+max-spacing/2, spacing)/spacing;
+            temp2 = posPtr[i]+shift3;
+            temp2 = temp2 < 0 ? temp2 + shift2 : temp2;
+            wgpBPtr[i] = (temp2-gBPtr[i]*spacing) * invspacing;
             wgBPtr[i] = (T)1-wgpBPtr[i];
+
         }
         if(!field->bcConfig.periodic[dim]){ //Fix non-periodicity //TODO: TEST
             for(unsigned int i = 0; i < this->Np; ++i){
