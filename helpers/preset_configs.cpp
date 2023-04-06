@@ -94,8 +94,8 @@ Config<T,2,3> preset_configs::constPotentialWell(){
                    preset_species::TopHat2D3VBoltzmann<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7,1,0.01)
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
-            {20,0.1},
-            {false, true, false, false, false, true, true, false, true, 0.1, "outputs/"},
+            {100,0.1},
+            {false, true, false, false, false, true, true, false, false, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true

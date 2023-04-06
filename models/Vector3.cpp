@@ -74,14 +74,21 @@ Vector3<T> Vector3<T>::operator+(const Vector3 &other) const {
         throw std::runtime_error("Can only operate on vectors with the same length.");
     }
     Vector3<T> out(n);
-    for(unsigned int i = 0; i < n; ++i){
-        out.x[i] = this->x[i] + other.x[i];
-    }
-    for(unsigned int i = 0; i < n; ++i){
-        out.y[i] = this->y[i] + other.y[i];
-    }
-    for(unsigned int i = 0; i < n; ++i){
-        out.z[i] = this->z[i] + other.z[i];
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.x[i] = this->x[i] + other.x[i];
+//    }
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.y[i] = this->y[i] + other.y[i];
+//    }
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.z[i] = this->z[i] + other.z[i];
+//    }
+    auto thisPtr = x-1;
+    auto otherPtr = other.x-1;
+    auto outPtr = out.x-1;
+    const auto last = x+3*n;
+    while(++thisPtr != last){
+        *(++outPtr) = *thisPtr + *(++otherPtr);
     }
     return out;
 }
@@ -92,14 +99,22 @@ Vector3<T> Vector3<T>::operator-(const Vector3 &other) const {
         throw std::runtime_error("Can only operate on vectors with the same length.");
     }
     Vector3<T> out(n);
-    for(unsigned int i = 0; i < n; ++i){
-        out.x[i] = this->x[i] - other.x[i];
-    }
-    for(unsigned int i = 0; i < n; ++i){
-        out.y[i] = this->y[i] - other.y[i];
-    }
-    for(unsigned int i = 0; i < n; ++i){
-        out.z[i] = this->z[i] - other.z[i];
+    //Unoptimised code
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.x[i] = this->x[i] - other.x[i];
+//    }
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.y[i] = this->y[i] - other.y[i];
+//    }
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.z[i] = this->z[i] - other.z[i];
+//    }
+    auto thisPtr = x-1;
+    auto otherPtr = other.x-1;
+    auto outPtr = out.x-1;
+    const auto last = x+3*n;
+    while(++thisPtr != last){
+        *(++outPtr) = *thisPtr - *(++otherPtr);
     }
     return out;
 }
@@ -107,14 +122,21 @@ Vector3<T> Vector3<T>::operator-(const Vector3 &other) const {
 template<typename T>
 Vector3<T> Vector3<T>::operator*(double c) const{
     Vector3<T> out(n);
-    for(unsigned int i = 0; i < n; ++i){
-        out.x[i] = c*x[i];
-    }
-    for(unsigned int i = 0; i < n; ++i){
-        out.y[i] = c*y[i];
-    }
-    for(unsigned int i = 0; i < n; ++i){
-        out.z[i] = c*z[i];
+    //Unoptimised code:
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.x[i] = c*x[i];
+//    }
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.y[i] = c*y[i];
+//    }
+//    for(unsigned int i = 0; i < n; ++i){
+//        out.z[i] = c*z[i];
+//    }
+    auto thisPtr = x-1;
+    auto outPtr = out.x-1;
+    const auto last = x+3*n;
+    while(++thisPtr != last){
+        *(++outPtr) = c*(*thisPtr);
     }
     return out;
 }

@@ -308,17 +308,20 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
 template<typename T>
 void Species2D3V<T>::computeLocalB(const Field<T, 2, 3> *field) {
     const T* f = ((Field2D3V<T>*)field)->getField();
+    unsigned int i1, i2, i3, i4;
+    T w1, w2, w3, w4;
+    unsigned int Nx = field->grid.dimensions[0].Nc;
     for(unsigned int i = 0; i < this->Np; ++i){
-        unsigned int i1 = gB.x[i] + field->grid.dimensions[0].Nc * gB.y[i];
-        unsigned int i2 = gpB.x[i] + field->grid.dimensions[0].Nc * gB.y[i];
-        unsigned int i3 = gB.x[i] + field->grid.dimensions[0].Nc * gpB.y[i];
-        unsigned int i4 = gpB.x[i] + field->grid.dimensions[0].Nc * gpB.y[i];
-        T w1 = wgB.x[i]*wgB.y[i];
-        T w2 = wgpB.x[i]*wgB.y[i];
-        T w3 = wgB.x[i]*wgpB.y[i];
-        T w4 = wgpB.x[i]*wgpB.y[i];
-        for(unsigned int dim = 0; dim < 3; ++dim){
-            Bp[dim][i] = w1*f[6*i1+3+dim] + w2*f[6*i2+3+dim] + w3*f[6*i3+3+dim] + w4*f[6*i4+3+dim];
+        i1 = gB.x[i] + Nx * gB.y[i];
+        i2 = gpB.x[i] + Nx * gB.y[i];
+        i3 = gB.x[i] + Nx * gpB.y[i];
+        i4 = gpB.x[i] + Nx * gpB.y[i];
+        w1 = wgB.x[i]*wgB.y[i];
+        w2 = wgpB.x[i]*wgB.y[i];
+        w3 = wgB.x[i]*wgpB.y[i];
+        w4 = wgpB.x[i]*wgpB.y[i];
+        for(unsigned int dim = 3; dim < 6; ++dim){
+            Bp[dim-3][i] = w1*f[6*i1+dim] + w2*f[6*i2+dim] + w3*f[6*i3+dim] + w4*f[6*i4+dim];
         }
     }
 }
@@ -364,15 +367,18 @@ void Species2D3V<T>::computeAlphas(T dt) {
 template<typename T>
 void Species2D3V<T>::computeLocalE(const Field<T, 2, 3> *field) {
     const T* f = ((Field2D3V<T>*)field)->getField();
+    unsigned int i1, i2, i3, i4;
+    T w1, w2, w3, w4;
+    unsigned int Nx = field->grid.dimensions[0].Nc;
     for(unsigned int i = 0; i < this->Np; ++i){
-        unsigned int i1 = g.x[i] + field->grid.dimensions[0].Nc * g.y[i];
-        unsigned int i2 = gp.x[i] + field->grid.dimensions[0].Nc * g.y[i];
-        unsigned int i3 = g.x[i] + field->grid.dimensions[0].Nc * gp.y[i];
-        unsigned int i4 = gp.x[i] + field->grid.dimensions[0].Nc * gp.y[i];
-        T w1 = wg.x[i]*wg.y[i];
-        T w2 = wgp.x[i]*wg.y[i];
-        T w3 = wg.x[i]*wgp.y[i];
-        T w4 = wgp.x[i]*wgp.y[i];
+        i1 = g.x[i] + Nx * g.y[i];
+        i2 = gp.x[i] + Nx * g.y[i];
+        i3 = g.x[i] + Nx * gp.y[i];
+        i4 = gp.x[i] + Nx * gp.y[i];
+        w1 = wg.x[i]*wg.y[i];
+        w2 = wgp.x[i]*wg.y[i];
+        w3 = wg.x[i]*wgp.y[i];
+        w4 = wgp.x[i]*wgp.y[i];
         for(unsigned int dim = 0; dim < 3; ++dim){
             Ep[dim][i] = w1*f[6*i1+dim] + w2*f[6*i2+dim] + w3*f[6*i3+dim] + w4*f[6*i4+dim];
         }
