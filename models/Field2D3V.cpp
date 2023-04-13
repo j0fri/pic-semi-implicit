@@ -216,7 +216,9 @@ std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vect
 
     //Construct system vector:
     for(unsigned int g = 0; g < Ng; ++g){
-        Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy*this->e0);
+        //TODO: check units, scheme uses gauss but UKAEA uses SI
+        Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy)*4*M_PI; //Gauss units
+        //Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy*this->e0); //SI units
     }
     delete[] Q;
 
