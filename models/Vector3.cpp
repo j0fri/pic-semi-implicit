@@ -124,13 +124,13 @@ Vector3<T> Vector3<T>::operator*(double c) const{
     Vector3<T> out(n);
     //Unoptimised code:
 //    for(unsigned int i = 0; i < n; ++i){
-//        out.x[i] = c*x[i];
+//        out.x[i] = C*x[i];
 //    }
 //    for(unsigned int i = 0; i < n; ++i){
-//        out.y[i] = c*y[i];
+//        out.y[i] = C*y[i];
 //    }
 //    for(unsigned int i = 0; i < n; ++i){
-//        out.z[i] = c*z[i];
+//        out.z[i] = C*z[i];
 //    }
     auto thisPtr = x-1;
     auto outPtr = out.x-1;

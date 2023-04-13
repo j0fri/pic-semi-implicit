@@ -28,7 +28,7 @@ public:
     Field1D1V(const Field1D1V& other);
     ~Field1D1V();
 
-    void initialise(const std::vector<Species<T,1,1>*>& species);
+    void initialise(const std::vector<Species<T,1,1>*>& species, T dt);
 
     //TODO: implement these
     void saveElectricField(std::ofstream& outputFile) const ;

@@ -64,10 +64,14 @@ const T *Species2D3V<T>::getAlpha() const {
     return static_cast<const T*>(alpha);
 }
 
-//TODO: ADD KINETIC ENERGY
 template<typename T>
 T Species2D3V<T>::getTotalKineticEnergy() const {
-    return 0;
+    T total = 0;
+    for(unsigned int i = 0; i < 3*this->Np; ++i){
+        total += vel.x[i]*vel.x[i];
+    }
+    T kineticEnergy = total/2*this->m;
+    return kineticEnergy;
 }
 
 template<typename T>
@@ -100,42 +104,12 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
 
 template<typename T>
 void Species2D3V<T>::advanceVelocities(T dt, const Field<T, 2, 3> *field) {
-//    std::ofstream file1("outputs/vBar.txt", std::ios::app);
-//    file1 << "Begin advanceVelocities: " << std::endl;
-//    output_helper::outputRowMajorMatrix(vel.x, 3, this->Np,this->Np,1,file1);
-
-
     this->computeLocalE(field);
-
-
-//    auto temp2 = (Ep*(this->q*dt/(2*this->m)));
-//    file1 << "Acceleration term: " << std::endl;
-//    output_helper::outputRowMajorMatrix(temp2.x, 3, this->Np,this->Np,1,file1);
-
-
     Vector3<T> temp = vel + Ep*(this->q*dt/(2*this->m));
     for(unsigned int i = 0; i < this->Np; ++i){
         math_helper::gemv(3,3,(T)1.0,alpha+9*i,3,temp.x+i,temp.n,vBar.x+i,vBar.n);
     }
     vel = vBar*((T)2.0) - vel;
-
-//    file1 << "Local magnetic field: " << std::endl;
-//    output_helper::outputRowMajorMatrix(Bp.x,3,this->Np,this->Np,1,file1);
-//    file1 << "alpha1: " << std::endl;
-//    output_helper::outputColMajorMatrix(alpha,3,3,3,1,file1);
-//    file1 << "alpha2: " << std::endl;
-//    output_helper::outputColMajorMatrix(alpha+9,3,3,3,1,file1);
-//    file1 << "alpha3: " << std::endl;
-//    output_helper::outputColMajorMatrix(alpha+18,3,3,3,1,file1);
-//    file1 << "alpha4: " << std::endl;
-//    output_helper::outputColMajorMatrix(alpha+27,3,3,3,1,file1);
-//    file1 << "alpha5: " << std::endl;
-//    output_helper::outputColMajorMatrix(alpha+36,3,3,3,1,file1);
-//    file1 << "vbar: " << std::endl;
-//    output_helper::outputRowMajorMatrix(vBar.x, 3, this->Np,this->Np,1,file1);
-//    file1 << "Finish advanceVelocities: " << std::endl;
-//    output_helper::outputRowMajorMatrix(vel.x, 3, this->Np,this->Np,1,file1);
-//    file1 << std::endl << std::endl << std::endl;
 }
 
 template<typename T>
@@ -178,8 +152,8 @@ void Species2D3V<T>::saveVelocityDistribution(std::ofstream &outputFile) const {
 
 template<typename T>
 void Species2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
-    //TODO: implement
-    throw std::runtime_error("Not implemented yet.");
+    outputFile << this->m << " " << this->q << std::endl;
+    outputFile << this->getTotalKineticEnergy() << std::endl;
 }
 
 template<typename T>
@@ -366,15 +340,15 @@ void Species2D3V<T>::computeAlphas(T dt) {
 
 template<typename T>
 void Species2D3V<T>::computeLocalE(const Field<T, 2, 3> *field) {
-    const T* f = ((Field2D3V<T>*)field)->getField();
+    const T* f = ((Field2D3V<T>*)field)->getFieldT();
     unsigned int i1, i2, i3, i4;
     T w1, w2, w3, w4;
     unsigned int Nx = field->grid.dimensions[0].Nc;
     for(unsigned int i = 0; i < this->Np; ++i){
-        i1 = g.x[i] + Nx * g.y[i];
-        i2 = gp.x[i] + Nx * g.y[i];
-        i3 = g.x[i] + Nx * gp.y[i];
-        i4 = gp.x[i] + Nx * gp.y[i];
+        i1 = g.x[i] + Nx*g.y[i];
+        i2 = gp.x[i] + Nx*g.y[i];
+        i3 = g.x[i] + Nx*gp.y[i];
+        i4 = gp.x[i] + Nx*gp.y[i];
         w1 = wg.x[i]*wg.y[i];
         w2 = wgp.x[i]*wg.y[i];
         w3 = wg.x[i]*wgp.y[i];

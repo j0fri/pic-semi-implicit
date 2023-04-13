@@ -43,7 +43,7 @@ Field1D1V<T>::~Field1D1V(){
 }
 
 template<typename T>
-void Field1D1V<T>::initialise(const std::vector<Species<T, 1, 1> *> &species) {
+void Field1D1V<T>::initialise(const std::vector<Species<T, 1, 1> *> &species, T dt) {
     this->E = new T[Nx];
     this->Et = new T[Nx];
     this->J = new T[Nx];

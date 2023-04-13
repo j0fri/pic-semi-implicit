@@ -59,7 +59,7 @@ void math_helper::gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsi
     T colFactor;
     unsigned int colStart;
     for(unsigned int col = 0; col < N; ++col){
-        colFactor = x[col*incx];
+        colFactor = x[col*incx]*alpha;
         colStart = col*lda;
         for(unsigned int row = 0; row < M; ++row){
             y[row*incy] += colFactor * A[row+colStart];

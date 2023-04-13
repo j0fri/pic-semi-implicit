@@ -12,11 +12,13 @@ SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o mo
 
 SIMLIBS = -lboost_program_options -lblas -llapack
 
-HELPERHDRS = helpers/math_helper.h helpers/preset_configs.h helpers/preset_distributions.h helpers/preset_fields.h\
-			 helpers/preset_species.h helpers/string_helper.h helpers/output_helper.h
+HELPERHDRS = helpers/math_helper.h helpers/string_helper.h helpers/output_helper.h
 
-HELPERCPPS = helpers/math_helper.cpp helpers/preset_configs.cpp helpers/preset_distributions.cpp helpers/preset_fields.cpp\
-			 helpers/preset_species.cpp helpers/string_helper.cpp helpers/output_helper.cpp
+HELPERCPPS = helpers/math_helper.cpp helpers/string_helper.cpp helpers/output_helper.cpp
+
+PRESETHDRS = helpers/preset_configs.h helpers/preset_distributions.h helpers/preset_fields.h helpers/preset_species.h
+
+PRESETCPPS = helpers/preset_configs.cpp helpers/preset_distributions.cpp helpers/preset_fields.cpp helpers/preset_species.cpp
 
 TESTHDRS = testModels/Field2D3VConst.h
 
@@ -26,6 +28,8 @@ HDRS = $(SIMHDRS) $(VISHDRS) $(TESTHDRS) $(HELPERHDRS)
 
 %.o : %.cpp $(HDRS) $(HELPERCPPS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+main.o: main.cpp $(HDRS) $(PRESETHDRS) $(HELPERCPPS) $(PRESETCPPS)
 
 sim: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o sim $^ $(SIMLIBS)

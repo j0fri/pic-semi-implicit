@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
 //		("Lx", po::value<float>()->default_value(1), "Field non-dimensional length in x.")
 //		("Kb", po::value<float>()->default_value(0.00001), "Boltzmann constant.")
 //		("T0", po::value<float>()->default_value(1.0), "Initial temperature (K).")
-//		("c", po::value<float>()->default_value(1.0), "Speed of light.")
+//		("C", po::value<float>()->default_value(1.0), "Speed of light.")
 //		("e0", po::value<float>()->default_value(1.0), "Permittivity.")
 //		("T", po::value<float>()->default_value(10.0), "Total time.")
 //		("dt", po::value<float>()->default_value(0.01), "Time step.")
@@ -39,10 +39,12 @@ int main(int argc, char* argv[]){
 //    po::variables_map vm;
 //    po::store(po::parse_command_line(argc, argv, opts), vm);
 
+    //auto config = preset_configs::constVelocityX<double>();
     //auto config = preset_configs::landau2D3VX<double>(30,5);
+    auto config = preset_configs::landau2D3VXWave<double>(30,5);
     //auto config = preset_configs::magneticGyration<double>();
     //auto config = preset_configs::magneticGyrationX<double>();
-    auto config = preset_configs::constPotentialWell<double>();
+    //auto config = preset_configs::constPotentialWell<double>();
     //auto config = preset_configs::constPotentialWellFile<double>();
 
 	Simulation<double,2,3> sim(config);

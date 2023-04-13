@@ -60,7 +60,7 @@ void Simulation<T, Nd, Nv>::initialise() {
             species[i]->initialise();
             species[i]->advancePositions(0, field); //Important for weight calculations
         }
-        field->initialise(species);
+        field->initialise(species, timeConfig.step);
         this->clearOutputFiles();
         state = State::Initialised;
     }catch(const std::exception& exception){

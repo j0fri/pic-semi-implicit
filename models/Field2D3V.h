@@ -30,8 +30,9 @@ protected:
     /*All the previous matrices are arrays of length Nx*Ny*9, same structure as field, with all 9 components of the
     matrix are stored in column-major format (increment of 1 is in x) for each grid value*/
 
-    T* A; //System matrix: Nx*Ny*6*Nx*Ny*6
-    T* c; //System vector: Nx*Ny*6, same order as field
+    T* A; //Incomplete system matrix (without mass matrix terms): Nx*Ny*6*Nx*Ny*6
+    T* Ac; //Complete system matrix (with mass matrix terms): Nx*Ny*6*Nx*Ny*6
+    T* C; //System vector: Nx*Ny*6, same order as field
 
 public:
     Field2D3V() = delete;
@@ -47,7 +48,7 @@ public:
      * in which case they are only that). For now only works with fully periodic conditions.
      * It assumes that values in Z direction are zero for the derivatives, additionally, all average components of
      * electric field are 0 (before adding forced terms). */
-    void initialise(const std::vector<Species<T,2,3>*>& species);
+    void initialise(const std::vector<Species<T,2,3>*>& species, T dt);
 
     //Save electric/magnetic field in 3 successive matrices, x, y and z components of the field. Rows are different x
     //values and columns are y values.
@@ -60,13 +61,14 @@ public:
     const T* getField() const;
     const T* getFieldT() const;
 
-    //Returns a pointer to an Nx by Ny matrix in col-major format (i.e. rows are different x-vals and cols are y-vals)
+    //Returns a pointer to a Nx by Ny matrix in col-major format (i.e. rows are different x-vals and cols are y-vals)
     //Electrostatic potential is defined to be 0 at 0,0
     std::unique_ptr<const T> getElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
 private:
     void accumulateJ(const std::vector<Species<T,2,3>*>& species);
     void accumulateM(const std::vector<Species<T,2,3>*>& species, T dt);
     virtual void solveAndAdvance(T dt);
+    virtual void initialiseSystemMatrix(T dt);
 };
 
 

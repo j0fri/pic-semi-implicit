@@ -32,7 +32,7 @@ public:
 	Field(const Field<T,Nd,Nv>& other);
 	virtual ~Field();
 	
-	virtual void initialise(const std::vector<Species<T,Nd,Nv>*>& species) = 0;
+	virtual void initialise(const std::vector<Species<T,Nd,Nv>*>& species, T dt) = 0;
 	virtual void advanceField(const std::vector<Species<T,Nd,Nv>*>& species, T dt);
 
 	virtual void saveElectricField(std::ofstream& outputFile) const = 0;
