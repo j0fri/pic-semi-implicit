@@ -44,3 +44,12 @@ semilogy(t,KE+PE);
 legend('Kinetic Energy','Field Energy','Total Energy');
 xlabel('Time');
 ylabel('Energy');
+
+
+figure(3);
+clf;
+semilogy(t,PE);
+hold on
+legend('Field Energy','Linear damping');
+xlabel('Time');
+ylabel('Energy');
