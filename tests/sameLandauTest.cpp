@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
     for(auto fileName: fileNames){
         std::ifstream refFile("referenceOutputs/landau/" + fileName + ".txt", std::ios::in);
         std::ifstream file("outputs/" + fileName + ".txt", std::ios::in);
-        if(output_helper::testSameFileContent<double>(file,refFile)){
+        if(output_helper::testSameFileContent<double>(file,refFile, std::pow(10,-12))){
             std::cout << fileName << " files SAME" << std::endl;
         }else{
             std::cout << fileName << " files NOT SAME" << std::endl;

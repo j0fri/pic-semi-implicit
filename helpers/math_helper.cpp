@@ -49,7 +49,7 @@ void math_helper::gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsi
 //    for(unsigned int i = 0; i < M; ++i){
 //        temp = 0;
 //        for(unsigned int j = 0; j < N; ++j){
-//            temp += A[i+lda*j] * x[j*incx];
+//            temp += A_obsolete[i+lda*j] * x[j*incx];
 //        }
 //        y[i*incy] = alpha*temp;
 //    }

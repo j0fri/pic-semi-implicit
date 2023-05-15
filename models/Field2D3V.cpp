@@ -4,7 +4,6 @@
 #include "Species2D3V.h"
 #include "../helpers/math_helper.h"
 #include "../helpers/output_helper.h"
-#include <Eigen/Sparse>
 
 #define F77NAME(x) x##_
 extern "C" {
@@ -38,9 +37,30 @@ Field2D3V<T>::Field2D3V(const typename Config<T,2,3>::FieldConfig &fieldConfig,
     }
 
     try{
-        A = new T[36*Ng*Ng];
-        Ac = new T[36*Ng*Ng];
-        C = new T[6*Ng];
+        Eigen::VectorXi aNonZerosBase(6);
+        //aNonZerosBase << 3,3,5,3,3,5;
+        aNonZerosBase << 29,29,31,3,3,5; //Use Ac's sizes so it can be copied later.
+        Eigen::VectorXi aNonZeros(6*Ng);
+        for(unsigned int i = 0; i < 6*Ng; ++i){
+            aNonZeros[i] = aNonZerosBase[i%6];
+        }
+        A = Eigen::SparseMatrix<T>(6*Ng, 6*Ng);
+        A.reserve(aNonZeros);
+
+//        Eigen::VectorXi acNonZerosBase(6);
+//        acNonZerosBase << 29,29,31,3,3,5;
+//        Eigen::VectorXi acNonZeros(6*Ng);
+//        for(unsigned int i = 0; i < 6*Ng; ++i){
+//            acNonZeros[i] = acNonZerosBase[i%6];
+//        }
+//        Ac = Eigen::SparseMatrix<T>(6*Ng, 6*Ng);
+//        Ac.reserve(acNonZeros);
+
+        C = Eigen::VectorX<T>(6*Ng);
+
+        A_obsolete = new T[36 * Ng * Ng];
+        Ac_obsolete = new T[36 * Ng * Ng];
+        C_obsolete = new T[6 * Ng];
     }catch(const std::bad_alloc& e){
         std::cerr << "Error during field memory allocation of O(Nx*Ny*Nx*Ny) variables." << std::endl;
         throw;
@@ -58,8 +78,8 @@ Field2D3V<T>::~Field2D3V() {
     delete[] Mgdy;
     delete[] Mgdxdy;
     delete[] Mgmdxdy;
-    delete[] A;
-    delete[] C;
+    delete[] A_obsolete;
+    delete[] C_obsolete;
 }
 
 template<typename T>
@@ -410,7 +430,9 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     }
 
     //Construct system matrix:
-    std::copy(A,A+36*Ng*Ng,Ac);
+//    std::copy(A_obsolete, A_obsolete + 36 * Ng * Ng, Ac_obsolete);
+    Ac = A;
+
     unsigned int lda = 6*Ng;
     unsigned int gi, gdxi, gdxdyi, gdyi, gmdxdyi, gmdxi, gmdxmdyi, gmdyi, gdxmdyi;
     T c1 = (T)2/(this->c*dt);
@@ -434,55 +456,64 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         //gi term: add Mg term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gi+col)*lda+eq+row] += -c2*Mg[9*gi+3*col+row];
+                //Ac_obsolete[(6 * gi + col) * lda + eq + row] += -c2 * Mg[9 * gi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gi+col) += -c2 * Mg[9*gi + 3*col + row];
             }
         }
         //gdxi term: add Mgdx term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gdxi+col)*lda+eq+row] += -c2*Mgdx[9*gi+3*col+row];
+                //Ac_obsolete[(6 * gdxi + col) * lda + eq + row] += -c2 * Mgdx[9 * gi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gdxi+col) += -c2 * Mgdx[9*gi + 3*col + row];
             }
         }
         //gdxdyi term: add Mgdxdy term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gdxdyi+col)*lda+eq+row] += -c2*Mgdxdy[9*gi+3*col+row];
+                //Ac_obsolete[(6 * gdxdyi + col) * lda + eq + row] += -c2 * Mgdxdy[9 * gi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gdxdyi+col) += -c2 * Mgdxdy[9*gi + 3*col + row];
             }
         }
         //gdyi term: add Mgdy term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gdyi+col)*lda+eq+row] += -c2*Mgdy[9*gi+3*col+row];
+                //Ac_obsolete[(6 * gdyi + col) * lda + eq + row] += -c2 * Mgdy[9 * gi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gdyi+col) += -c2 * Mgdy[9*gi + 3*col + row];
             }
         }
         //gmdxdyi term: add Mgmdxdy
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gmdxdyi+col)*lda+eq+row] += -c2*Mgmdxdy[9*gi+3*col+row];
+                //Ac_obsolete[(6 * gmdxdyi + col) * lda + eq + row] += -c2 * Mgmdxdy[9 * gi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gmdxdyi+col) += -c2 * Mgmdxdy[9*gi + 3*col + row];
             }
         }
         //gmdxi term: add Mgdx term at gmdxi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gmdxi+col)*lda+eq+row] += -c2*Mgdx[9*gmdxi+3*col+row];
+                //Ac_obsolete[(6 * gmdxi + col) * lda + eq + row] += -c2 * Mgdx[9 * gmdxi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gmdxi+col) += -c2 * Mgdx[9*gmdxi + 3*col + row];
             }
         }
         //gmdxmdyi term: add Mgdxdy term at gmdxmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gmdxmdyi+col)*lda+eq+row] += -c2*Mgdxdy[9*gmdxmdyi+3*col+row];
+                //Ac_obsolete[(6 * gmdxmdyi + col) * lda + eq + row] += -c2 * Mgdxdy[9 * gmdxmdyi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gmdxmdyi+col) += -c2 * Mgdxdy[9*gmdxmdyi + 3*col + row];
             }
         }
         //gmdyi term: add Mgdy term at gmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gmdyi+col)*lda+eq+row] += -c2*Mgdy[9*gmdyi+3*col+row];
+                //Ac_obsolete[(6 * gmdyi + col) * lda + eq + row] += -c2 * Mgdy[9 * gmdyi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gmdyi+col) += -c2 * Mgdy[9*gmdyi + 3*col + row];
             }
         }
         //gdxmdyi term: add Mgmdxdy term at gdxmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                Ac[(6*gdxmdyi+col)*lda+eq+row] += -c2*Mgmdxdy[9*gdxmdyi+3*col+row];
+                //Ac_obsolete[(6 * gdxmdyi + col) * lda + eq + row] += -c2 * Mgmdxdy[9 * gdxmdyi + 3 * col + row];
+                Ac.coeffRef(eq+row,6*gdxmdyi+col) += -c2 * Mgmdxdy[9*gdxmdyi + 3*col + row];
             }
         }
         eq += 3;
@@ -502,13 +533,20 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         //Indices:
         gi = xi + Nx*yi;
         //Magnetic field equations:
-        C[eq++] = c1*field[6*gi+3]; // 2/cdt*Bx(i,j)
-        C[eq++] = c1*field[6*gi+4]; // 2/cdt*By(i,j)
-        C[eq++] = c1*field[6*gi+5]; // 2/cdt*Bz(i,j)
+//        C_obsolete[eq++] = c1 * field[6 * gi + 3]; // 2/cdt*Bx(i,j)
+//        C_obsolete[eq++] = c1 * field[6 * gi + 4]; // 2/cdt*By(i,j)
+//        C_obsolete[eq++] = c1 * field[6 * gi + 5]; // 2/cdt*Bz(i,j)
+        C[eq++] = c1 * field[6 * gi + 3]; // 2/cdt*Bx(i,j)
+        C[eq++] = c1 * field[6 * gi + 4]; // 2/cdt*By(i,j)
+        C[eq++] = c1 * field[6 * gi + 5]; // 2/cdt*Bz(i,j)
+        
         //Electric field equations:
-        C[eq++] = -c1*field[6*gi]+c2*J[3*gi]; // -2/cdt*Ex(i,j)+4pi/c*J_hatx(i,j)
-        C[eq++] = -c1*field[6*gi+1]+c2*J[3*gi+1]; // -2/cdt*Ey(i,j)+4pi/c*J_haty(i,j)
-        C[eq++] = -c1*field[6*gi+2]+c2*J[3*gi+2]; // -2/cdt*Ez(i,j)+4pi/c*J_hatz(i,j)
+//        C_obsolete[eq++] = -c1 * field[6 * gi] + c2 * J[3 * gi]; // -2/cdt*Ex(i,j)+4pi/c*J_hatx(i,j)
+//        C_obsolete[eq++] = -c1 * field[6 * gi + 1] + c2 * J[3 * gi + 1]; // -2/cdt*Ey(i,j)+4pi/c*J_haty(i,j)
+//        C_obsolete[eq++] = -c1 * field[6 * gi + 2] + c2 * J[3 * gi + 2]; // -2/cdt*Ez(i,j)+4pi/c*J_hatz(i,j)
+        C[eq++] = -c1 * field[6 * gi] + c2 * J[3 * gi]; // -2/cdt*Ex(i,j)+4pi/c*J_hatx(i,j)
+        C[eq++] = -c1 * field[6 * gi + 1] + c2 * J[3 * gi + 1]; // -2/cdt*Ey(i,j)+4pi/c*J_haty(i,j)
+        C[eq++] = -c1 * field[6 * gi + 2] + c2 * J[3 * gi + 2]; // -2/cdt*Ez(i,j)+4pi/c*J_hatz(i,j)
         //Advance indices:
         ++xi;
         if(xi == Nx){
@@ -517,34 +555,43 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         }
     }
 
-    int* pivots;
-    try{
-        pivots = new int[lda]; //Pivot vector for matrix solve
-    }catch(const std::bad_alloc& e){
-        std::cerr << "Error in field memory temporary allocation in system solve (O(Nx*Ny))" << std::endl;
-        throw;
-    }
+//    int* pivots;
+//    try{
+//        pivots = new int[lda]; //Pivot vector for matrix solve
+//    }catch(const std::bad_alloc& e){
+//        std::cerr << "Error in field memory temporary allocation in system solve (O(Nx*Ny))" << std::endl;
+//        throw;
+//    }
+//
+//    //Solve matrix
+//    if constexpr(std::is_same<T,double>::value){
+//        int info;
+//        F77NAME(dgesv)(Ng*6, 1, (double *)Ac_obsolete, Ng * 6, pivots, (double *)C_obsolete, Ng * 6, info);
+//        if(info != 0){
+//            throw std::runtime_error("System solve error during solveAndAdvance.");
+//        }
+//        delete[] pivots;
+//    }else{
+//        //TODO: Make non-lapack dependent
+//        throw std::invalid_argument("T can only be double when using Lapack for system solve");
+//    }
 
-    //Solve matrix
-    if constexpr(std::is_same<T,double>::value){
-        int info;
-        F77NAME(dgesv)(Ng*6,1,(double *)Ac,Ng*6,pivots, (double *)C, Ng*6,info);
-        if(info != 0){
-            throw std::runtime_error("System solve error during solveAndAdvance.");
-        }
-        delete[] pivots;
-    }else{
-        //TODO: Make non-lapack dependent
-        throw std::invalid_argument("T can only be double when using Lapack for system solve");
-    }
+//    Eigen::SimplicialCholesky<SpMat> chol(Ac);
+//    Eigen::VectorX<T> sol = chol.solve(C);
+
+    Ac.makeCompressed();
+    Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
+    solver.analyzePattern(Ac);
+    solver.factorize(Ac);
+    Eigen::VectorX<T> sol = solver.solve(C);
 
     eq = 0;
     while(eq < lda){
         //TODO: consider if forced terms must be manually added
         if(!this->onlyForcedE){
             for(unsigned int dim = 0; dim < 3; ++dim){
-                fieldT[eq] = C[eq];
-                field[eq] = 2*C[eq] - field[eq]; //E(n+1) = 2*E(n+1/2)-E(n)
+                fieldT[eq] = sol[eq];
+                field[eq] = 2 * sol[eq] - field[eq]; //E(n+1) = 2*E(n+1/2)-E(n)
                 ++eq;
             }
         }else{
@@ -555,8 +602,8 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         }
         if(!this->onlyForcedB){
             for(unsigned int dim = 0; dim < 3; ++dim){
-                fieldT[eq] = C[eq];
-                field[eq] = 2*C[eq] - field[eq]; //B(n+1) = 2*B(n+1/2)-B(n)
+                fieldT[eq] = sol[eq];
+                field[eq] = 2 * sol[eq] - field[eq]; //B(n+1) = 2*B(n+1/2)-B(n)
                 ++eq;
             }
         }else{
@@ -570,7 +617,7 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 
 template<typename T>
 void Field2D3V<T>::initialiseSystemMatrix(T dt) {
-    std::fill(A,A+36*Ng*Ng,0.0);
+    //std::fill(A_obsolete, A_obsolete + 36 * Ng * Ng, 0.0);
     unsigned int lda = 6*Ng;
     unsigned int eq = 0;
     unsigned int xi = 0;
@@ -590,39 +637,61 @@ void Field2D3V<T>::initialiseSystemMatrix(T dt) {
         gmdyi = xi + Nx*((yi-1+Ny)%Ny);
         //Magnetic field equations:
         //x-equation:
-        A[(6*gdyi+2)*lda+eq] = idy; //1/dy*Etz(i,j+1)
-        A[(6*gi+2)*lda+eq] = -idy; //-1/dy*Etz(i,j)
-        A[(6*gi+3)*lda+eq] = c1; //2/cdt*Btx(i,j)
+//        A_obsolete[(6 * gdyi + 2) * lda + eq] = idy; //1/dy*Etz(i,j+1)
+//        A_obsolete[(6 * gi + 2) * lda + eq] = -idy; //-1/dy*Etz(i,j)
+//        A_obsolete[(6 * gi + 3) * lda + eq] = c1; //2/cdt*Btx(i,j)
+        A.coeffRef(eq, 6*gdyi+2) = idy;
+        A.coeffRef(eq,6*gi+2) = -idy;
+        A.coeffRef(eq,6*gi+3) = c1;
         ++eq;
         //y-equation:
-        A[(6*gdxi+2)*lda+eq] = -idx; //-1/dx*Etz(i+1,j)
-        A[(6*gi+2)*lda+eq] = idx; //1/dx*Etz*(i,j)
-        A[(6*gi+4)*lda+eq] = c1; //2/cdt*Bty(i,j)
+//        A_obsolete[(6 * gdxi + 2) * lda + eq] = -idx; //-1/dx*Etz(i+1,j)
+//        A_obsolete[(6 * gi + 2) * lda + eq] = idx; //1/dx*Etz*(i,j)
+//        A_obsolete[(6 * gi + 4) * lda + eq] = c1; //2/cdt*Bty(i,j)
+        A.coeffRef(eq,6*gdxi+2) = -idx;
+        A.coeffRef(eq, 6*gi+2) = idx;
+        A.coeffRef(eq,6*gi+4) = c1;
         ++eq;
         //z-equation:
-        A[(6*gdxi+1)*lda+eq] = idx; //1/dx*Ety(i+1,j)
-        A[(6*gi+1)*lda+eq] = -idx; //-1/dx*Ety(i,j)
-        A[(6*gdyi)*lda+eq] = -idy; //-1/dy*Etx(i,j+1)
-        A[(6*gi)*lda+eq] = idy; //1/dy*Etx(i,j)
-        A[(6*gi+5)*lda+eq] = c1; //2/cdt*Btz(i,j)
+//        A_obsolete[(6 * gdxi + 1) * lda + eq] = idx; //1/dx*Ety(i+1,j)
+//        A_obsolete[(6 * gi + 1) * lda + eq] = -idx; //-1/dx*Ety(i,j)
+//        A_obsolete[(6 * gdyi) * lda + eq] = -idy; //-1/dy*Etx(i,j+1)
+//        A_obsolete[(6 * gi) * lda + eq] = idy; //1/dy*Etx(i,j)
+//        A_obsolete[(6 * gi + 5) * lda + eq] = c1; //2/cdt*Btz(i,j)
+        A.coeffRef(eq,6*gdxi+1) = idx;
+        A.coeffRef(eq,6*gi+1) = -idx;
+        A.coeffRef(eq,6*gdyi) = -idy;
+        A.coeffRef(eq,6*gi) = idy;
+        A.coeffRef(eq,6*gi+5) = c1;
         ++eq;
         //Electric field equations:
         //x-equation:
-        A[(6*gi+5)*lda+eq] = idy; //1/dy*Btz(i,j)
-        A[(6*gmdyi+5)*lda+eq] = -idy; //-1/dy*Btz(i,j-1)
-        A[(6*gi)*lda+eq] = -c1; //-2/cdt*Etx(i,j)
+//        A_obsolete[(6 * gi + 5) * lda + eq] = idy; //1/dy*Btz(i,j)
+//        A_obsolete[(6 * gmdyi + 5) * lda + eq] = -idy; //-1/dy*Btz(i,j-1)
+//        A_obsolete[(6 * gi) * lda + eq] = -c1; //-2/cdt*Etx(i,j)
+        A.coeffRef(eq,6*gi+5) = idy;
+        A.coeffRef(eq,6*gmdyi+5) = -idy;
+        A.coeffRef(eq,6*gi) = -c1;
         ++eq;
         //y-equation:
-        A[(6*gi+5)*lda+eq] = -idx; //-1/dx*Btz(i,j)
-        A[(6*gmdxi+5)*lda+eq] = idx; //1/dx*Btz(i-1,j)
-        A[(6*gi+1)*lda+eq] = -c1; //-2/cdt*Ety(i,j)
+//        A_obsolete[(6 * gi + 5) * lda + eq] = -idx; //-1/dx*Btz(i,j)
+//        A_obsolete[(6 * gmdxi + 5) * lda + eq] = idx; //1/dx*Btz(i-1,j)
+//        A_obsolete[(6 * gi + 1) * lda + eq] = -c1; //-2/cdt*Ety(i,j)
+        A.coeffRef(eq,6*gi+5) = -idx;
+        A.coeffRef(eq,6*gmdxi+5) = idx;
+        A.coeffRef(eq,6*gi+1) = -c1;
         ++eq;
         //z-equation:
-        A[(6*gi+4)*lda+eq] = idx; //1/dx*Bty(i,j)
-        A[(6*gmdxi+4)*lda+eq] = -idx; //-1/dx*Bty(i-1,j)
-        A[(6*gi+3)*lda+eq] = -idy; //-1/dy*Btx(i,j)
-        A[(6*gmdyi+3)*lda+eq] = idy; //1/dy*Bt(i,j-1)
-        A[(6*gi+2)*lda+eq] = -c1; //-2/cdt*Etz(i,j)
+//        A_obsolete[(6 * gi + 4) * lda + eq] = idx; //1/dx*Bty(i,j)
+//        A_obsolete[(6 * gmdxi + 4) * lda + eq] = -idx; //-1/dx*Bty(i-1,j)
+//        A_obsolete[(6 * gi + 3) * lda + eq] = -idy; //-1/dy*Btx(i,j)
+//        A_obsolete[(6 * gmdyi + 3) * lda + eq] = idy; //1/dy*Bt(i,j-1)
+//        A_obsolete[(6 * gi + 2) * lda + eq] = -c1; //-2/cdt*Etz(i,j)
+        A.coeffRef(eq,6*gi+4) = idx;
+        A.coeffRef(eq,6*gmdxi+4) = -idx;
+        A.coeffRef(eq,6*gi+3) = -idy;
+        A.coeffRef(eq,6*gmdyi+3) = idy;
+        A.coeffRef(eq,6*gi+2) = -c1;
         ++eq;
         //Advance indices:
         ++xi;

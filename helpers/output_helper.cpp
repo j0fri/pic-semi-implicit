@@ -32,7 +32,7 @@ void output_helper::outputRowMajorMatrix(const T* a, unsigned int m, unsigned in
 }
 
 template <typename T>
-bool output_helper::testSameFileContent(std::ifstream &file1, std::ifstream &file2) {
+bool output_helper::testSameFileContent(std::ifstream &file1, std::ifstream &file2, T tolerance) {
     if(!file1.is_open() || !file2.is_open()){
         throw std::invalid_argument("Compared files not open.");
     }
@@ -47,7 +47,7 @@ bool output_helper::testSameFileContent(std::ifstream &file1, std::ifstream &fil
         }
         file1 >> d1;
         file2 >> d2;
-        if(d1 != d2){
+        if(std::abs(d1 - d2) > tolerance){
             return false;
         }
     }

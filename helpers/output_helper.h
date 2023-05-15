@@ -18,7 +18,7 @@ namespace output_helper {
 
     //Tests if two files are the same, only works if files only contain values of type T
     template <typename T>
-    bool testSameFileContent(std::ifstream& file1, std::ifstream& file2);
+    bool testSameFileContent(std::ifstream& file1, std::ifstream& file2, T tolerance = (T)0);
 }
 
 #include "output_helper.cpp"
