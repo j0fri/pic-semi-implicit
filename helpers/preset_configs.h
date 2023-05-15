@@ -21,6 +21,10 @@ namespace preset_configs {
     template <typename T>
     Config<T,2,3> landau2D3VX(unsigned int Nx, unsigned int Ny);
 
+    //Same as previous case but initialised from file
+    template <typename T>
+    Config<T,2,3> landauFile();
+
     template <typename T>
     Config<T,2,3> landau2D3VXWave(unsigned int Nx, unsigned int Ny);
 

@@ -29,7 +29,7 @@ HDRS = $(SIMHDRS) $(VISHDRS) $(TESTHDRS) $(HELPERHDRS)
 %.o : %.cpp $(HDRS) $(HELPERCPPS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-main.o: main.cpp $(HDRS) $(PRESETHDRS) $(HELPERCPPS) $(PRESETCPPS)
+main.o: main.cpp $(HDRS) $(PRESETHDRS) $(HELPERCPPS) $(PRESETHDRS)
 
 sim: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o sim $^ $(SIMLIBS)
@@ -73,21 +73,9 @@ constFieldTest1: tests/constFieldTest1.o $(SIMOBJS) $(TESTOBJS)
 samePotentialWellTest: tests/samePotentialWellTest.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
-.PHONY: landauFile
-landauFile: sim
-	./sim  --mode 1
-	
-.PHONY: landau
-landau: sim
-	./sim  --mode 2
-	
-.PHONY: twoStreamFile
-twoStreamFile: sim
-	./sim  --mode 3
-
-.PHONY: twoStream
-twoStream: sim
-	./sim  --mode 4
+.PHONY: sameLandauTest
+sameLandauTest: tests/sameLandauTest.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 export PATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86-bin/developerstudio12.5/bin:$(PATH)
 export MANPATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86-bin/developerstudio12.5/man:$(MANPATH)

@@ -117,7 +117,7 @@ void Species2D3V<T>::savePosition(std::ofstream &outputFile) const {
     if(this->Np > 1000){
         std::cout << "WARNING: consider disabling savePosition if Np > 1000" << std::endl;
     }
-    outputFile << this->m << " " << this->q << std::endl;
+    //outputFile << this->m << " " << this->q << std::endl;
     output_helper::outputRowMajorMatrix(this->pos.x,2,this->Np,this->Np,1,outputFile);
 }
 
@@ -140,7 +140,7 @@ void Species2D3V<T>::saveVelocity(std::ofstream &outputFile) const {
     if(this->Np > 1000){
         std::cout << "WARNING: consider disabling saveVelocity if Np > 1000" << std::endl;
     }
-    outputFile << this->m << " " << this->q << std::endl;
+    //outputFile << this->m << " " << this->q << std::endl;
     output_helper::outputRowMajorMatrix(this->vel.x,3,this->Np,this->Np,1,outputFile);
 }
 

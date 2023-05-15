@@ -4,6 +4,7 @@
 #include "Species2D3V.h"
 #include "../helpers/math_helper.h"
 #include "../helpers/output_helper.h"
+#include <Eigen/Sparse>
 
 #define F77NAME(x) x##_
 extern "C" {
@@ -149,9 +150,11 @@ void Field2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
     T totalE = 0;
     T totalB = 0;
     for(unsigned int gi = 0; gi < this->Ng; ++gi){
+        //Electric field terms
         totalE += field[6*gi]*field[6*gi];
         totalE += field[6*gi+1]*field[6*gi+1];
         totalE += field[6*gi+2]*field[6*gi+2];
+        //Magnetic field terms
         totalB += field[6*gi+3]*field[6*gi+3];
         totalB += field[6*gi+4]*field[6*gi+4];
         totalB += field[6*gi+5]*field[6*gi+5];

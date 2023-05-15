@@ -53,3 +53,11 @@ hold on
 legend('Field Energy','Linear damping');
 xlabel('Time');
 ylabel('Energy');
+
+figure(4);
+clf
+semilogy(t,KE+PE);
+hold on
+title('Total energy evolution in time');
+xlabel('Time')
+ylabel('Energy')
