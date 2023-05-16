@@ -211,19 +211,19 @@ std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vect
     T dx = this->grid.getSpacings()[0];
     T dy = this->grid.getSpacings()[1];
 
-    T* EA;
-    T* Ec;
+    //T* EA;
+//    T* Ec;
     T* Q;
-    int* pivots;
+//    int* pivots;
 
     try{
-        EA = new T[Ng*Ng]; //System matrix for phi
-        Ec = new T[Ng]; //System vector for phi, later becomes electrostatic potential at electric field grid
+//        EA = new T[Ng*Ng]; //System matrix for phi
+//        Ec = new T[Ng]; //System vector for phi, later becomes electrostatic potential at electric field grid
         Q = new T[Ng]; //Vector of charge in every cell at magnetic field grid
-        pivots = new int[Ng]; //Pivot vector for matrix solve
+//        pivots = new int[Ng]; //Pivot vector for matrix solve
     }catch(const std::bad_alloc& e){
-        std::cerr << "Error in field memory temporary allocation in initialisation (O(Nx*Ny*Nx*Ny))" << std::endl;
-        throw;
+//        std::cerr << "Error in field memory temporary allocation in initialisation (O(Nx*Ny*Nx*Ny))" << std::endl;
+//        throw;
     }
 
     //Accumulate charges:
@@ -238,61 +238,89 @@ std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vect
         }
     }
 
+    Eigen::VectorX<T> Ec(Ng);
     //Construct system vector:
     for(unsigned int g = 0; g < Ng; ++g){
         //TODO: check units, scheme uses gauss but UKAEA uses SI
         Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy)*4*M_PI; //Gauss units
         //Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy*this->e0); //SI units
     }
+    Ec[0] = (T)0; //Fixed point
     delete[] Q;
 
-    //Populate system matrix:
-    std::fill(EA, EA+Ng*Ng,0.0);
-    unsigned int eq;
-    unsigned int gi, gdxi, gmdxi, gdyi, gmdyi;
-    T c1 = (T)1/(dx*dx);
-    T c2 = (T)1/(dy*dy);
-    for(unsigned int j = 0; j < Ny; ++j){
-        for(unsigned int i = 0; i < Nx; ++i){
-            eq = j*Nx+i;
-            if(eq == 0){
-                continue; //This will be the fixed point
-            }
-            gi = j*Nx+i;
-            gdxi = j*Nx+((i+1)%Nx);
-            gmdxi = j*Nx+((i-1+Nx)%Nx);
-            gdyi = ((j+1)%Ny)*Nx+i;
-            gmdyi = ((j-1+Ny)%Ny)*Nx+i;
+    static Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
+    static bool first = true;
+    if(first){
+        typedef Eigen::Triplet<T> Tri;
+        std::vector<Tri> tripletList;
 
-            //Poisson equation:
-            EA[gdxi*Ng+eq] += c1;
-            EA[gmdxi*Ng+eq] += c1;
-            EA[gdyi*Ng+eq] += c2;
-            EA[gmdyi*Ng+eq] += c2;
-            EA[gi*Ng+eq] += -2*c1-2*c2;
+        //Populate system matrix:
+//        std::fill(EA, EA+Ng*Ng,0.0);
+        unsigned int eq;
+        unsigned int gi, gdxi, gmdxi, gdyi, gmdyi;
+        T c1 = (T)1/(dx*dx);
+        T c2 = (T)1/(dy*dy);
+        for(unsigned int j = 0; j < Ny; ++j){
+            for(unsigned int i = 0; i < Nx; ++i){
+                eq = j*Nx+i;
+                if(eq == 0){
+                    continue; //This will be the fixed point
+                }
+                gi = j*Nx+i;
+                gdxi = j*Nx+((i+1)%Nx);
+                gmdxi = j*Nx+((i-1+Nx)%Nx);
+                gdyi = ((j+1)%Ny)*Nx+i;
+                gmdyi = ((j-1+Ny)%Ny)*Nx+i;
+
+                //Poisson equation:
+//                EA[gdxi*Ng+eq] += c1;
+//                EA[gmdxi*Ng+eq] += c1;
+//                EA[gdyi*Ng+eq] += c2;
+//                EA[gmdyi*Ng+eq] += c2;
+//                EA[gi*Ng+eq] += -2*c1-2*c2;
+                tripletList.emplace_back(eq,gdxi,c1);
+                tripletList.emplace_back(eq,gmdxi,c1);
+                tripletList.emplace_back(eq,gdyi,c2);
+                tripletList.emplace_back(eq,gmdyi,c2);
+                tripletList.emplace_back(eq,gi,-2*c1-2*c2);
+            }
         }
+
+        //Potential is 0 at 0,0 to avoid matrix rank-deficiency
+//        EA[0] = 1;
+
+        tripletList.emplace_back(0,0,1);
+
+        SpMat EA = SpMat(Ng,Ng);
+        EA.setFromTriplets(tripletList.begin(), tripletList.end());
+        EA.makeCompressed();
+
+        solver.analyzePattern(EA);
+        solver.factorize(EA);
+
+        first = false;
     }
 
-    //Potential is 0 at 0,0 to avoid matrix rank-deficiency
-    EA[0] = 1;
-    Ec[0] = (T)0;
+
+    Eigen::VectorX<T> sol = solver.solve(Ec);
 
     //Solve matrix
-    if constexpr(std::is_same<T,double>::value){
-        int info;
-        F77NAME(dgesv)(Ng,1,(double *)EA,Ng,pivots, (double *)Ec, Ng,info);
-        if(info != 0){
-            throw std::runtime_error("System solve error during initialisation of electric field.");
-        }
-        delete[] pivots;
-    }else{
-        //TODO: Make non-lapack dependent
-        throw std::invalid_argument("T can only be double when using Lapack for initialisation");
-    }
-
-    delete[] EA;
-
-    return std::unique_ptr<const T>(Ec);
+//    if constexpr(std::is_same<T,double>::value){
+//        int info;
+//        F77NAME(dgesv)(Ng,1,(double *)EA,Ng,pivots, (double *)Ec, Ng,info);
+//        if(info != 0){
+//            throw std::runtime_error("System solve error during initialisation of electric field.");
+//        }
+//        delete[] pivots;
+//    }else{
+//        //TODO: Make non-lapack dependent
+//        throw std::invalid_argument("T can only be double when using Lapack for initialisation");
+//    }
+//
+//    delete[] EA;
+    T* sol_out = new T[Ng];
+    std::copy(sol.begin(), sol.end(), sol_out);
+    return std::unique_ptr<const T>(sol_out);
 }
 
 template<typename T>
@@ -595,9 +623,6 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 //        throw std::invalid_argument("T can only be double when using Lapack for system solve");
 //    }
 
-//    Eigen::SimplicialCholesky<SpMat> chol(Ac);
-//    Eigen::VectorX<T> sol = chol.solve(C);
-
 //    Ac.makeCompressed();
 //    Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
 //    solver.analyzePattern(Ac);
@@ -618,15 +643,8 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     lscg.setTolerance((T)1e-8);
     lscg.compute(Ac);
     Eigen::VectorX<T> sol = lscg.solve(-C);
-    lscg.iterations();
-    lscg.error();
-    std::cout << "#iterations:     " << lscg.iterations() << std::endl;
-    std::cout << "estimated error: " << lscg.error()      << std::endl;
-
-
-   // std::cout << solver2.error() << std::endl;
-//    std::cout << field[0]-sol[0] << " " << field[1]-sol[1] << " " <<field[2]-sol[2] << " " << std::endl;
-//    sol = sol2;
+//    std::cout << "#iterations:     " << lscg.iterations() << std::endl;
+//    std::cout << "estimated error: " << lscg.error()      << std::endl;
 
     eq = 0;
     while(eq < lda){
