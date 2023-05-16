@@ -1,4 +1,5 @@
 #include <iostream>
+#include <Eigen/IterativeLinearSolvers>
 
 #include "Field2D3V.h"
 #include "Species2D3V.h"
@@ -579,10 +580,14 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 //    Eigen::SimplicialCholesky<SpMat> chol(Ac);
 //    Eigen::VectorX<T> sol = chol.solve(C);
 
-    Ac.makeCompressed();
-    Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
-    solver.analyzePattern(Ac);
-    solver.factorize(Ac);
+//    Ac.makeCompressed();
+//    Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
+//    solver.analyzePattern(Ac);
+//    solver.factorize(Ac);
+//    Eigen::VectorX<T> sol = solver.solve(C);
+
+    Eigen::BiCGSTAB<SpMat> solver;
+    solver.compute(Ac);
     Eigen::VectorX<T> sol = solver.solve(C);
 
     eq = 0;
