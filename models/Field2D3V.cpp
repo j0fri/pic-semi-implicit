@@ -432,7 +432,9 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 
     //Construct system matrix:
 //    std::copy(A_obsolete, A_obsolete + 36 * Ng * Ng, Ac_obsolete);
-    Ac = A;
+
+    typedef Eigen::Triplet<T> Tri;
+    std::vector<Tri> tripletList;
 
     unsigned int lda = 6*Ng;
     unsigned int gi, gdxi, gdxdyi, gdyi, gmdxdyi, gmdxi, gmdxmdyi, gmdyi, gdxmdyi;
@@ -458,63 +460,73 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gi + col) * lda + eq + row] += -c2 * Mg[9 * gi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gi+col) += -c2 * Mg[9*gi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gi+col) += -c2 * Mg[9*gi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gi+col,-c2 * Mg[9*gi + 3*col + row]);
             }
+
         }
         //gdxi term: add Mgdx term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gdxi + col) * lda + eq + row] += -c2 * Mgdx[9 * gi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gdxi+col) += -c2 * Mgdx[9*gi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gdxi+col) += -c2 * Mgdx[9*gi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gdxi+col,-c2 * Mgdx[9*gi + 3*col + row]);
             }
         }
         //gdxdyi term: add Mgdxdy term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gdxdyi + col) * lda + eq + row] += -c2 * Mgdxdy[9 * gi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gdxdyi+col) += -c2 * Mgdxdy[9*gi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gdxdyi+col) += -c2 * Mgdxdy[9*gi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gdxdyi+col,-c2 * Mgdxdy[9*gi + 3*col + row]);
             }
         }
         //gdyi term: add Mgdy term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gdyi + col) * lda + eq + row] += -c2 * Mgdy[9 * gi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gdyi+col) += -c2 * Mgdy[9*gi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gdyi+col) += -c2 * Mgdy[9*gi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gdyi+col,-c2 * Mgdy[9*gi + 3*col + row]);
             }
         }
         //gmdxdyi term: add Mgmdxdy
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gmdxdyi + col) * lda + eq + row] += -c2 * Mgmdxdy[9 * gi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gmdxdyi+col) += -c2 * Mgmdxdy[9*gi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gmdxdyi+col) += -c2 * Mgmdxdy[9*gi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gmdxdyi+col,-c2 * Mgmdxdy[9*gi + 3*col + row]);
             }
         }
         //gmdxi term: add Mgdx term at gmdxi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gmdxi + col) * lda + eq + row] += -c2 * Mgdx[9 * gmdxi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gmdxi+col) += -c2 * Mgdx[9*gmdxi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gmdxi+col) += -c2 * Mgdx[9*gmdxi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gmdxi+col,-c2 * Mgdx[9*gmdxi + 3*col + row]);
             }
         }
         //gmdxmdyi term: add Mgdxdy term at gmdxmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gmdxmdyi + col) * lda + eq + row] += -c2 * Mgdxdy[9 * gmdxmdyi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gmdxmdyi+col) += -c2 * Mgdxdy[9*gmdxmdyi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gmdxmdyi+col) += -c2 * Mgdxdy[9*gmdxmdyi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gmdxmdyi+col,-c2 * Mgdxdy[9*gmdxmdyi + 3*col + row]);
             }
         }
         //gmdyi term: add Mgdy term at gmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gmdyi + col) * lda + eq + row] += -c2 * Mgdy[9 * gmdyi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gmdyi+col) += -c2 * Mgdy[9*gmdyi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gmdyi+col) += -c2 * Mgdy[9*gmdyi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gmdyi+col,-c2 * Mgdy[9*gmdyi + 3*col + row]);
             }
         }
         //gdxmdyi term: add Mgmdxdy term at gdxmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
                 //Ac_obsolete[(6 * gdxmdyi + col) * lda + eq + row] += -c2 * Mgmdxdy[9 * gdxmdyi + 3 * col + row];
-                Ac.coeffRef(eq+row,6*gdxmdyi+col) += -c2 * Mgmdxdy[9*gdxmdyi + 3*col + row];
+//                Ac.coeffRef(eq+row,6*gdxmdyi+col) += -c2 * Mgmdxdy[9*gdxmdyi + 3*col + row];
+                tripletList.emplace_back(eq+row,6*gdxmdyi+col,-c2 * Mgmdxdy[9*gdxmdyi + 3*col + row]);
             }
         }
         eq += 3;
@@ -525,6 +537,12 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
             ++yi;
         }
     }
+
+    SpMat Am = SpMat(6*Ng,6*Ng);
+    Am.setFromTriplets(tripletList.begin(), tripletList.end());
+
+    Ac = -A;
+    Ac -= Am;
 
     //Construct system vector:
     eq = 0;
@@ -584,11 +602,31 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 //    Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
 //    solver.analyzePattern(Ac);
 //    solver.factorize(Ac);
-//    Eigen::VectorX<T> sol = solver.solve(C);
+//    Eigen::VectorX<T> sol = solver.solve(-C);
 
-    Eigen::BiCGSTAB<SpMat> solver;
-    solver.compute(Ac);
-    Eigen::VectorX<T> sol = solver.solve(C);
+//    Eigen::VectorX<T> prevSol(6*Ng);
+//    std::copy(field, field+6*Ng, prevSol.begin());
+//    //Ac.makeCompressed();
+//    Eigen::BiCGSTAB<SpMat, Eigen::IncompleteLUT<T>> solver2;
+//    solver2.compute(Ac);
+//    //Eigen::VectorX<T> sol = solver.solve(C);
+//    solver2.setTolerance(std::pow(10,-12));
+//    solver2.setMaxIterations(1000);
+//    Eigen::VectorX<T> sol = solver2.solveWithGuess(-C,-prevSol);
+
+    Eigen::LeastSquaresConjugateGradient<SpMat> lscg;
+    lscg.setTolerance((T)1e-8);
+    lscg.compute(Ac);
+    Eigen::VectorX<T> sol = lscg.solve(-C);
+    lscg.iterations();
+    lscg.error();
+    std::cout << "#iterations:     " << lscg.iterations() << std::endl;
+    std::cout << "estimated error: " << lscg.error()      << std::endl;
+
+
+   // std::cout << solver2.error() << std::endl;
+//    std::cout << field[0]-sol[0] << " " << field[1]-sol[1] << " " <<field[2]-sol[2] << " " << std::endl;
+//    sol = sol2;
 
     eq = 0;
     while(eq < lda){
