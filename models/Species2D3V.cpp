@@ -119,6 +119,28 @@ void Species2D3V<T>::handleNonPeriodicBC(const Field<T, 2, 3> *field, unsigned i
         throw std::invalid_argument("Only 1 non-periodic B.C. in x supported in 2D3V species.");
     }
 
+    T* ptr = pos.x;
+    T min = field->grid.dimensions[dim].min;
+    T max = field->grid.dimensions[dim].max;
+    std::vector<unsigned int> particlesOutsideDomain;
+    for(unsigned int i = 0; i < this->Np; ++i){
+        if(ptr[i] > max || ptr[i] < min){
+            particlesOutsideDomain.push_back(i);
+        }
+    }
+
+    auto positions = this->bcPositionGenerator[0].value().generate(particlesOutsideDomain.size());
+    auto normalVelocities = this->bcNormalVelocityGenerator[0].value().generate(particlesOutsideDomain.size());
+
+    unsigned int particle;
+    for(unsigned int i = 0; i < (unsigned int) particlesOutsideDomain.size(); ++i){
+        particle = particlesOutsideDomain[i];
+        pos.x[particle] = (T)0;
+        pos.y[particle] = positions[i][0];
+        vel.x[particle] = normalVelocities[i][0];
+        vel.y[particle] = (T)0;
+        vel.z[particle] = (T)0;
+    }
 }
 
 template<typename T>

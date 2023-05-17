@@ -47,6 +47,10 @@ namespace preset_configs {
     //Same as previous case but initialised from file
     template <typename T>
     Config<T,2,3> constPotentialWellFile();
+
+    //Electron beam with no background ions
+    template <typename T>
+    Config<T,2,3> electronBeam(unsigned int Nx, unsigned int Ny);
 }
 
 #include "preset_configs.cpp"

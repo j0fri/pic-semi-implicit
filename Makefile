@@ -31,7 +31,7 @@ HDRS = $(SIMHDRS) $(VISHDRS) $(TESTHDRS) $(HELPERHDRS)
 %.o : %.cpp $(HDRS) $(HELPERCPPS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-main.o: main.cpp $(HDRS) $(PRESETHDRS) $(HELPERCPPS) $(PRESETHDRS)
+main.o: main.cpp $(HDRS) $(PRESETHDRS) $(HELPERCPPS) $(PRESETHDRS) $(PRESETCPPS)
 
 sim: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o sim $^ $(SIMLIBS)

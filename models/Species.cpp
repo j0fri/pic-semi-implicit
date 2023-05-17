@@ -7,7 +7,9 @@ Species<T, Nd, Nv>::Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speci
     initialXDist(speciesConfig.xDist), initialXGrid(speciesConfig.initialXGrid), initialVDist(speciesConfig.vDist),
     initialVGrid(speciesConfig.initialVGrid), initialisePositionFromFile(speciesConfig.initialisePositionFromFile),
     initialPositionFileName(speciesConfig.initialPositionFileName), initialiseVelocityFromFile(speciesConfig.initialiseVelocityFromFile),
-    initialVelocityFileName(speciesConfig.initialVelocityFileName), bcConfig(bcConfig){}
+    initialVelocityFileName(speciesConfig.initialVelocityFileName), bcConfig(bcConfig),
+    bcPositionGenerator(speciesConfig.bcPositionGenerator),
+    bcNormalVelocityGenerator(speciesConfig.bcNormalVelocityGenerator) {}
 
 template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const Species<T, Nd, Nv> &other) = default;

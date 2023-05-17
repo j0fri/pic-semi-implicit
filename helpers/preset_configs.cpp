@@ -185,3 +185,59 @@ Config<T,2,3> preset_configs::constPotentialWellFile(){
     config.fieldConfig.forcedB[2].f = ([](const std::array<T,2>& arr){return -0.01*arr[0]-0.01*arr[1];}); //Weak magnetic field
     return config;
 }
+
+template <typename T>
+Config<T,2,3> preset_configs::electronBeam(unsigned int Nx, unsigned int Ny) {
+    typename Config<T,2,3>::FieldConfig fieldConfig{
+            Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,1,Nx},{-3,3,Ny}}}},
+            1,
+            1,
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            false,
+            false,
+            false
+    };
+
+    typename Config<T,2,3>::SpeciesConfig electronConfig{
+        100000,
+        1,
+        -1,
+        preset_distributions::Uniform<double,2>(1),
+        Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,1,Nx},{-3,3,Ny}}}},
+        preset_distributions::Boltzmann<double,3>(1,1,1),
+        Grid<T,3>{std::array<typename Grid<T,3>::Dim,3>{{
+                {(T)1,(T)1,1}, //Fixed x velocity = 1
+                {-math_helper::boltzmannBounds((T)1,(T)1,(T)0),math_helper::boltzmannBounds((T)1,(T)1,(T)0),100},
+                {-math_helper::boltzmannBounds((T)1,(T)1,(T)0),math_helper::boltzmannBounds((T)1,(T)1,(T)0),100}
+        }}},
+        false,
+        "",
+        false,
+        "",
+        std::array<std::optional<DistributionGrid<T,1>>,4>{},
+        std::array<std::optional<DistributionGrid<T,1>>,4>{}
+    };
+    electronConfig.bcPositionGenerator[0] = DistributionGrid<T,1>(
+        preset_distributions::Uniform<T,1>(1).f,
+        Grid<T,1>{std::array<typename Grid<T,1>::Dim,1>{{{-1,1,1}}}}
+    ); //Generate particles only in -1<=y<=1
+    electronConfig.bcNormalVelocityGenerator[0] = preset_distributions::Constant<T,1>(1); //Normal velocity=1
+
+    Config<T,2,3> config{
+            std::vector<typename Config<T,2,3>::SpeciesConfig>{{
+                electronConfig
+            }},
+            fieldConfig,
+            {10,0.01},
+            {false, true, false, false, true, true, true, true, true, 0.1, "outputs/"},
+            {
+                {false,true}, //X non-periodic
+                {(T)0,(T)0,(T)0,(T)0} //Potential zero at non-periodic boundaries
+            },
+            true,
+            true
+    };
+
+    return config;
+}

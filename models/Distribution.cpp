@@ -62,6 +62,7 @@ std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Grid<T
 
     //Check enough particles
     if(totalParticles < Np){
+        std::cout << "Cells " << cells.size() << std::endl;
         throw std::runtime_error("Generated particles less than Np. Consider increasing "
                                  "PARTICLE_GENERATION_INCREASE_FACTOR.");
     }

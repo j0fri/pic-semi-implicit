@@ -40,12 +40,13 @@ int main(int argc, char* argv[]){
 //    po::store(po::parse_command_line(argc, argv, opts), vm);
 
     //auto config = preset_configs::constVelocityX<double>();
-    auto config = preset_configs::landau2D3VX<double>(100,5);
+    //auto config = preset_configs::landau2D3VX<double>(100,5);
     //auto config = preset_configs::landau2D3VXWave<double>(30,5);
     //auto config = preset_configs::magneticGyration<double>();
     //auto config = preset_configs::magneticGyrationX<double>();
     //auto config = preset_configs::constPotentialWell<double>();
     //auto config = preset_configs::constPotentialWellFile<double>();
+    auto config = preset_configs::electronBeam<double>(50,50);
 
 	Simulation<double,2,3> sim(config);
     sim.initialise();
