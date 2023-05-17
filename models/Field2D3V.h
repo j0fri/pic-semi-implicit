@@ -2,11 +2,14 @@
 #define PIC_SEMI_IMPLICIT_FIELD2D3V_H
 
 #include <vector>
+#include <iostream>
 #include <fstream>
 #include <memory>
 #include <Eigen/SparseCore>
 #include <Eigen/SparseLU>
 #include <Eigen/OrderingMethods>
+#include <Eigen/IterativeLinearSolvers>
+
 #include "Field.h"
 #include "Config.h"
 #include "Species.h"
@@ -31,17 +34,14 @@ protected:
     T* Mgdy; //Mass matrix for cell with cell + dy
     T* Mgdxdy; //Mass matrix for cell with cell + dx + dy
     T* Mgmdxdy; //Mass matrix for cell with cell - dx + dy
-    /*All the previous matrices are arrays of length Nx*Ny*9, same structure as field, with all 9 components of the
-    matrix are stored in column-major format (increment of 1 is in x) for each grid value*/
+    //Incomplete system matrix (without mass matrix terms): Nx*Ny*6*Nx*Ny*6
+    //Complete system matrix (with mass matrix terms): Nx*Ny*6*Nx*Ny*6
 
 
-    T* A_obsolete; //Incomplete system matrix (without mass matrix terms): Nx*Ny*6*Nx*Ny*6
-    T* Ac_obsolete; //Complete system matrix (with mass matrix terms): Nx*Ny*6*Nx*Ny*6
-    T* C_obsolete; //System vector: Nx*Ny*6, same order as field
-
-    SpMat A;
-    SpMat Ac;
-    Eigen::VectorX<T> C;
+    SpMat A; //Finite difference components of system matrix (6*Nx*Ny by 6*Nx*Ny)
+    SpMat Am; //Mass matrix components of system matrix (6*Nx*Ny by 6*Nx*Ny)
+    SpMat Ac; //Complete system matrix (6*Nx*Ny by 6*Nx*Ny)
+    Eigen::VectorX<T> C; //System vector: Nx*Ny*6, same order as field
 
 public:
     Field2D3V() = delete;

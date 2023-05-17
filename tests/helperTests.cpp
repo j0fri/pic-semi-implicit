@@ -55,7 +55,7 @@ int main(){
     for(int i = 0; i < N*N; ++i){
         A[i] = i;
     }
-    std::cout << "A_obsolete (lda=1): " << std::endl;
+    std::cout << "A (lda=1): " << std::endl;
     printMatrix(N,N,N,A);
 
     auto* x = new double[N];
@@ -67,10 +67,10 @@ int main(){
 
     auto* y = new double[N];
     math_helper::gemv(N,N,1.0,A,N,x,1,y,1);
-    std::cout << "A_obsolete*x: " << std::endl;
+    std::cout << "A*x: " << std::endl;
     printMatrix(N,1,N,y);
 
-    std::cout << "N-1 by N-1 submatrix of A_obsolete(lda=N) * x(incx=2): " << std::endl;
+    std::cout << "N-1 by N-1 submatrix of A(lda=N) * x(incx=2): " << std::endl;
     auto* y2 = new double[N-1];
     math_helper::gemv(N-1,N-1,1.0,A,N,x,2,y2,1);
     printMatrix(N-1,1,N,y2);
