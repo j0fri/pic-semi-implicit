@@ -63,6 +63,9 @@ private:
     //File must contain three rows with Np numbers each, for x, y and z velocities
     void initialiseVelocities(std::ifstream &file);
 
+    void handlePeriodicBC(const Field<T,2,3>* field, unsigned int dim);
+    void handleNonPeriodicBC(const Field<T,2,3>* field, unsigned int dim);
+
     void computeAlphas(T dt);
     void computeWeights(const Field<T,2,3>* field);
     void computeLocalB(const Field<T,2,3>* field);

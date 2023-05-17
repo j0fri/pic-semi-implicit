@@ -79,27 +79,46 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
     //Algorithm step 1
     //TODO: non-periodic boundary conditions + optimise
     pos += (vel * dt); //Advance vector
+
     //Periodic boundary conditions:
     for(unsigned int dim = 0; dim < 2; ++dim){
-        if(!this->bcConfig.periodic[dim]){
-            throw std::runtime_error("Non-boundary conditions not implemented yet.");
-        }
-        T* ptr = dim == 0 ? pos.x : pos.y;
-        T min = field->grid.dimensions[dim].min;
-        T max = field->grid.dimensions[dim].max;
-        T length = max - min;
-        for(unsigned int i = 0; i < this->Np; ++i){
-            while(ptr[i]>=max){
-                ptr[i] -= length;
-            }
-            while(ptr[i]<min){
-                ptr[i] += length;
-            }
+        if(this->bcConfig.periodic[dim]){
+            this->handlePeriodicBC(field, dim);
+        }else{
+            this->handleNonPeriodicBC(field, dim);
         }
     }
+
     this->computeWeights(field);
     this->computeLocalB(field);
     this->computeAlphas(dt);
+}
+
+template<typename T>
+void Species2D3V<T>::handlePeriodicBC(const Field<T, 2, 3> *field, unsigned int dim) {
+    if(!(dim==0||dim==1)){
+        throw std::invalid_argument("Boundary dimension must be 0 or 1 in 2D3V species.");
+    }
+    T* ptr = dim == 0 ? pos.x : pos.y;
+    T min = field->grid.dimensions[dim].min;
+    T max = field->grid.dimensions[dim].max;
+    T length = max - min;
+    for(unsigned int i = 0; i < this->Np; ++i){
+        while(ptr[i]>=max){
+            ptr[i] -= length;
+        }
+        while(ptr[i]<min){
+            ptr[i] += length;
+        }
+    }
+}
+
+template<typename T>
+void Species2D3V<T>::handleNonPeriodicBC(const Field<T, 2, 3> *field, unsigned int dim) {
+    if(dim!=0){
+        throw std::invalid_argument("Only 1 non-periodic B.C. in x supported in 2D3V species.");
+    }
+
 }
 
 template<typename T>

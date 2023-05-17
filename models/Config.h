@@ -1,4 +1,5 @@
 #include "Distribution.h"
+#include "DistributionGrid.h"
 
 #ifndef PIC_SEMI_IMPLICIT_CONFIG_H
 #define PIC_SEMI_IMPLICIT_CONFIG_H
@@ -21,6 +22,17 @@ struct Config{
         std::string initialPositionFileName;
         bool initialiseVelocityFromFile{};
         std::string initialVelocityFileName;
+
+        //For now only 1
+        std::array<std::optional<DistributionGrid<T,Nd-1>>, 2*Nd> bcPositionGenerator; /*for each dimension, optional generator of
+        new particles, order of boundaries is x=minx, x=maxx, y=miny, ..., ignored if periodic in given dimension,
+        magnitude/frequency of generator not relevant as created number will correspond to deleted particles*/
+        std::array<std::optional<DistributionGrid<T,Nd-1>>, 2*Nd> bcNormalVelocityGenerator; /*for each dimension, optional generator of
+        new particles, order of boundaries is x=minx, x=maxx, y=miny, ..., ignored if periodic in given dimension,
+        magnitude/frequency of generator not relevant as created number will correspond to deleted particles*/
+
+        /*Currently only 1 non-periodic boundary condition is allowed with minx being a generator b.c. and xmax being
+        absorbent, in this case both potentials must be provided. */
     };
     std::vector<SpeciesConfig> speciesConfig;
 
@@ -71,14 +83,17 @@ struct Config{
 
     struct BCConfig{
         std::array<bool,Nd> periodic; //for each dimension, if true the boundary will be periodic
-        std::array<std::optional<Distribution<T,Nd-1>>, 2*Nd> generators; /*for each dimension, optional generator of
-        new particles, order of boundaries is x=minx, x=maxx, y=miny, ..., ignored if periodic in given dimension,
-        magnitude/frequency of generator not relevant as created number will correspond to deleted particles*/
+
+        std::array<std::optional<T>,2*Nd> potentials; /*for each dimension, optional set voltage for non-boundary
+        conditions. */
+
+        /*Currently only 1 non-periodic boundary condition is allowed with minx being a generator b.c. and xmax being
+        absorbent, in this case both potentials must be provided. */
     };
     BCConfig bcConfig;
 
-    bool verbose; //Prints time during simulation
-    bool outputConfig; //Outputs main config values
+    bool verbose = false; //Prints time during simulation
+    bool outputConfig = false; //Outputs main config values
 };
 
 #endif //PIC_SEMI_IMPLICIT_CONFIG_H

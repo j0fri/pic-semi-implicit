@@ -2,6 +2,7 @@
 #define PIC_SEMI_IMPLICIT_PRESET_DISTRIBUTIONS_H
 
 #include "../models/Distribution.h"
+#include "../models/DistributionGrid.h"
 
 namespace preset_distributions{
     //Boltzmann distribution in Nd dimensions, inputs are mass, boltzmann constant and temperature
@@ -25,6 +26,10 @@ namespace preset_distributions{
 
     template <typename T, unsigned int Nd>
     Distribution<T,Nd> TopHat(unsigned int Id, T x1, T x2);
+
+    //Constant value along domain
+    template <typename T, unsigned int Nd>
+    DistributionGrid<T,Nd> Constant(T val);
 }
 
 #include "preset_distributions.cpp"

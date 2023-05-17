@@ -69,6 +69,7 @@ Distribution<T,Nd> preset_distributions::Sin(unsigned int Id, T a, T b, T c){
     return Distribution<T,Nd>(fun);
 }
 
+
 template <typename T, unsigned int Nd>
 Distribution<T,Nd> preset_distributions::TopHat(unsigned int Id, T x1, T x2){
     if(Id > Nd){
@@ -76,4 +77,16 @@ Distribution<T,Nd> preset_distributions::TopHat(unsigned int Id, T x1, T x2){
     }
     auto fun = std::function([=](const std::array<T,Nd>& arr){return arr[Id] >= x1 ? (arr[Id] <= x2 ? (T)1 : (T)0) : (T)0;});
     return Distribution<T,Nd>(fun);
+}
+
+
+template <typename T, unsigned int Nd>
+DistributionGrid<T,Nd> preset_distributions::Constant(T val){
+    auto fun = std::function([=](const std::array<T,Nd>& arr) {return 1;});
+    Grid<T,Nd> grid{};
+    for(unsigned int i = 0; i < Nd; ++i){
+        grid.dimensions[i] = {val,val,1};
+    }
+    return DistributionGrid<T,Nd>(fun,grid);
+
 }
