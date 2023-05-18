@@ -27,7 +27,12 @@ Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
 //    }else if(Nd == 2 && Nv == 3){
 //        field = new Field2D3V<T>(config.fieldConfig);
     } else if constexpr (Nd == 2 && Nv == 3){
-        field = new Field2D3V<T>(config.fieldConfig, config.bcConfig);
+        try{
+            field = new Field2D3V<T>(config.fieldConfig, config.bcConfig);
+        }catch(const std::bad_alloc& e){
+            std::cout << "Memory allocation exception during field construction." << std::endl;
+            throw;
+        }
     }else{
         state = State::InitialisationError;
         throw std::runtime_error("Nd and Nv combination not supported.");

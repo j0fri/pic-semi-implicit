@@ -401,13 +401,11 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 
     unsigned int lda = 6*Ng;
     unsigned int gi, gdxi, gdxdyi, gdyi, gmdxdyi, gmdxi, gmdxmdyi, gmdyi, gdxmdyi;
-    T c1 = (T)2/(this->c*dt);
-    T c2 = (T)4*M_PI/(this->c);
+    T c1 = 2*M_PI*dt;
     unsigned int eq = 0;
     unsigned int xi = 0;
     unsigned int yi = 0;
     while(eq < lda) {
-        eq += 3; //Skip magnetic field equations
         //Indices:
         gi = xi + Nx*yi;
         gdxi = (xi+1)%Nx + Nx*yi;
@@ -422,59 +420,59 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         //gi term: add Mg term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gi+col,-c2 * Mg[9*gi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gi+col, c1 * Mg[9*gi + 3*col + row]);
             }
 
         }
         //gdxi term: add Mgdx term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdxi+col,-c2 * Mgdx[9*gi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gdxi+col, c1 * Mgdx[9*gi + 3*col + row]);
             }
         }
         //gdxdyi term: add Mgdxdy term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdxdyi+col,-c2 * Mgdxdy[9*gi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gdxdyi+col, c1 * Mgdxdy[9*gi + 3*col + row]);
             }
         }
         //gdyi term: add Mgdy term at gi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdyi+col,-c2 * Mgdy[9*gi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gdyi+col, c1 * Mgdy[9*gi + 3*col + row]);
             }
         }
         //gmdxdyi term: add Mgmdxdy
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdxdyi+col,-c2 * Mgmdxdy[9*gi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gmdxdyi+col, c1 * Mgmdxdy[9*gi + 3*col + row]);
             }
         }
         //gmdxi term: add Mgdx term at gmdxi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdxi+col,-c2 * Mgdx[9*gmdxi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gmdxi+col, c1 * Mgdx[9*gmdxi + 3*col + row]);
             }
         }
         //gmdxmdyi term: add Mgdxdy term at gmdxmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdxmdyi+col,-c2 * Mgdxdy[9*gmdxmdyi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gmdxmdyi+col, c1 * Mgdxdy[9*gmdxmdyi + 3*col + row]);
             }
         }
         //gmdyi term: add Mgdy term at gmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdyi+col,-c2 * Mgdy[9*gmdyi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gmdyi+col, c1 * Mgdy[9*gmdyi + 3*col + row]);
             }
         }
         //gdxmdyi term: add Mgmdxdy term at gdxmdyi
         for(unsigned int col = 0; col < 3; ++col){
             for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdxmdyi+col,-c2 * Mgmdxdy[9*gdxmdyi + 3*col + row]);
+                tripletList.emplace_back(eq+row,6*gdxmdyi+col, c1 * Mgmdxdy[9*gdxmdyi + 3*col + row]);
             }
         }
-        eq += 3;
+        eq += 6;
         //Advance indices:
         ++xi;
         if(xi == Nx){
@@ -485,8 +483,8 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 
     Am = SpMat(6*Ng,6*Ng);
     Am.setFromTriplets(tripletList.begin(), tripletList.end());
-    Ac = -A;
-    Ac -= Am;
+    Ac = A;
+    Ac += Am;
 
     //Construct system vector:
     eq = 0;
@@ -495,16 +493,17 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     while(eq < lda) {
         //Indices:
         gi = xi + Nx*yi;
-
-        //Magnetic field equations:
-        C[eq++] = c1 * field[6 * gi + 3]; // 2/cdt*Bx(i,j)
-        C[eq++] = c1 * field[6 * gi + 4]; // 2/cdt*By(i,j)
-        C[eq++] = c1 * field[6 * gi + 5]; // 2/cdt*Bz(i,j)
         
         //Electric field equations:
-        C[eq++] = -c1 * field[6 * gi] + c2 * J[3 * gi]; // -2/cdt*Ex(i,j)+4pi/c*J_hatx(i,j)
-        C[eq++] = -c1 * field[6 * gi + 1] + c2 * J[3 * gi + 1]; // -2/cdt*Ey(i,j)+4pi/c*J_haty(i,j)
-        C[eq++] = -c1 * field[6 * gi + 2] + c2 * J[3 * gi + 2]; // -2/cdt*Ez(i,j)+4pi/c*J_hatz(i,j)
+        C[eq++] = field[6 * gi] - c1 * J[3 * gi];
+        C[eq++] = field[6 * gi + 1] - c1 * J[3 * gi + 1];
+        C[eq++] = field[6 * gi + 2] - c1 * J[3 * gi + 2];
+        
+        //Magnetic field equations:
+        C[eq++] = field[6 * gi + 3];
+        C[eq++] = field[6 * gi + 4];
+        C[eq++] = field[6 * gi + 5];
+
         //Advance indices:
         ++xi;
         if(xi == Nx){
@@ -516,7 +515,7 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     Eigen::LeastSquaresConjugateGradient<SpMat> lscg;
     lscg.setTolerance((T)1e-8);
     lscg.compute(Ac);
-    Eigen::VectorX<T> sol = lscg.solve(-C);
+    Eigen::VectorX<T> sol = lscg.solve(C);
 
     eq = 0;
     while(eq < lda){
@@ -550,69 +549,85 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 
 template<typename T>
 void Field2D3V<T>::initialiseSystemMatrix(T dt) {
-    unsigned int lda = 6*Ng;
     unsigned int eq = 0;
     unsigned int xi = 0;
     unsigned int yi = 0;
-    unsigned int gi, gdxi, gmdxi, gdyi, gmdyi;
+    unsigned int gi, gdxi, gdxdyi, gdyi, gmdxi, gmdxmdyi, gmdyi;
     T dx = this->grid.getSpacings()[0];
     T dy = this->grid.getSpacings()[1];
-    T idx = (T)1/dx;
-    T idy = (T)1/dy;
-    T c1 = (T)2/(this->c*dt);
+    T cx = (this->c*dt)/(4*dx);
+    T cy = (this->c*dt)/(4*dy);
 
     //Construct system matrix:
     typedef Eigen::Triplet<T> Tri;
     std::vector<Tri> tripletList;
 
-    while(eq < lda){
+    while(eq < 6*Ng){
         //Indices:
         gi = xi + Nx*yi;
         gdxi = (xi+1)%Nx + Nx*yi;
-        gmdxi = (xi-1+Nx)%Nx + Nx*yi;
+        gdxdyi = (xi+1)%Nx + Nx*((yi+1)%Ny);
         gdyi = xi + Nx*((yi+1)%Ny);
+        gmdxi = (xi-1+Nx)%Nx + Nx*yi;
+        gmdxmdyi = (xi-1+Nx)%Nx + Nx*((yi-1+Ny)%Ny);
         gmdyi = xi + Nx*((yi-1+Ny)%Ny);
-
-        //Magnetic field equations:
-        //x-equation:
-        tripletList.emplace_back(eq, 6*gdyi+2, idy);
-        tripletList.emplace_back(eq, 6*gi+2, -idy);
-        tripletList.emplace_back(eq, 6*gi+3, c1);
-        ++eq;
-
-        //y-equation:
-        tripletList.emplace_back(eq, 6*gdxi+2, -idx);
-        tripletList.emplace_back(eq, 6*gi+2, idx);
-        tripletList.emplace_back(eq, 6*gi+4, c1);
-        ++eq;
-
-        //z-equation:
-        tripletList.emplace_back(eq, 6*gdxi+1, idx);
-        tripletList.emplace_back(eq, 6*gi+1, -idx);
-        tripletList.emplace_back(eq, 6*gdyi, -idy);
-        tripletList.emplace_back(eq, 6*gi, idy);
-        tripletList.emplace_back(eq, 6*gi+5, c1);
-        ++eq;
 
         //Electric field equations:
         //x-equation:
-        tripletList.emplace_back(eq, 6*gi+5, idy);
-        tripletList.emplace_back(eq, 6*gmdyi+5, -idy);
-        tripletList.emplace_back(eq, 6*gi, -c1);
+        tripletList.emplace_back(eq, 6*gi, (T)1);
+        tripletList.emplace_back(eq, 6*gmdxi+5, -cy);
+        tripletList.emplace_back(eq, 6*gi+5, -cy);
+        tripletList.emplace_back(eq, 6*gmdxmdyi+5, cy);
+        tripletList.emplace_back(eq, 6*gmdyi+5, cy);
         ++eq;
 
         //y-equation:
-        tripletList.emplace_back(eq, 6*gi+5, -idx);
-        tripletList.emplace_back(eq, 6*gmdxi+5, idx);
-        tripletList.emplace_back(eq, 6*gi+1, -c1);
+        tripletList.emplace_back(eq, 6*gi+1, (T)1);
+        tripletList.emplace_back(eq, 6*gmdyi+5, cx);
+        tripletList.emplace_back(eq, 6*gi+5, cx);
+        tripletList.emplace_back(eq, 6*gmdxmdyi+5, -cx);
+        tripletList.emplace_back(eq, 6*gmdxi+5, -cx);
         ++eq;
 
         //z-equation:
-        tripletList.emplace_back(eq, 6*gi+4, idx);
-        tripletList.emplace_back(eq, 6*gmdxi+4, -idx);
-        tripletList.emplace_back(eq, 6*gi+3, -idy);
-        tripletList.emplace_back(eq, 6*gmdyi+3, idy);
-        tripletList.emplace_back(eq, 6*gi+2, -c1);
+        tripletList.emplace_back(eq, 6*gi+2, (T)1);
+        tripletList.emplace_back(eq, 6*gmdyi+4, -cx);
+        tripletList.emplace_back(eq, 6*gi+4, -cx);
+        tripletList.emplace_back(eq, 6*gmdxmdyi+4, cx);
+        tripletList.emplace_back(eq, 6*gmdxi+4, cx);
+        tripletList.emplace_back(eq, 6*gmdxi+3, cy);
+        tripletList.emplace_back(eq, 6*gi+3, cy);
+        tripletList.emplace_back(eq, 6*gmdxmdyi+3, -cy);
+        tripletList.emplace_back(eq, 6*gmdyi+3, -cy);
+        ++eq;
+
+        //Magnetic field equations:
+        //x-equation:
+        tripletList.emplace_back(eq, 6*gi+3, (T)1);
+        tripletList.emplace_back(eq, 6*gdyi+2, cy);
+        tripletList.emplace_back(eq, 6*gdxdyi+2, cy);
+        tripletList.emplace_back(eq, 6*gi+2, -cy);
+        tripletList.emplace_back(eq, 6*gdxi+2, -cy);
+        ++eq;
+
+        //y-equation:
+        tripletList.emplace_back(eq, 6*gi+4, (T)1);
+        tripletList.emplace_back(eq, 6*gdxi+2, -cx);
+        tripletList.emplace_back(eq, 6*gdxdyi+2, -cx);
+        tripletList.emplace_back(eq, 6*gi+2, cx);
+        tripletList.emplace_back(eq, 6*gdyi+2, cx);
+        ++eq;
+
+        //z-equation:
+        tripletList.emplace_back(eq, 6*gi+5, (T)1);
+        tripletList.emplace_back(eq, 6*gdxi+1, cx);
+        tripletList.emplace_back(eq, 6*gdxdyi+1, cx);
+        tripletList.emplace_back(eq, 6*gi+1, -cx);
+        tripletList.emplace_back(eq, 6*gdyi+1, -cx);
+        tripletList.emplace_back(eq, 6*gdyi, -cy);
+        tripletList.emplace_back(eq, 6*gdxdyi, -cy);
+        tripletList.emplace_back(eq, 6*gi, cy);
+        tripletList.emplace_back(eq, 6*gdxi, cy);
         ++eq;
 
         //Advance indices:
