@@ -66,6 +66,7 @@ public:
 
     void saveEnergy(std::ofstream& outputFile) const;
     void saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,2,3>*> &species) const;
+    void saveCurrent(std::ofstream& outputFile) const;
 
     const T* getField() const;
     const T* getFieldT() const;

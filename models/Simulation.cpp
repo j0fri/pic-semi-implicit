@@ -148,6 +148,14 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
         }
         electrostaticPotentialFile.close();
     }
+
+    if(saveConfig.saveCurrent){
+        std::ofstream currentFile(saveConfig.outputFilesDirectory + saveConfig.currentFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+        if(!currentFile.is_open()){
+            throw std::runtime_error("Could not open current file.");
+        }
+        currentFile.close();
+    }
 }
 
 
@@ -274,6 +282,15 @@ void Simulation<T,Nd,Nv>::save(){
         }
         field->saveElectrostaticPotential(electrostaticPotentialFile, species);
         electrostaticPotentialFile.close();
+    }
+
+    if(saveConfig.saveCurrent){
+        std::ofstream currentFile(saveConfig.outputFilesDirectory + saveConfig.currentFileName + saveConfig.outputFilesSubscript, std::ios::app);
+        if(!currentFile.is_open()){
+            throw std::runtime_error("Could not open current file.");
+        }
+        field->saveCurrent(currentFile);
+        currentFile.close();
     }
 }
 

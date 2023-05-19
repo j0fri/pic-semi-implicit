@@ -159,6 +159,13 @@ void Field2D3V<T>::saveElectrostaticPotential(std::ofstream &outputFile, const s
 }
 
 template<typename T>
+void Field2D3V<T>::saveCurrent(std::ofstream &outputFile) const {
+    output_helper::outputColMajorMatrix(J,Nx,Ny,Nx*3,3,outputFile);
+    output_helper::outputColMajorMatrix(J+1,Nx,Ny,Nx*3,3,outputFile);
+    output_helper::outputColMajorMatrix(J+2,Nx,Ny,Nx*3,3,outputFile);
+}
+
+template<typename T>
 const T *Field2D3V<T>::getField() const {
     return static_cast<const T*>(field);
 }

@@ -7,7 +7,7 @@ Config<T,1,1> preset_configs::landau1D1V(){
         }},
         preset_fields::Default1D1V<T>(4*M_PI,30,1,1),
         {10,0.01},
-        {false, true, false, false, true, false, false, true, false, 0.1, "outputs/"},
+        {false, true, false, false, true, false, false, true, false, false, 0.1, "outputs/"},
         {{true},{}}, //Only periodic boundary conditions
         true,
         false
@@ -27,7 +27,7 @@ Config<T,2,3> preset_configs::constVelocityX(){
     }},
     preset_fields::Default2D3V<T>(1,1,10,10,1,1),
     {10,0.1},
-    {false, true, false, false, true, true, true, true, true, 0.1, "outputs/"},
+    {false, true, false, false, true, true, true, true, true, false, 0.1, "outputs/"},
     {{true,true},{}}, //Only periodic boundary conditions
     true,
     true
@@ -47,7 +47,7 @@ Config<T,2,3> preset_configs::landau2D3VX(unsigned int Nx, unsigned int Ny){
         }},
         preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
         {10,0.1},
-        {false, true, false, false, true, true, true, true, true, 0.1, "outputs/"},
+        {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
         {{true,true},{}}, //Only periodic boundary conditions
         true,
         true
@@ -69,7 +69,7 @@ Config<T,2,3> preset_configs::landauFile(){
            }},
             preset_fields::Default2D3V<T>(1,1,30,5,1,1),
             {10,0.1},
-            {false, true, false, false, true, true, true, true, true, 0.1, "outputs/"},
+            {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -86,7 +86,7 @@ Config<T,2,3> preset_configs::landau2D3VXWave(unsigned int Nx, unsigned int Ny){
            }},
             preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
             {10,0.1},
-            {false, true, false, false, true, true, true, true, true, 0.1, "outputs/"},
+            {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -105,7 +105,7 @@ Config<T,2,3> preset_configs::constAccelerationX(){
             }},
             preset_fields::ConstE2D3V<T>(0,(T)1,20,20),
             {10,0.1},
-            {false, true, false, false, false, true, true, false, true, 0.1, "outputs/"},
+            {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -121,7 +121,7 @@ Config<T,2,3> preset_configs::magneticGyration(){
            }},
             preset_fields::ConstB2D3V<T>(2,(T)1,20,20),
             {10,0.1},
-            {false, true, false, false, false, true, true, false, true, 0.1, "outputs/"},
+            {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -138,7 +138,7 @@ Config<T,2,3> preset_configs::magneticGyrationX(){
             }},
             preset_fields::ConstB2D3V<T>(0,(T)1,20,20),
             {10,0.1},
-            {false, true, false, false, false, true, true, false, true, 0.1, "outputs/"},
+            {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -155,7 +155,7 @@ Config<T,2,3> preset_configs::constPotentialWell(){
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
             {100,0.1},
-            {false, true, false, false, true, true, true, true, false, 0.1, "outputs/"},
+            {false, true, false, false, true, true, true, true, false, true, 0.1, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -175,7 +175,7 @@ Config<T,2,3> preset_configs::constPotentialWellFile(){
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
             {10,0.1},
-            {true, true, true, false, false, true, true, false, true, 10, "outputs/"},
+            {true, true, true, false, false, true, true, false, true, true, 10, "outputs/"},
             {{true,true},{}}, //Only periodic boundary conditions
             true,
             true
@@ -230,7 +230,7 @@ Config<T,2,3> preset_configs::electronBeam(unsigned int Nx, unsigned int Ny) {
             }},
             fieldConfig,
             {10,0.01},
-            {false, true, false, false, true, true, true, true, true, 0.1, "outputs/"},
+            {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
             {
                 {false,true}, //X non-periodic
                 {(T)0,(T)0,(T)0,(T)0} //Potential zero at non-periodic boundaries

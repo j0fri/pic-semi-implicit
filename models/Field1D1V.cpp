@@ -203,5 +203,11 @@ void Field1D1V<T>::saveElectrostaticPotential(std::ofstream &outputFile, const s
     //TODO: implement this
 }
 
+template<typename T>
+void Field1D1V<T>::saveCurrent(std::ofstream &outputFile) const {
+    //TODO: implement this
+}
+
+
 template class Field1D1V<float>;
 template class Field1D1V<double>;

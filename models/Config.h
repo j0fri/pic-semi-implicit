@@ -65,6 +65,7 @@ struct Config{
         bool saveMagneticField{};
         bool saveFieldEnergy{};
         bool saveElectrostaticPotential{};
+        bool saveCurrent{};
         T saveInterval;
         std::string outputFilesDirectory{"outputs/"};
         std::string outputFilesSubscript{".txt"}; //Will be appended to every output file
@@ -79,6 +80,7 @@ struct Config{
         std::string magneticFieldFileName{"magneticField"};
         std::string fieldEnergyFileName{"fieldEnergy"};
         std::string electrostaticPotentialFileName{"electrostaticPotential"};
+        std::string currentFileName{"current"};
     };
     SaveConfig saveConfig;
 
