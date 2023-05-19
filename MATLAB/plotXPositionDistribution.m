@@ -51,7 +51,7 @@ for i = 1:Nt
     plot(xEdges,average);
     %pcolor(X,Y,distribution{i}');
     xlim([xmin,xmax]);
-    xlabel("x");
+    xlabel("x");    
     ylabel("y");
     title("position distribution of species along x (averaged in y)")
     pause(dt);

@@ -293,14 +293,15 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
             temp = gPtr[i] + 1;
             gpPtr[i] = temp == Nc ? 0 : temp;
             temp = (unsigned int) ((posPtr[i]+shift1) * invspacing);
-            gBPtr[i] = temp > Nc ? temp - Nc : temp;
-            gpBPtr[i] = gBPtr[i] == Nc-1 ? 0 : gBPtr[i]+1;
+            gBPtr[i] = temp % Nc;
+            temp = gBPtr[i] + 1;
+            gpBPtr[i] = temp == Nc ? 0 : temp;
 
-            wgpPtr[i] = (posPtr[i]-(min+gPtr[i]*spacing)) * invspacing;
+            wgpPtr[i] = (posPtr[i]-min) * invspacing - gPtr[i];
             wgPtr[i] = (T)1-wgpPtr[i];
             temp2 = posPtr[i]+shift3;
             temp2 = temp2 < 0 ? temp2 + shift2 : temp2;
-            wgpBPtr[i] = (temp2-gBPtr[i]*spacing) * invspacing;
+            wgpBPtr[i] = temp2 * invspacing - gBPtr[i];
             wgBPtr[i] = (T)1-wgpBPtr[i];
 
         }

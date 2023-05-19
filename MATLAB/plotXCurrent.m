@@ -43,7 +43,7 @@ end
 figure(1);
 clf;
 averageEx = zeros(1,Nt); %Average over all the grid
-for i = 1:2
+for i = 1:Nt
     C = distribution{i}';
     C = [[C zeros(size(C,1),1)] ; zeros(1,size(C,2)+1)];% Last row/col ignored
     average = sum(C,1)/(Ny); %Span-wise average
