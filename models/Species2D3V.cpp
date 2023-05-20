@@ -273,7 +273,7 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
         T shift1 = max-2*min-halfspacing;
         T shift2 = max-min;
         T shift3 = -min-halfspacing;
-        unsigned int temp;
+        int temp;
         T temp2;
         //Periodic base case:
         for(unsigned int i = 0; i < this->Np; ++i){
@@ -288,22 +288,20 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
 //            wgBPtr[i] = (T)1-wgpBPtr[i];
 //            std::cout << "pos: " << posPtr[i] << ", g: " << gPtr[i] << ", gp: " << gpPtr[i] << ", gB: " << gBPtr[i] << ", gpB: " << gpBPtr[i] << std::endl;
 
+            gPtr[i] = (int)(((T)posPtr[i]-min) * invspacing);
+            gpPtr[i] = gPtr[i] + 1;
+            gpPtr[i] = gpPtr[i] == Nc ? 0 : gpPtr[i]; //Periodicity
+            temp = (int) (((T)posPtr[i]+shift1) * invspacing);
+            gBPtr[i] = (temp+Nc) % Nc;
+            gpBPtr[i] = gBPtr[i] + 1;
+            gpBPtr[i] = gpBPtr[i] == Nc ? 0 : temp;
 
-            gPtr[i] = (unsigned int)((posPtr[i]-min) * invspacing);
-            temp = gPtr[i] + 1;
-            gpPtr[i] = temp == Nc ? 0 : temp;
-            temp = (unsigned int) ((posPtr[i]+shift1) * invspacing);
-            gBPtr[i] = temp % Nc;
-            temp = gBPtr[i] + 1;
-            gpBPtr[i] = temp == Nc ? 0 : temp;
-
-            wgpPtr[i] = (posPtr[i]-min) * invspacing - gPtr[i];
-            wgPtr[i] = (T)1-wgpPtr[i];
-            temp2 = posPtr[i]+shift3;
+            wgpPtr[i] = ((T)posPtr[i]-min) * invspacing - (T)gPtr[i];
+            wgPtr[i] = (T)1-(T)wgpPtr[i];
+            temp2 = (T)posPtr[i]+shift3;
             temp2 = temp2 < 0 ? temp2 + shift2 : temp2;
-            wgpBPtr[i] = temp2 * invspacing - gBPtr[i];
+            wgpBPtr[i] = temp2 * invspacing - (T)gBPtr[i];
             wgBPtr[i] = (T)1-wgpBPtr[i];
-
         }
         if(!field->bcConfig.periodic[dim]){ //Fix non-periodicity //TODO: TEST
             for(unsigned int i = 0; i < this->Np; ++i){
