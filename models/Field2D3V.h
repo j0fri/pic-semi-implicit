@@ -78,7 +78,16 @@ private:
     void accumulateJ(const std::vector<Species<T,2,3>*>& species);
     void accumulateM(const std::vector<Species<T,2,3>*>& species, T dt);
     virtual void solveAndAdvance(T dt);
-    virtual void initialiseSystemMatrix(T dt);
+    virtual void initialisePeriodicA(T dt);
+    virtual void initialiseNonPeriodicA(T dt);
+    virtual void initialisePeriodicField(const std::vector<Species<T,2,3>*>& species, T dt);
+    virtual void initialiseNonPeriodicField(const std::vector<Species<T,2,3>*>& species, T dt);
+    virtual void constructPeriodicAc(T dt);
+    virtual void constructNonPeriodicAc(T dt);
+    virtual void constructPeriodicC(T dt);
+    virtual void constructNonPeriodicC(T dt);
+    std::unique_ptr<const T> getPeriodicElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
+    std::unique_ptr<const T> getNonPeriodicElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
 };
 
 

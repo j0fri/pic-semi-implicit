@@ -82,7 +82,7 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
 
     //Periodic boundary conditions:
     for(unsigned int dim = 0; dim < 2; ++dim){
-        if(this->bcConfig.periodic[dim]){
+        if(this->bcConfig.types[dim] == Config<T,2,3>::BC::Periodic){
             this->handlePeriodicBC(field, dim);
         }else{
             this->handleNonPeriodicBC(field, dim);
@@ -305,7 +305,7 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
             wgBPtr[i] = (T)1-wgpBPtr[i];
 
         }
-        if(!field->bcConfig.periodic[dim]){ //Fix non-periodicity //TODO: TEST
+        if(!this->bcConfig.types[dim] == Config<T,2,3>::BC::Periodic){ //Fix non-periodicity //TODO: TEST
             for(unsigned int i = 0; i < this->Np; ++i){
                 if(posPtr[i]-min < spacing/2){
                     wgBPtr[i] = 0;

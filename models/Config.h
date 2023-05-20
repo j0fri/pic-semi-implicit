@@ -30,10 +30,9 @@ struct Config{
         std::array<std::optional<DistributionGrid<T,1>>, 2*Nd> bcNormalVelocityGenerator; /*for each dimension, optional generator of
         normal velocity of new particles, order of boundaries is x=minx, x=maxx, y=miny, ..., ignored if periodic
         in given dimension */
-        std::array<std::optional<T>,Nd> sourceStrength; //for each dimension, how many particles are generated
+        std::array<std::optional<T>, 2*Nd> sourceStrength; //for each dimension, how many particles are generated
 
-        /*Currently only 1 non-periodic boundary condition is allowed with minx being a generator b.c. and xmax being
-        absorbent, in this case both potentials (xmin and xmax) must be provided. */
+        /*Currently only xmin can have a positive sourceStrength. */
     };
     std::vector<SpeciesConfig> speciesConfig;
 
@@ -84,14 +83,13 @@ struct Config{
     };
     SaveConfig saveConfig;
 
+    enum BC{Periodic, Free, PerfectConductor};
     struct BCConfig{
-        std::array<bool,Nd> periodic; //for each dimension, if true the boundary will be periodic
+        std::array<BC,2*Nd> types;
+        std::array<std::optional<T>,2*Nd> rhos; /*For each dimension, charge density at the boundary, only relevant
+            for PerfectConductor type boundaries.*/
 
-        std::array<std::optional<T>,2*Nd> potentials; /*for each dimension, optional set voltage for non-boundary
-        conditions. */
-
-        /*Currently only 1 non-periodic boundary condition is allowed with minx being a generator b.c. and xmax being
-        absorbent, in this case both potentials must be provided. */
+        /* Boundary conditions in 2D3V must be either all periodic or all perfect conductors. */
     };
     BCConfig bcConfig;
 

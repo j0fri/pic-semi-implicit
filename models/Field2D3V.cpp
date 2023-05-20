@@ -3,16 +3,6 @@
 #include "../helpers/math_helper.h"
 #include "../helpers/output_helper.h"
 
-#define F77NAME(x) x##_
-extern "C" {
-void F77NAME(dgesv)(const int& n, const int& nrhs, const double * A,
-                    const int& lda, int * ipiv, double * B,
-                    const int& ldb, int& info);
-void F77NAME(sgesv)(const int& n, const int& nrhs, const float * A,
-                    const int& lda, int * ipiv, float * B,
-                    const int& ldb, int& info);
-}
-
 
 template<typename T>
 Field2D3V<T>::Field2D3V(const typename Config<T,2,3>::FieldConfig &fieldConfig,
@@ -50,10 +40,11 @@ Field2D3V<T>::~Field2D3V() {
     delete[] Mgmdxdy;
 }
 
+
 template<typename T>
 void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species, T dt) {
     if(this->initialiseFromSpecies){
-        std::cout << "WARNING: when initialising field from species, if boundary conditions are present, ensure the "
+        std::cout << "WARNING: when initialising field from species, if periodic boundary conditions are present, ensure the "
                      "charge distribution results in a periodic field." << std::endl;
     }
     if(!this->initialiseFromSpecies){
@@ -72,49 +63,34 @@ void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species, T 
                 }
             }
         }
-    }else if(this->bcConfig.periodic[0] && this->bcConfig.periodic[1]){ //Periodic in both dimensions
-        T dx = this->grid.getSpacings()[0];
-        T dy = this->grid.getSpacings()[1];
-
-        std::fill(field, field+6*Ng,(T)0.0);
-
-        std::unique_ptr<const T> phi = this->getElectrostaticPotential(species);
-        T minx = this->grid.dimensions[0].min;
-        T miny = this->grid.dimensions[1].min;
-
-        unsigned int gdxi, gmdxi, gdyi, gmdyi;
-        for(unsigned int i = 0; i < Nx; ++i){
-            for(unsigned int j = 0; j < Ny; ++j){
-                //Forced electric terms
-                for(unsigned int dim = 0; dim < 3; ++dim){
-                    T tempE = this->forcedE[dim].f(std::array<T,2>{minx+i*dx,miny+j*dy});
-                    field[6*i+6*Nx*j+dim] = tempE;
-                }
-                //Forced magnetic terms
-                for(unsigned int dim = 0; dim < 3; ++dim){
-                    T tempB = this->forcedB[dim].f(std::array<T,2>{minx+i*dx,miny+j*dy});
-                    field[6*i+6*Nx*j+3+dim] = tempB;
-                }
-                //Species electric terms
-                gdxi = j*Nx+((i+1)%Nx);
-                gmdxi = j*Nx+((i-1+Nx)%Nx);
-                gdyi = ((j+1)%Ny)*Nx+i;
-                gmdyi = ((j-1+Ny)%Ny)*Nx+i;
-                if(!this->onlyForcedE){
-                    field[6*i+6*Nx*j] -= (phi.get()[gdxi]-phi.get()[gmdxi])/(2*dx); //Ex = -dPhi/dx
-                    field[6*i+6*Nx*j+1] -= (phi.get()[gdyi]-phi.get()[gmdyi])/(2*dy); //Ey = -dPhi/dy
-                }
-            }
-        }
-
-        //TODO: add divergence-free initialisation for magnetic field
-    }else{
-        //TODO: add divergence-free initialisation for non-periodic boundary conditions
-        throw std::invalid_argument("Divergence-free initialisation for non-periodic boundary conditions not implemented"
-                                    " yet.");
     }
-    this->initialiseSystemMatrix(dt);
+
+    bool allPeriodic = true;
+    bool allPerfectConductors = true;
+    for(auto bc: this->bcConfig.types){
+        if(bc != Config<T,2,3>::BC::Periodic){
+            allPeriodic = false;
+        }
+        if(bc != Config<T,2,3>::BC::PerfectConductor){
+            allPerfectConductors = false;
+        }
+    }
+
+    if(allPeriodic){
+        this->initialisePeriodicField(species, dt);
+        this->initialisePeriodicA(dt);
+        return;
+    }
+    if(allPerfectConductors){
+        this->initialiseNonPeriodicField(species, dt);
+        this->initialiseNonPeriodicA(dt);
+        return;
+    }
+
+    throw std::invalid_argument("Boundaries in a 2D3V field must be either all periodic or all perfect conductors.");
 }
+
+
 
 
 template<typename T>
@@ -124,12 +100,14 @@ void Field2D3V<T>::saveElectricField(std::ofstream &outputFile) const {
     output_helper::outputColMajorMatrix(field+2,Nx,Ny,Nx*6,6,outputFile);
 }
 
+
 template<typename T>
 void Field2D3V<T>::saveMagneticField(std::ofstream &outputFile) const {
     output_helper::outputColMajorMatrix(field+3,Nx,Ny,Nx*6,6,outputFile);
     output_helper::outputColMajorMatrix(field+4,Nx,Ny,Nx*6,6,outputFile);
     output_helper::outputColMajorMatrix(field+5,Nx,Ny,Nx*6,6,outputFile);
 }
+
 
 template<typename T>
 void Field2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
@@ -152,11 +130,13 @@ void Field2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
     outputFile << totalEnergy << std::endl;
 }
 
+
 template<typename T>
 void Field2D3V<T>::saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,2,3>*> &species) const {
     std::unique_ptr<const T> phi = this->getElectrostaticPotential(species);
     output_helper::outputColMajorMatrix(&*phi,Nx,Ny,Nx,1,outputFile);
 }
+
 
 template<typename T>
 void Field2D3V<T>::saveCurrent(std::ofstream &outputFile) const {
@@ -165,107 +145,42 @@ void Field2D3V<T>::saveCurrent(std::ofstream &outputFile) const {
     output_helper::outputColMajorMatrix(J+2,Nx,Ny,Nx*3,3,outputFile);
 }
 
+
 template<typename T>
 const T *Field2D3V<T>::getField() const {
     return static_cast<const T*>(field);
 }
+
 
 template<typename T>
 const T *Field2D3V<T>::getFieldT() const {
     return static_cast<const T*>(fieldT);
 }
 
+
 template<typename T>
 std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const {
-    if(!(this->bcConfig.periodic[0] && this->bcConfig.periodic[1])){
-        //TODO: add electrostatic potential for non-periodic boundary conditions
-        throw std::runtime_error("Electrostatic potential not implemented for non-periodic boundary conditions");
-    }
-
-    T dx = this->grid.getSpacings()[0];
-    T dy = this->grid.getSpacings()[1];
-
-    T* Q;
-    try{
-        Q = new T[Ng]; //Vector of charge in every cell at magnetic field grid
-    }catch(const std::bad_alloc& e){
-        std::cerr << "Error in field memory temporary allocation in initialisation (O(Nx*Ny*Nx*Ny))" << std::endl;
-        throw;
-    }
-
-    //Accumulate charges:
-    std::fill(Q,Q+Ng,0.0);
-    for(auto sPtr: species){
-        const Vector2<unsigned int> gB = ((Species2D3V<T>*)sPtr)->getG();
-        T q = sPtr->q;
-        unsigned int gi;
-        for(unsigned int i = 0; i < sPtr->Np; ++i){
-            gi = gB.x[i]+Nx*gB.y[i];
-            Q[gi] += q;
+    bool allPeriodic = true;
+    bool allPerfectConductors = true;
+    for(auto bc: this->bcConfig.types){
+        if(bc != Config<T,2,3>::BC::Periodic){
+            allPeriodic = false;
+        }
+        if(bc != Config<T,2,3>::BC::PerfectConductor){
+            allPerfectConductors = false;
         }
     }
 
-    Eigen::VectorX<T> Ec(Ng);
-    //Construct system vector:
-    for(unsigned int g = 0; g < Ng; ++g){
-        //TODO: check units, scheme uses gauss but UKAEA uses SI
-        Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy)*4*M_PI; //Gauss units
-        //Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy*this->e0); //SI units
+    if(allPeriodic){
+        return this->getPeriodicElectrostaticPotential(species);
     }
-    Ec[0] = (T)0; //Fixed point
-    delete[] Q;
-
-    static Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
-    static bool first = true;
-    if(first){
-        typedef Eigen::Triplet<T> Tri;
-        std::vector<Tri> tripletList;
-
-        //Populate system matrix:
-        unsigned int eq;
-        unsigned int gi, gdxi, gmdxi, gdyi, gmdyi;
-        T c1 = (T)1/(dx*dx);
-        T c2 = (T)1/(dy*dy);
-        for(unsigned int j = 0; j < Ny; ++j){
-            for(unsigned int i = 0; i < Nx; ++i){
-                eq = j*Nx+i;
-                if(eq == 0){
-                    continue; //This will be the fixed point
-                }
-                gi = j*Nx+i;
-                gdxi = j*Nx+((i+1)%Nx);
-                gmdxi = j*Nx+((i-1+Nx)%Nx);
-                gdyi = ((j+1)%Ny)*Nx+i;
-                gmdyi = ((j-1+Ny)%Ny)*Nx+i;
-
-                //Poisson equation:
-                tripletList.emplace_back(eq,gdxi,c1);
-                tripletList.emplace_back(eq,gmdxi,c1);
-                tripletList.emplace_back(eq,gdyi,c2);
-                tripletList.emplace_back(eq,gmdyi,c2);
-                tripletList.emplace_back(eq,gi,-2*c1-2*c2);
-            }
-        }
-
-        //Potential is 0 at 0,0 to avoid matrix rank-deficiency
-        tripletList.emplace_back(0,0,1);
-
-        SpMat EA = SpMat(Ng,Ng);
-        EA.setFromTriplets(tripletList.begin(), tripletList.end());
-        EA.makeCompressed();
-
-        solver.analyzePattern(EA);
-        solver.factorize(EA);
-
-        first = false;
+    if(allPerfectConductors){
+        return this->getNonPeriodicElectrostaticPotential(species);
     }
 
-    Eigen::VectorX<T> sol = solver.solve(Ec);
-
-    T* sol_out = new T[Ng];
-    std::copy(sol.begin(), sol.end(), sol_out);
-    return std::unique_ptr<const T>(sol_out);
+    throw std::invalid_argument("Boundaries in a 2D3V field must be either all periodic or all perfect conductors.");
 }
+
 
 template<typename T>
 void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
@@ -307,6 +222,7 @@ void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
         }
     }
 }
+
 
 template<typename T>
 void Field2D3V<T>::accumulateM(const std::vector<Species<T,2,3>*> &species, T dt) {
@@ -389,6 +305,7 @@ void Field2D3V<T>::accumulateM(const std::vector<Species<T,2,3>*> &species, T dt
     }
 }
 
+
 template<typename T>
 void Field2D3V<T>::solveAndAdvance(T dt) {
     if(this->onlyForcedE && this->onlyForcedB) {
@@ -397,126 +314,28 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         return;
     }
 
-    if(!(this->bcConfig.periodic[0] && this->bcConfig.periodic[1])){
-        //TODO: add system solve for non-periodic boundary conditions
-        throw std::runtime_error("Solve and advance not implemented for non-periodic boundary conditions");
-    }
-
-    //Construct system matrix:
-    typedef Eigen::Triplet<T> Tri;
-    std::vector<Tri> tripletList;
-
-    unsigned int lda = 6*Ng;
-    unsigned int gi, gdxi, gdxdyi, gdyi, gmdxdyi, gmdxi, gmdxmdyi, gmdyi, gdxmdyi;
-    T c1 = 2*M_PI*dt;
-    unsigned int eq = 0;
-    unsigned int xi = 0;
-    unsigned int yi = 0;
-    while(eq < lda) {
-        //Indices:
-        gi = xi + Nx*yi;
-        gdxi = (xi+1)%Nx + Nx*yi;
-        gdxdyi = (xi+1)%Nx + Nx*((yi+1)%Ny);
-        gdyi = xi + Nx*((yi+1)%Ny);
-        gmdxdyi = (xi-1+Nx)%Nx + Nx*((yi+1)%Ny);
-        gmdxi = (xi-1+Nx)%Nx + Nx*yi;
-        gmdxmdyi = (xi-1+Nx)%Nx + Nx*((yi-1+Ny)%Ny);
-        gmdyi = xi + Nx*((yi-1+Ny)%Ny);
-        gdxmdyi = (xi+1)%Nx + Nx*((yi-1+Ny)%Ny);
-
-        //gi term: add Mg term at gi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gi+col, c1 * Mg[9*gi + 3*col + row]);
-            }
-
+    bool allPeriodic = true;
+    bool allPerfectConductors = true;
+    for(auto bc: this->bcConfig.types){
+        if(bc != Config<T,2,3>::BC::Periodic){
+            allPeriodic = false;
         }
-        //gdxi term: add Mgdx term at gi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdxi+col, c1 * Mgdx[9*gi + 3*col + row]);
-            }
-        }
-        //gdxdyi term: add Mgdxdy term at gi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdxdyi+col, c1 * Mgdxdy[9*gi + 3*col + row]);
-            }
-        }
-        //gdyi term: add Mgdy term at gi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdyi+col, c1 * Mgdy[9*gi + 3*col + row]);
-            }
-        }
-        //gmdxdyi term: add Mgmdxdy
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdxdyi+col, c1 * Mgmdxdy[9*gi + 3*col + row]);
-            }
-        }
-        //gmdxi term: add Mgdx term at gmdxi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdxi+col, c1 * Mgdx[9*gmdxi + 3*col + row]);
-            }
-        }
-        //gmdxmdyi term: add Mgdxdy term at gmdxmdyi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdxmdyi+col, c1 * Mgdxdy[9*gmdxmdyi + 3*col + row]);
-            }
-        }
-        //gmdyi term: add Mgdy term at gmdyi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gmdyi+col, c1 * Mgdy[9*gmdyi + 3*col + row]);
-            }
-        }
-        //gdxmdyi term: add Mgmdxdy term at gdxmdyi
-        for(unsigned int col = 0; col < 3; ++col){
-            for(unsigned int row = 0; row < 3; ++row){
-                tripletList.emplace_back(eq+row,6*gdxmdyi+col, c1 * Mgmdxdy[9*gdxmdyi + 3*col + row]);
-            }
-        }
-        eq += 6;
-        //Advance indices:
-        ++xi;
-        if(xi == Nx){
-            xi = 0;
-            ++yi;
+        if(bc != Config<T,2,3>::BC::PerfectConductor){
+            allPerfectConductors = false;
         }
     }
 
-    Am = SpMat(6*Ng,6*Ng);
-    Am.setFromTriplets(tripletList.begin(), tripletList.end());
-    Ac = A;
-    Ac += Am;
+    if(!allPeriodic && !allPerfectConductors){
+        throw std::invalid_argument("Boundaries in a 2D3V field must be either all periodic or all perfect conductors.");
+    }
 
-    //Construct system vector:
-    eq = 0;
-    xi = 0;
-    yi = 0;
-    while(eq < lda) {
-        //Indices:
-        gi = xi + Nx*yi;
-        
-        //Electric field equations:
-        C[eq++] = field[6 * gi] - c1 * J[3 * gi];
-        C[eq++] = field[6 * gi + 1] - c1 * J[3 * gi + 1];
-        C[eq++] = field[6 * gi + 2] - c1 * J[3 * gi + 2];
-        
-        //Magnetic field equations:
-        C[eq++] = field[6 * gi + 3];
-        C[eq++] = field[6 * gi + 4];
-        C[eq++] = field[6 * gi + 5];
-
-        //Advance indices:
-        ++xi;
-        if(xi == Nx){
-            xi = 0;
-            ++yi;
-        }
+    if(allPeriodic){
+        this->constructPeriodicAc(dt);
+        this->constructPeriodicC(dt);
+    }
+    if(allPerfectConductors){
+        this->constructNonPeriodicAc(dt);
+        this->constructNonPeriodicC(dt);
     }
 
     Eigen::LeastSquaresConjugateGradient<SpMat> lscg;
@@ -524,7 +343,8 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     lscg.compute(Ac);
     Eigen::VectorX<T> sol = lscg.solve(C);
 
-    eq = 0;
+    unsigned int lda = 6*Ng;
+    unsigned int eq = 0;
     while(eq < lda){
         //TODO: consider if forced terms must be manually added
         if(!this->onlyForcedE){
@@ -554,8 +374,9 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     }
 }
 
+
 template<typename T>
-void Field2D3V<T>::initialiseSystemMatrix(T dt) {
+void Field2D3V<T>::initialisePeriodicA(T dt) {
     unsigned int eq = 0;
     unsigned int xi = 0;
     unsigned int yi = 0;
@@ -647,6 +468,291 @@ void Field2D3V<T>::initialiseSystemMatrix(T dt) {
 
     A = SpMat(6*Ng, 6*Ng);
     A.setFromTriplets(tripletList.begin(), tripletList.end());
+}
+
+
+template<typename T>
+void Field2D3V<T>::initialiseNonPeriodicA(T dt) {
+    //TODO
+}
+
+
+template<typename T>
+void Field2D3V<T>::initialisePeriodicField(const std::vector<Species<T,2,3>*>& species, T dt) {
+    T dx = this->grid.getSpacings()[0];
+    T dy = this->grid.getSpacings()[1];
+
+    std::fill(field, field+6*Ng,(T)0.0);
+
+    std::unique_ptr<const T> phi = this->getElectrostaticPotential(species);
+    T minx = this->grid.dimensions[0].min;
+    T miny = this->grid.dimensions[1].min;
+
+    unsigned int gdxi, gmdxi, gdyi, gmdyi;
+    for(unsigned int i = 0; i < Nx; ++i){
+        for(unsigned int j = 0; j < Ny; ++j){
+            //Forced electric terms
+            for(unsigned int dim = 0; dim < 3; ++dim){
+                T tempE = this->forcedE[dim].f(std::array<T,2>{minx+i*dx,miny+j*dy});
+                field[6*i+6*Nx*j+dim] = tempE;
+            }
+            //Forced magnetic terms
+            for(unsigned int dim = 0; dim < 3; ++dim){
+                T tempB = this->forcedB[dim].f(std::array<T,2>{minx+i*dx,miny+j*dy});
+                field[6*i+6*Nx*j+3+dim] = tempB;
+            }
+            //Species electric terms
+            gdxi = j*Nx+((i+1)%Nx);
+            gmdxi = j*Nx+((i-1+Nx)%Nx);
+            gdyi = ((j+1)%Ny)*Nx+i;
+            gmdyi = ((j-1+Ny)%Ny)*Nx+i;
+            if(!this->onlyForcedE){
+                field[6*i+6*Nx*j] -= (phi.get()[gdxi]-phi.get()[gmdxi])/(2*dx); //Ex = -dPhi/dx
+                field[6*i+6*Nx*j+1] -= (phi.get()[gdyi]-phi.get()[gmdyi])/(2*dy); //Ey = -dPhi/dy
+            }
+        }
+    }
+}
+
+
+template<typename T>
+void Field2D3V<T>::initialiseNonPeriodicField(const std::vector<Species<T,2,3>*>& species, T dt) {
+    //TODO
+}
+
+
+template<typename T>
+void Field2D3V<T>::constructPeriodicAc(T dt) {
+    //Construct system matrix:
+    typedef Eigen::Triplet<T> Tri;
+    std::vector<Tri> tripletList;
+
+    unsigned int lda = 6*Ng;
+    unsigned int gi, gdxi, gdxdyi, gdyi, gmdxdyi, gmdxi, gmdxmdyi, gmdyi, gdxmdyi;
+    T c1 = 2*M_PI*dt;
+    unsigned int eq = 0;
+    unsigned int xi = 0;
+    unsigned int yi = 0;
+    while(eq < lda) {
+        //Indices:
+        gi = xi + Nx*yi;
+        gdxi = (xi+1)%Nx + Nx*yi;
+        gdxdyi = (xi+1)%Nx + Nx*((yi+1)%Ny);
+        gdyi = xi + Nx*((yi+1)%Ny);
+        gmdxdyi = (xi-1+Nx)%Nx + Nx*((yi+1)%Ny);
+        gmdxi = (xi-1+Nx)%Nx + Nx*yi;
+        gmdxmdyi = (xi-1+Nx)%Nx + Nx*((yi-1+Ny)%Ny);
+        gmdyi = xi + Nx*((yi-1+Ny)%Ny);
+        gdxmdyi = (xi+1)%Nx + Nx*((yi-1+Ny)%Ny);
+
+        //gi term: add Mg term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gi+col, c1 * Mg[9*gi + 3*col + row]);
+            }
+
+        }
+        //gdxi term: add Mgdx term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdxi+col, c1 * Mgdx[9*gi + 3*col + row]);
+            }
+        }
+        //gdxdyi term: add Mgdxdy term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdxdyi+col, c1 * Mgdxdy[9*gi + 3*col + row]);
+            }
+        }
+        //gdyi term: add Mgdy term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdyi+col, c1 * Mgdy[9*gi + 3*col + row]);
+            }
+        }
+        //gmdxdyi term: add Mgmdxdy
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdxdyi+col, c1 * Mgmdxdy[9*gi + 3*col + row]);
+            }
+        }
+        //gmdxi term: add Mgdx term at gmdxi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdxi+col, c1 * Mgdx[9*gmdxi + 3*col + row]);
+            }
+        }
+        //gmdxmdyi term: add Mgdxdy term at gmdxmdyi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdxmdyi+col, c1 * Mgdxdy[9*gmdxmdyi + 3*col + row]);
+            }
+        }
+        //gmdyi term: add Mgdy term at gmdyi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdyi+col, c1 * Mgdy[9*gmdyi + 3*col + row]);
+            }
+        }
+        //gdxmdyi term: add Mgmdxdy term at gdxmdyi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdxmdyi+col, c1 * Mgmdxdy[9*gdxmdyi + 3*col + row]);
+            }
+        }
+        eq += 6;
+        //Advance indices:
+        ++xi;
+        if(xi == Nx){
+            xi = 0;
+            ++yi;
+        }
+    }
+
+    Am = SpMat(6*Ng,6*Ng);
+    Am.setFromTriplets(tripletList.begin(), tripletList.end());
+    Ac = A;
+    Ac += Am;
+}
+
+
+template<typename T>
+void Field2D3V<T>::constructNonPeriodicAc(T dt) {
+    //TODO
+}
+
+
+template<typename T>
+void Field2D3V<T>::constructPeriodicC(T dt) {
+    unsigned int lda = 6*Ng;
+    T c1 = 2*M_PI*dt;
+    unsigned int eq, xi, yi, gi;
+    eq = 0;
+    xi = 0;
+    yi = 0;
+    while(eq < lda) {
+        //Indices:
+        gi = xi + Nx*yi;
+
+        //Electric field equations:
+        C[eq++] = field[6 * gi] - c1 * J[3 * gi];
+        C[eq++] = field[6 * gi + 1] - c1 * J[3 * gi + 1];
+        C[eq++] = field[6 * gi + 2] - c1 * J[3 * gi + 2];
+
+        //Magnetic field equations:
+        C[eq++] = field[6 * gi + 3];
+        C[eq++] = field[6 * gi + 4];
+        C[eq++] = field[6 * gi + 5];
+
+        //Advance indices:
+        ++xi;
+        if(xi == Nx){
+            xi = 0;
+            ++yi;
+        }
+    }
+}
+
+
+template<typename T>
+void Field2D3V<T>::constructNonPeriodicC(T dt) {
+    //TODO
+}
+
+
+template<typename T>
+std::unique_ptr<const T>
+Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
+    T dx = this->grid.getSpacings()[0];
+    T dy = this->grid.getSpacings()[1];
+
+    T* Q;
+    try{
+        Q = new T[Ng]; //Vector of charge in every cell at magnetic field grid
+    }catch(const std::bad_alloc& e){
+        std::cerr << "Error in field memory temporary allocation in initialisation (O(Nx*Ny*Nx*Ny))" << std::endl;
+        throw;
+    }
+
+    //Accumulate charges:
+    std::fill(Q,Q+Ng,0.0);
+    for(auto sPtr: species){
+        const Vector2<unsigned int> gB = ((Species2D3V<T>*)sPtr)->getG();
+        T q = sPtr->q;
+        unsigned int gi;
+        for(unsigned int i = 0; i < sPtr->Np; ++i){
+            gi = gB.x[i]+Nx*gB.y[i];
+            Q[gi] += q;
+        }
+    }
+
+    Eigen::VectorX<T> Ec(Ng);
+    //Construct system vector:
+    for(unsigned int g = 0; g < Ng; ++g){
+        //TODO: check units, scheme uses gauss but UKAEA uses SI
+        Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy)*4*M_PI; //Gauss units
+        //Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy*this->e0); //SI units
+    }
+    Ec[0] = (T)0; //Fixed point
+    delete[] Q;
+
+    static Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
+    static bool first = true;
+    if(first){
+        typedef Eigen::Triplet<T> Tri;
+        std::vector<Tri> tripletList;
+
+        //Populate system matrix:
+        unsigned int eq;
+        unsigned int gi, gdxi, gmdxi, gdyi, gmdyi;
+        T c1 = (T)1/(dx*dx);
+        T c2 = (T)1/(dy*dy);
+        for(unsigned int j = 0; j < Ny; ++j){
+            for(unsigned int i = 0; i < Nx; ++i){
+                eq = j*Nx+i;
+                if(eq == 0){
+                    continue; //This will be the fixed point
+                }
+                gi = j*Nx+i;
+                gdxi = j*Nx+((i+1)%Nx);
+                gmdxi = j*Nx+((i-1+Nx)%Nx);
+                gdyi = ((j+1)%Ny)*Nx+i;
+                gmdyi = ((j-1+Ny)%Ny)*Nx+i;
+
+                //Poisson equation:
+                tripletList.emplace_back(eq,gdxi,c1);
+                tripletList.emplace_back(eq,gmdxi,c1);
+                tripletList.emplace_back(eq,gdyi,c2);
+                tripletList.emplace_back(eq,gmdyi,c2);
+                tripletList.emplace_back(eq,gi,-2*c1-2*c2);
+            }
+        }
+
+        //Potential is 0 at 0,0 to avoid matrix rank-deficiency
+        tripletList.emplace_back(0,0,1);
+
+        SpMat EA = SpMat(Ng,Ng);
+        EA.setFromTriplets(tripletList.begin(), tripletList.end());
+        EA.makeCompressed();
+
+        solver.analyzePattern(EA);
+        solver.factorize(EA);
+
+        first = false;
+    }
+
+    Eigen::VectorX<T> sol = solver.solve(Ec);
+
+    T* sol_out = new T[Ng];
+    std::copy(sol.begin(), sol.end(), sol_out);
+    return std::unique_ptr<const T>(sol_out);
+}
+
+
+template<typename T>
+std::unique_ptr<const T>
+Field2D3V<T>::getNonPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
+    //TODO
 }
 
 
