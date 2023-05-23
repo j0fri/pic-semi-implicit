@@ -80,13 +80,14 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
     //TODO: non-periodic boundary conditions + optimise
     pos += (vel * dt); //Advance vector
 
-    //Periodic boundary conditions:
-    for(unsigned int dim = 0; dim < 2; ++dim){
-        if(this->bcConfig.types[dim] == Config<T,2,3>::BC::Periodic){
-            this->handlePeriodicBC(field, dim);
-        }else{
-            this->handleNonPeriodicBC(field, dim);
-        }
+    //Boundary conditions:
+    if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
+        this->handlePeriodicBC(field, 0);
+        this->handlePeriodicBC(field, 1);
+    }
+    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
+        this->handlePeriodicBC(field, 0);
+        this->handleNonPeriodicBC(field, 1);
     }
 
     this->computeWeights(field);
@@ -254,30 +255,44 @@ void Species2D3V<T>::initialiseVelocities(std::ifstream &file) {
 
 template<typename T>
 void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
-    for(unsigned int dim = 0; dim < 2; ++dim){
-        T min = field->grid.dimensions[dim].min;
-        T max = field->grid.dimensions[dim].max;
-        unsigned int Nc = field->grid.dimensions[dim].Nc;
-        T spacing = field->grid.getSpacings()[dim];
-        unsigned int* gPtr = g[dim];
-        unsigned int* gpPtr = gp[dim];
-        unsigned int* gBPtr = gB[dim];
-        unsigned int* gpBPtr = gpB[dim];
-        T* wgPtr = wg[dim];
-        T* wgpPtr = wgp[dim];
-        T* wgBPtr = wgB[dim];
-        T* wgpBPtr = wgpB[dim];
-        T* posPtr = pos[dim];
-        T invspacing = (T)1/spacing;
-        T halfspacing = spacing/2;
-        T shift1 = max-2*min-halfspacing;
-        T shift2 = max-min;
-        T shift3 = -min-halfspacing;
-        int temp;
-        T temp2;
-        //Periodic base case:
-        for(unsigned int i = 0; i < this->Np; ++i){
-            //Unoptimised code:
+    if(this->bcConfig.type == Config<T,2,3>::BC::Periodic){
+        this->computePeriodicWeights(field, 0);
+        this->computePeriodicWeights(field, 1);
+        return;
+    }
+    if(this->bcConfig.type == Config<T,2,3>::BC::TwoPlates){
+        this->computeNonPeriodicWeights(field, 0);
+        this->computePeriodicWeights(field, 1);
+        return;
+    }
+    throw std::invalid_argument("Unsupported boundary conditions in 2D3V Species computeWeights.");
+}
+
+template<typename T>
+void Species2D3V<T>::computePeriodicWeights(const Field<T, 2, 3> *field, unsigned int dim) {
+    T min = field->grid.dimensions[dim].min;
+    T max = field->grid.dimensions[dim].max;
+    unsigned int Nc = field->grid.dimensions[dim].Nc;
+    T spacing = field->grid.getSpacings()[dim];
+    unsigned int* gPtr = g[dim];
+    unsigned int* gpPtr = gp[dim];
+    unsigned int* gBPtr = gB[dim];
+    unsigned int* gpBPtr = gpB[dim];
+    T* wgPtr = wg[dim];
+    T* wgpPtr = wgp[dim];
+    T* wgBPtr = wgB[dim];
+    T* wgpBPtr = wgpB[dim];
+    T* posPtr = pos[dim];
+    T invspacing = (T)1/spacing;
+    T halfspacing = spacing/2;
+    T shift1 = max-2*min-halfspacing;
+    T shift2 = max-min;
+    T shift3 = -min-halfspacing;
+    int temp;
+    T temp2;
+    //Periodic base case:
+    for(unsigned int i = 0; i < this->Np; ++i){
+        //Unoptimised code:
 //            gPtr[i] = (unsigned int) std::floor((posPtr[i]-min) / spacing);
 //            gpPtr[i] = (gPtr[i]+1) % Nc;
 //            gBPtr[i] = (((unsigned int) std::floor((posPtr[i]+max-2*min-spacing/2) / spacing))) % Nc;
@@ -288,35 +303,45 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
 //            wgBPtr[i] = (T)1-wgpBPtr[i];
 //            std::cout << "pos: " << posPtr[i] << ", g: " << gPtr[i] << ", gp: " << gpPtr[i] << ", gB: " << gBPtr[i] << ", gpB: " << gpBPtr[i] << std::endl;
 
-            gPtr[i] = (int)(((T)posPtr[i]-min) * invspacing);
-            gpPtr[i] = gPtr[i] + 1;
-            gpPtr[i] = gpPtr[i] == Nc ? 0 : gpPtr[i]; //Periodicity
-            temp = (int) (((T)posPtr[i]+shift1) * invspacing);
-            gBPtr[i] = (temp+Nc) % Nc;
-            gpBPtr[i] = gBPtr[i] + 1;
-            gpBPtr[i] = gpBPtr[i] == Nc ? 0 : temp;
+        gPtr[i] = (int)(((T)posPtr[i]-min) * invspacing);
+        gpPtr[i] = gPtr[i] + 1;
+        gpPtr[i] = gpPtr[i] == Nc ? 0 : gpPtr[i]; //Periodicity
+        temp = (int) (((T)posPtr[i]+shift1) * invspacing);
+        gBPtr[i] = (temp+Nc) % Nc;
+        gpBPtr[i] = gBPtr[i] + 1;
+        gpBPtr[i] = gpBPtr[i] == Nc ? 0 : temp;
 
-            wgpPtr[i] = ((T)posPtr[i]-min) * invspacing - (T)gPtr[i];
-            wgPtr[i] = (T)1-(T)wgpPtr[i];
-            temp2 = (T)posPtr[i]+shift3;
-            temp2 = temp2 < 0 ? temp2 + shift2 : temp2;
-            wgpBPtr[i] = temp2 * invspacing - (T)gBPtr[i];
-            wgBPtr[i] = (T)1-wgpBPtr[i];
+        wgpPtr[i] = ((T)posPtr[i]-min) * invspacing - (T)gPtr[i];
+        wgPtr[i] = (T)1-(T)wgpPtr[i];
+        temp2 = (T)posPtr[i]+shift3;
+        temp2 = temp2 < 0 ? temp2 + shift2 : temp2;
+        wgpBPtr[i] = temp2 * invspacing - (T)gBPtr[i];
+        wgBPtr[i] = (T)1-wgpBPtr[i];
+    }
+}
+
+template<typename T>
+void Species2D3V<T>::computeNonPeriodicWeights(const Field<T, 2, 3> *field, unsigned int dim) {
+    this->computePeriodicWeights(field, dim);
+    T min = field->grid.dimensions[dim].min;
+    T max = field->grid.dimensions[dim].max;
+    T spacing = field->grid.getSpacings()[dim];
+    T* wgpPtr = wgp[dim];
+    T* wgBPtr = wgB[dim];
+    T* wgpBPtr = wgpB[dim];
+    T* posPtr = pos[dim];
+    for(unsigned int i = 0; i < this->Np; ++i){
+        if(posPtr[i]-min < spacing/2){
+            wgBPtr[i] = 0;
         }
-        if(!this->bcConfig.types[dim] == Config<T,2,3>::BC::Periodic){ //Fix non-periodicity //TODO: TEST
-            for(unsigned int i = 0; i < this->Np; ++i){
-                if(posPtr[i]-min < spacing/2){
-                    wgBPtr[i] = 0;
-                }
-                if(max-posPtr[i] <= spacing){
-                    wgpPtr[i] = 0;
-                    if(max-posPtr[i] <= spacing/2){
-                        wgpBPtr[i] = 0;
-                    }
-                }
+        if(max-posPtr[i] <= spacing){
+            wgpPtr[i] = 0;
+            if(max-posPtr[i] <= spacing/2){
+                wgpBPtr[i] = 0;
             }
         }
     }
+
 }
 
 template<typename T>

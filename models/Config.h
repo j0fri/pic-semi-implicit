@@ -83,13 +83,15 @@ struct Config{
     };
     SaveConfig saveConfig;
 
-    enum BC{Periodic, Free, PerfectConductor};
+    enum BC{Periodic, TwoPlates};
     struct BCConfig{
-        std::array<BC,2*Nd> types;
-        std::array<std::optional<T>,2*Nd> rhos; /*For each dimension, charge density at the boundary, only relevant
-            for PerfectConductor type boundaries.*/
+        BC type;
 
-        /* Boundary conditions in 2D3V must be either all periodic or all perfect conductors. */
+        struct TwoPlates{
+            T leftRho;
+            T rightRho;
+        };
+        std::optional<TwoPlates> twoPlates;
     };
     BCConfig bcConfig;
 

@@ -18,7 +18,7 @@ speciesData = readmatrix("../outputs/speciesEnergy.txt",'NumHeaderLines',0);
 PE = fieldData(:);
 KE = zeros(size(PE));
 for si = 1:Ns
-    disp(speciesData(2+2*(si-1):(2*Ns):end,1));
+    %disp(speciesData(2+2*(si-1):(2*Ns):end,1));
     KE = KE + speciesData(2+2*(si-1):(2*Ns):end,1);
 end
 
@@ -61,3 +61,6 @@ hold on
 title('Total energy evolution in time');
 xlabel('Time')
 ylabel('Energy')
+
+disp('Max percentage difference in energy')
+disp((max(KE+PE)-min(KE+PE))/(mean(KE+PE)))

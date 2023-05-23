@@ -65,25 +65,14 @@ void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species, T 
         }
     }
 
-    bool allPeriodic = true;
-    bool allPerfectConductors = true;
-    for(auto bc: this->bcConfig.types){
-        if(bc != Config<T,2,3>::BC::Periodic){
-            allPeriodic = false;
-        }
-        if(bc != Config<T,2,3>::BC::PerfectConductor){
-            allPerfectConductors = false;
-        }
-    }
-
-    if(allPeriodic){
+    if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
         this->initialisePeriodicField(species, dt);
         this->initialisePeriodicA(dt);
         return;
     }
-    if(allPerfectConductors){
-        this->initialiseNonPeriodicField(species, dt);
-        this->initialiseNonPeriodicA(dt);
+    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
+        this->initialiseTwoPlatesField(species, dt);
+        this->initialiseTwoPlatesA(dt);
         return;
     }
 
@@ -162,23 +151,15 @@ template<typename T>
 std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const {
     bool allPeriodic = true;
     bool allPerfectConductors = true;
-    for(auto bc: this->bcConfig.types){
-        if(bc != Config<T,2,3>::BC::Periodic){
-            allPeriodic = false;
-        }
-        if(bc != Config<T,2,3>::BC::PerfectConductor){
-            allPerfectConductors = false;
-        }
-    }
 
-    if(allPeriodic){
+    if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
         return this->getPeriodicElectrostaticPotential(species);
     }
-    if(allPerfectConductors){
-        return this->getNonPeriodicElectrostaticPotential(species);
+    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
+        return this->getPeriodicElectrostaticPotential(species);
     }
 
-    throw std::invalid_argument("Boundaries in a 2D3V field must be either all periodic or all perfect conductors.");
+    throw std::invalid_argument("Unsupported boundary conditions.");
 }
 
 
@@ -314,28 +295,13 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         return;
     }
 
-    bool allPeriodic = true;
-    bool allPerfectConductors = true;
-    for(auto bc: this->bcConfig.types){
-        if(bc != Config<T,2,3>::BC::Periodic){
-            allPeriodic = false;
-        }
-        if(bc != Config<T,2,3>::BC::PerfectConductor){
-            allPerfectConductors = false;
-        }
-    }
-
-    if(!allPeriodic && !allPerfectConductors){
-        throw std::invalid_argument("Boundaries in a 2D3V field must be either all periodic or all perfect conductors.");
-    }
-
-    if(allPeriodic){
+    if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
         this->constructPeriodicAc(dt);
         this->constructPeriodicC(dt);
     }
-    if(allPerfectConductors){
-        this->constructNonPeriodicAc(dt);
-        this->constructNonPeriodicC(dt);
+    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
+        this->constructTwoPlatesAc(dt);
+        this->constructTwoPlatesC(dt);
     }
 
     Eigen::LeastSquaresConjugateGradient<SpMat> lscg;
@@ -472,7 +438,7 @@ void Field2D3V<T>::initialisePeriodicA(T dt) {
 
 
 template<typename T>
-void Field2D3V<T>::initialiseNonPeriodicA(T dt) {
+void Field2D3V<T>::initialiseTwoPlatesA(T dt) {
     //TODO
 }
 
@@ -516,7 +482,7 @@ void Field2D3V<T>::initialisePeriodicField(const std::vector<Species<T,2,3>*>& s
 
 
 template<typename T>
-void Field2D3V<T>::initialiseNonPeriodicField(const std::vector<Species<T,2,3>*>& species, T dt) {
+void Field2D3V<T>::initialiseTwoPlatesField(const std::vector<Species<T,2,3>*>& species, T dt) {
     //TODO
 }
 
@@ -617,8 +583,96 @@ void Field2D3V<T>::constructPeriodicAc(T dt) {
 
 
 template<typename T>
-void Field2D3V<T>::constructNonPeriodicAc(T dt) {
-    //TODO
+void Field2D3V<T>::constructTwoPlatesAc(T dt) {
+    typedef Eigen::Triplet<T> Tri;
+    std::vector<Tri> tripletList;
+
+    unsigned int lda = 6*Ng;
+    unsigned int gi, gdxi, gdxdyi, gdyi, gmdxdyi, gmdxi, gmdxmdyi, gmdyi, gdxmdyi;
+    T c1 = 2*M_PI*dt;
+    unsigned int eq = 0;
+    unsigned int xi = 0;
+    unsigned int yi = 0;
+    while(eq < lda) {
+        //Indices:
+        gi = xi + Nx*yi;
+        gdxi = (xi+1)%Nx + Nx*yi;
+        gdxdyi = (xi+1)%Nx + Nx*((yi+1)%Ny);
+        gdyi = xi + Nx*((yi+1)%Ny);
+        gmdxdyi = (xi-1+Nx)%Nx + Nx*((yi+1)%Ny);
+        gmdxi = (xi-1+Nx)%Nx + Nx*yi;
+        gmdxmdyi = (xi-1+Nx)%Nx + Nx*((yi-1+Ny)%Ny);
+        gmdyi = xi + Nx*((yi-1+Ny)%Ny);
+        gdxmdyi = (xi+1)%Nx + Nx*((yi-1+Ny)%Ny);
+
+        //gi term: add Mg term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gi+col, c1 * Mg[9*gi + 3*col + row]);
+            }
+
+        }
+        //gdxi term: add Mgdx term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdxi+col, c1 * Mgdx[9*gi + 3*col + row]);
+            }
+        }
+        //gdxdyi term: add Mgdxdy term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdxdyi+col, c1 * Mgdxdy[9*gi + 3*col + row]);
+            }
+        }
+        //gdyi term: add Mgdy term at gi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdyi+col, c1 * Mgdy[9*gi + 3*col + row]);
+            }
+        }
+        //gmdxdyi term: add Mgmdxdy
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdxdyi+col, c1 * Mgmdxdy[9*gi + 3*col + row]);
+            }
+        }
+        //gmdxi term: add Mgdx term at gmdxi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdxi+col, c1 * Mgdx[9*gmdxi + 3*col + row]);
+            }
+        }
+        //gmdxmdyi term: add Mgdxdy term at gmdxmdyi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdxmdyi+col, c1 * Mgdxdy[9*gmdxmdyi + 3*col + row]);
+            }
+        }
+        //gmdyi term: add Mgdy term at gmdyi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gmdyi+col, c1 * Mgdy[9*gmdyi + 3*col + row]);
+            }
+        }
+        //gdxmdyi term: add Mgmdxdy term at gdxmdyi
+        for(unsigned int col = 0; col < 3; ++col){
+            for(unsigned int row = 0; row < 3; ++row){
+                tripletList.emplace_back(eq+row,6*gdxmdyi+col, c1 * Mgmdxdy[9*gdxmdyi + 3*col + row]);
+            }
+        }
+        eq += 6;
+        //Advance indices:
+        ++xi;
+        if(xi == Nx){
+            xi = 0;
+            ++yi;
+        }
+    }
+
+    Am = SpMat(6*Ng,6*Ng);
+    Am.setFromTriplets(tripletList.begin(), tripletList.end());
+    Ac = A;
+    Ac += Am;
 }
 
 
@@ -655,7 +709,7 @@ void Field2D3V<T>::constructPeriodicC(T dt) {
 
 
 template<typename T>
-void Field2D3V<T>::constructNonPeriodicC(T dt) {
+void Field2D3V<T>::constructTwoPlatesC(T dt) {
     //TODO
 }
 
@@ -751,7 +805,7 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
 
 template<typename T>
 std::unique_ptr<const T>
-Field2D3V<T>::getNonPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
+Field2D3V<T>::getTwoPlatesElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
     //TODO
 }
 

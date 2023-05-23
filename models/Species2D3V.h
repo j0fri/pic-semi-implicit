@@ -68,6 +68,8 @@ private:
 
     void computeAlphas(T dt);
     void computeWeights(const Field<T,2,3>* field);
+    void computePeriodicWeights(const Field<T,2,3>* field, unsigned int dim);
+    void computeNonPeriodicWeights(const Field<T,2,3>* field, unsigned int dim);
     void computeLocalB(const Field<T,2,3>* field);
     void computeLocalE(const Field<T,2,3>* field);
 };

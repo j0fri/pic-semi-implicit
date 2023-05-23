@@ -8,7 +8,7 @@ Config<T,1,1> preset_configs::landau1D1V(){
         preset_fields::Default1D1V<T>(4*M_PI,30,1,1),
         {10,0.01},
         {false, true, false, false, true, false, false, true, false, false, 0.1, "outputs/"},
-        {{Config<T,1,1>::BC::Periodic, Config<T,1,1>::BC::Periodic},{(T)0, (T)0}}, //Only periodic boundary conditions
+        {{Config<T,1,1>::BC::Periodic}}, //Only periodic boundary conditions
         true,
         false
     };
@@ -29,8 +29,7 @@ Config<T,2,3> preset_configs::constVelocityX(){
     {10,0.1},
     {false, true, false, false, true, true, true, true, true, false, 0.1, "outputs/"},
     {
-            {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-            {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+           {Config<T,2,3>::BC::Periodic}
     },
     true,
     true
@@ -52,8 +51,7 @@ Config<T,2,3> preset_configs::landau2D3VX(unsigned int Nx, unsigned int Ny){
         {10,0.1},
         {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
         {
-            {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-            {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+           {Config<T,2,3>::BC::Periodic}
         },
         true,
         true
@@ -77,8 +75,7 @@ Config<T,2,3> preset_configs::landauFile(){
             {10,0.1},
             {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
             {
-                {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-                {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+                {Config<T,2,3>::BC::Periodic}
             },
             true,
             true
@@ -97,8 +94,7 @@ Config<T,2,3> preset_configs::landau2D3VXWave(unsigned int Nx, unsigned int Ny){
             {10,0.1},
             {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
             {
-                    {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-                    {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+                    
             },
             true,
             true
@@ -119,8 +115,7 @@ Config<T,2,3> preset_configs::constAccelerationX(){
             {10,0.1},
             {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
             {
-                    {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-                    {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+                    {Config<T,2,3>::BC::Periodic}
             },
             true,
             true
@@ -138,8 +133,7 @@ Config<T,2,3> preset_configs::magneticGyration(){
             {10,0.1},
             {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
             {
-                    {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-                    {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+                    {Config<T,2,3>::BC::Periodic}
             },
             true,
             true
@@ -158,8 +152,7 @@ Config<T,2,3> preset_configs::magneticGyrationX(){
             {10,0.1},
             {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
             {
-                    {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-                    {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+                    {Config<T,2,3>::BC::Periodic}
             },
             true,
             true
@@ -178,8 +171,7 @@ Config<T,2,3> preset_configs::constPotentialWell(){
             {100,0.1},
             {false, true, false, false, true, true, true, true, false, true, 0.1, "outputs/"},
             {
-                    {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-                    {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+                    {Config<T,2,3>::BC::Periodic}
             },
             true,
             true
@@ -201,8 +193,7 @@ Config<T,2,3> preset_configs::constPotentialWellFile(){
             {10,0.1},
             {true, true, true, false, false, true, true, false, true, true, 10, "outputs/"},
             {
-                    {Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic,Config<T,2,3>::BC::Periodic},
-                    {(T)0.0, (T)0.0, (T)0.0, (T)0.0}
+                    {Config<T,2,3>::BC::Periodic}
             },
             true,
             true
@@ -259,9 +250,8 @@ Config<T,2,3> preset_configs::electronBeam(unsigned int Nx, unsigned int Ny) {
             {10,0.01},
             {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
             {
-                {Config<T,2,3>::BC::PerfectConductor, Config<T,2,3>::BC::PerfectConductor,
-                 Config<T,2,3>::BC::PerfectConductor,Config<T,2,3>::BC::PerfectConductor}, //X non-periodic
-                {(T)0,(T)0,(T)0,(T)0} //Potential zero at non-periodic boundaries
+                {Config<T,2,3>::BC::TwoPlates}, //X non-periodic
+                {(T)0,(T)0} //Potential zero at non-periodic boundaries
             },
             true,
             true
