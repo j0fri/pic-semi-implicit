@@ -219,65 +219,99 @@ void Field2D3V<T>::accumulateM(const std::vector<Species<T,2,3>*> &species, T dt
         const T* alpha = ((Species2D3V<T>*)sPtr)->getAlpha();
         T factor = sPtr->q * sPtr->q * dt / (2 * sPtr->m * vol);
         for(unsigned int p = 0; p < sPtr->Np; ++p){
-            unsigned int gi = g.x[p]+g.y[p]*Nx;
-            unsigned int gdxi = gp.x[p]+g.y[p]*Nx;
-            unsigned int gdyi = g.x[p]+gp.y[p]*Nx;
-            unsigned int gdxdyi = gp.x[p]+gp.y[p]*Nx;
+            unsigned int gi9 = 9*(g.x[p]+g.y[p]*Nx);
+            unsigned int gdxi9 = 9*(gp.x[p]+g.y[p]*Nx);
+            unsigned int gdyi9 = 9*(g.x[p]+gp.y[p]*Nx);
+            unsigned int gdxdyi9 = 9*(gp.x[p]+gp.y[p]*Nx);
             T weight;
+            T weightFactor;
+            T* Mptr;
+            const T* alphaPtr;
+            const T* const alphaPtrConst = alpha+p*9-1;
             //Grid cells onto themselves:
             //0 onto 0, stored in 0's Mg
             weight = wg.x[p]*wg.y[p]*wg.x[p]*wg.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mg + gi9 - 1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mg[gi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //dx onto dx, stored in dx's Mg
             weight = wgp.x[p]*wg.y[p]*wgp.x[p]*wg.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mg+gdxi9-1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mg[gdxi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //dy onto dy, stored in dy's Mg
             weight = wg.x[p]*wgp.y[p]*wg.x[p]*wgp.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mg+gdyi9-1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mg[gdyi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //dxdy onto dxdy, stored in dxdy's Mg
             weight = wgp.x[p]*wgp.y[p]*wgp.x[p]*wgp.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mg+gdxdyi9-1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mg[gdxdyi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //Grid cells onto cell+dx:
             //0 onto dx, stored in 0's Mgdx
             weight = wg.x[p]*wg.y[p]*wgp.x[p]*wg.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mgdx + gi9 - 1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mgdx[gi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //dy onto dxdy, stored in dy's Mgdx
             weight = wg.x[p]*wgp.y[p]*wgp.x[p]*wgp.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mgdx+gdyi9-1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mgdx[gdyi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //Grid cells onto cell+dy:
             //0 onto dy, stored in 0's Mgdy
             weight = wg.x[p]*wg.y[p]*wg.x[p]*wgp.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mgdy + gi9 - 1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mgdy[gi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //dx onto dxdy, stored in dx's Mgdy
             weight = wgp.x[p]*wg.y[p]*wgp.x[p]*wgp.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mgdy+gdyi9-1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mgdy[gdyi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //Grid cell onto cell + dx + dy:
             //0 onto dx, stored in 0's Mgdxdy
             weight = wg.x[p]*wg.y[p]*wgp.x[p]*wgp.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mgdxdy + gi9 - 1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mgdxdy[gi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
             //Grid cell onto cell - dx + dy:
             //dx onto dy, stored in dx's Mgmdxdy
             weight = wgp.x[p]*wg.y[p]*wg.x[p]*wgp.y[p];
+            weightFactor = weight*factor;
+            Mptr = Mgmdxdy+gdxi9-1;
+            alphaPtr = alphaPtrConst;
             for(unsigned int comp = 0; comp < 9; ++comp){
-                Mgmdxdy[gdxi*9+comp] += alpha[p*9+comp]*weight*factor;
+                *(++Mptr) += *(++alphaPtr)*weightFactor;
             }
         }
     }
