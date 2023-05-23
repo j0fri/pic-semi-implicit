@@ -9,6 +9,7 @@
 #include "preset_distributions.h"
 #include "preset_species.h"
 #include "preset_fields.h"
+#include "preset_save_configs.h"
 
 
 namespace preset_configs {
@@ -27,6 +28,9 @@ namespace preset_configs {
 
     template <typename T>
     Config<T,2,3> landau2D3VXWave(unsigned int Nx, unsigned int Ny);
+
+    template <typename T>
+    Config<T,2,3> landau2D3VXWaveStatic(unsigned int Nx, unsigned int Ny);
 
     //Top hat species around 0,0 in a -1 to 1 domain which gets a constant electric acceleration.
     template <typename T>

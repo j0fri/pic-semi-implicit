@@ -149,9 +149,6 @@ const T *Field2D3V<T>::getFieldT() const {
 
 template<typename T>
 std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const {
-    bool allPeriodic = true;
-    bool allPerfectConductors = true;
-
     if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
         return this->getPeriodicElectrostaticPotential(species);
     }
@@ -159,7 +156,7 @@ std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vect
         return this->getPeriodicElectrostaticPotential(species);
     }
 
-    throw std::invalid_argument("Unsupported boundary conditions.");
+    throw std::invalid_argument("Unsupported boundary conditions in Field2D3V getElectrostaticPotential.");
 }
 
 
@@ -720,35 +717,23 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     T dx = this->grid.getSpacings()[0];
     T dy = this->grid.getSpacings()[1];
 
-    T* Q;
-    try{
-        Q = new T[Ng]; //Vector of charge in every cell at magnetic field grid
-    }catch(const std::bad_alloc& e){
-        std::cerr << "Error in field memory temporary allocation in initialisation (O(Nx*Ny*Nx*Ny))" << std::endl;
-        throw;
-    }
-
-    //Accumulate charges:
-    std::fill(Q,Q+Ng,0.0);
+    static Eigen::VectorX<T> Ec(Ng);
+    //Construct system vector: -4 pi rho at every E cell.
+    std::fill(Ec.begin(), Ec.end(), (T)0);
     for(auto sPtr: species){
-        const Vector2<unsigned int> gB = ((Species2D3V<T>*)sPtr)->getG();
-        T q = sPtr->q;
-        unsigned int gi;
-        for(unsigned int i = 0; i < sPtr->Np; ++i){
-            gi = gB.x[i]+Nx*gB.y[i];
-            Q[gi] += q;
+        const Vector2<unsigned int> g = ((Species2D3V<T>*)sPtr)->getG();
+        const Vector2<unsigned int> gp = ((Species2D3V<T>*)sPtr)->getGp();
+        const Vector2<T> Wg = ((Species2D3V<T>*)sPtr)->getWg();
+        const Vector2<T> Wgp = ((Species2D3V<T>*)sPtr)->getWgp();
+        T qScaled = -4*M_PI*sPtr->q/(dx*dy); //Gauss units
+        for(unsigned int p = 0; p < sPtr->Np; ++p){
+            Ec[g.x[p]+this->Nx*g.y[p]] += qScaled*Wg.x[p]*Wg.y[p];
+            Ec[g.x[p]+this->Nx*gp.y[p]] += qScaled*Wg.x[p]*Wgp.y[p];
+            Ec[gp.x[p]+this->Nx*g.y[p]] += qScaled*Wgp.x[p]*Wg.y[p];
+            Ec[gp.x[p]+this->Nx*gp.y[p]] += qScaled*Wgp.x[p]*Wgp.y[p];
         }
     }
-
-    Eigen::VectorX<T> Ec(Ng);
-    //Construct system vector:
-    for(unsigned int g = 0; g < Ng; ++g){
-        //TODO: check units, scheme uses gauss but UKAEA uses SI
-        Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy)*4*M_PI; //Gauss units
-        //Ec[g] = -Q[(g-1-Nx+Ng)%Ng]/(dx*dy*this->e0); //SI units
-    }
-    Ec[0] = (T)0; //Fixed point
-    delete[] Q;
+    Ec[0]=0; //For potential at 0=0;
 
     static Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
     static bool first = true;
@@ -801,7 +786,6 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     std::copy(sol.begin(), sol.end(), sol_out);
     return std::unique_ptr<const T>(sol_out);
 }
-
 
 template<typename T>
 std::unique_ptr<const T>

@@ -62,5 +62,5 @@ title('Total energy evolution in time');
 xlabel('Time')
 ylabel('Energy')
 
-disp('Max percentage difference in energy')
+disp('Max fraction  difference in energy')
 disp((max(KE+PE)-min(KE+PE))/(mean(KE+PE)))

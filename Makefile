@@ -18,9 +18,11 @@ HELPERHDRS = helpers/math_helper.h helpers/string_helper.h helpers/output_helper
 
 HELPERCPPS = helpers/math_helper.cpp helpers/string_helper.cpp helpers/output_helper.cpp
 
-PRESETHDRS = helpers/preset_configs.h helpers/preset_distributions.h helpers/preset_fields.h helpers/preset_species.h
+PRESETHDRS = helpers/preset_configs.h helpers/preset_distributions.h helpers/preset_fields.h helpers/preset_species.h\
+			 helpers/preset_save_configs.h
 
-PRESETCPPS = helpers/preset_configs.cpp helpers/preset_distributions.cpp helpers/preset_fields.cpp helpers/preset_species.cpp
+PRESETCPPS = helpers/preset_configs.cpp helpers/preset_distributions.cpp helpers/preset_fields.cpp helpers/preset_species.cpp\
+			 helpers/preset_save_configs.h
 
 TESTHDRS = testModels/Field2D3VConst.h
 
