@@ -86,9 +86,8 @@ Vector3<T> Vector3<T>::operator+(const Vector3 &other) const {
     auto thisPtr = x-1;
     auto otherPtr = other.x-1;
     auto outPtr = out.x-1;
-    const auto last = x+3*n;
-    while(++thisPtr != last){
-        *(++outPtr) = *thisPtr + *(++otherPtr);
+    for(unsigned int i = 0; i < 3*n; ++i){
+        *(++outPtr) = *(++thisPtr) + *(++otherPtr);
     }
     return out;
 }
@@ -134,9 +133,8 @@ Vector3<T> Vector3<T>::operator*(double c) const{
 //    }
     auto thisPtr = x-1;
     auto outPtr = out.x-1;
-    const auto last = x+3*n;
-    while(++thisPtr != last){
-        *(++outPtr) = c*(*thisPtr);
+    for(unsigned int i = 0; i < 3*n; ++i){
+        *(++outPtr) = c*(*(++thisPtr));
     }
     return out;
 }
