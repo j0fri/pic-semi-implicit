@@ -271,8 +271,8 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
 template<typename T>
 void Species2D3V<T>::computePeriodicWeights(const Field<T, 2, 3> *field, unsigned int dim) {
     T min = field->grid.dimensions[dim].min;
-    T max = field->grid.dimensions[dim].max;
     unsigned int Nc = field->grid.dimensions[dim].Nc;
+    unsigned int Ncm1 = Nc-1;
     T spacing = field->grid.getSpacings()[dim];
     unsigned int* gPtr = g[dim];
     unsigned int* gpPtr = gp[dim];
@@ -285,11 +285,9 @@ void Species2D3V<T>::computePeriodicWeights(const Field<T, 2, 3> *field, unsigne
     T* posPtr = pos[dim];
     T invspacing = (T)1/spacing;
     T halfspacing = spacing/2;
-    T shift1 = max-2*min-halfspacing;
-    T shift2 = max-min;
-    T shift3 = -min-halfspacing;
-    int temp;
-    T temp2;
+    T shift1 = halfspacing-min;
+    T temp;
+    T currentPos;
     //Periodic base case:
     for(unsigned int i = 0; i < this->Np; ++i){
         //Unoptimised code:
@@ -303,20 +301,29 @@ void Species2D3V<T>::computePeriodicWeights(const Field<T, 2, 3> *field, unsigne
 //            wgBPtr[i] = (T)1-wgpBPtr[i];
 //            std::cout << "pos: " << posPtr[i] << ", g: " << gPtr[i] << ", gp: " << gpPtr[i] << ", gB: " << gBPtr[i] << ", gpB: " << gpBPtr[i] << std::endl;
 
-        gPtr[i] = (int)(((T)posPtr[i]-min) * invspacing);
-        gpPtr[i] = gPtr[i] + 1;
-        gpPtr[i] = gpPtr[i] == Nc ? 0 : gpPtr[i]; //Periodicity
-        temp = (int) (((T)posPtr[i]+shift1) * invspacing);
-        gBPtr[i] = (temp+Nc) % Nc;
-        gpBPtr[i] = gBPtr[i] + 1;
-        gpBPtr[i] = gpBPtr[i] == Nc ? 0 : temp;
+        currentPos = (T)(*posPtr);
+        temp = ((currentPos-min) * invspacing);
+        *gPtr = (unsigned int)temp;
+        *gpPtr = *gPtr == Ncm1 ? 0 : *gPtr+1; //Periodicity
+        *wgpPtr = temp - (T)(*gPtr);
+        *wgPtr = 1.0-(T)*wgpPtr;
 
-        wgpPtr[i] = ((T)posPtr[i]-min) * invspacing - (T)gPtr[i];
-        wgPtr[i] = (T)1-(T)wgpPtr[i];
-        temp2 = (T)posPtr[i]+shift3;
-        temp2 = temp2 < 0 ? temp2 + shift2 : temp2;
-        wgpBPtr[i] = temp2 * invspacing - (T)gBPtr[i];
-        wgBPtr[i] = (T)1-wgpBPtr[i];
+        temp = ((currentPos+shift1) * invspacing);
+        *gBPtr = (unsigned int) temp;
+        *wgpBPtr = temp - (T)(*gBPtr);
+        *wgBPtr = 1.0-(*wgpBPtr);
+        *gBPtr = *gBPtr == 0 ? Ncm1 : (*gBPtr)-1;
+        *gpBPtr = *gBPtr == Ncm1 ? 0 : (*gBPtr)+1;
+
+        ++posPtr;
+        ++gPtr;
+        ++gpPtr;
+        ++gBPtr;
+        ++gpBPtr;
+        ++wgPtr;
+        ++wgpPtr;
+        ++wgBPtr;
+        ++wgpBPtr;
     }
 }
 
