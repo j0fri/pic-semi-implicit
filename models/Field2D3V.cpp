@@ -166,38 +166,61 @@ void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
     T dV = this->grid.getSpacings()[0] * this->grid.getSpacings()[1];
     for(auto sPtr: species){
         T dJ[3];
+        T pVel[3];
         const Vector2<unsigned int> g = ((Species2D3V<T>*)sPtr)->getG();
         const Vector2<unsigned int> gp = ((Species2D3V<T>*)sPtr)->getGp();
         const Vector2<T> wg = ((Species2D3V<T>*)sPtr)->getWg();
         const Vector2<T> wgp = ((Species2D3V<T>*)sPtr)->getWgp();
         const Vector3<T> vel = ((Species2D3V<T>*)sPtr)->getVel();
         const T* alpha = ((Species2D3V<T>*)sPtr)->getAlpha();
+        const T* alphaPtr;
+        T* jPtr;
+        T* dJPtr;
         for(unsigned int p = 0; p < sPtr->Np; ++p){
+            pVel[0] = vel.x[p];
+            pVel[1] = vel.y[p];
+            pVel[2] = vel.z[p];
             //Bottom-left cell
             unsigned int gi = g.x[p]+g.y[p]*Nx;
-            math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wg.y[p]/dV),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            alphaPtr = alpha+9*gi;
+            math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wg.y[p]),alphaPtr,3,pVel,1,dJ,1);
+            jPtr = J + 3*gi-1;
+            dJPtr = dJ-1;
             for(unsigned int dim = 0; dim < 3; ++dim){
-                J[3*gi+dim] += dJ[dim];
+                *(++jPtr) += *(++dJPtr);
             }
             //Bottom-right cell (dx)
             gi = gp.x[p]+g.y[p]*Nx;
-            math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wg.y[p]/dV),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            alphaPtr = alpha+9*gi;
+            math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wg.y[p]),alphaPtr,3,pVel,1,dJ,1);
+            jPtr = J + 3*gi-1;
+            dJPtr = dJ-1;
             for(unsigned int dim = 0; dim < 3; ++dim){
-                J[3*gi+dim] += dJ[dim];
+                *(++jPtr) += *(++dJPtr);
             }
             //Top-left cell (dy)
             gi = g.x[p]+gp.y[p]*Nx;
-            math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wgp.y[p]/dV),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            alphaPtr = alpha+9*gi;
+            math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wgp.y[p]),alphaPtr,3,pVel,1,dJ,1);
+            jPtr = J + 3*gi-1;
+            dJPtr = dJ-1;
             for(unsigned int dim = 0; dim < 3; ++dim){
-                J[3*gi+dim] += dJ[dim];
+                *(++jPtr) += *(++dJPtr);
             }
             //Top-right cell (dx, dy)
             gi = gp.x[p]+gp.y[p]*Nx;
-            math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wgp.y[p]/dV),alpha+9*gi,3,vel.x+p,sPtr->Np,dJ,1);
+            alphaPtr = alpha+9*gi;
+            math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wgp.y[p]),alphaPtr,3,pVel,1,dJ,1);
+            jPtr = J + 3*gi-1;
+            dJPtr = dJ-1;
             for(unsigned int dim = 0; dim < 3; ++dim){
-                J[3*gi+dim] += dJ[dim];
+                *(++jPtr) += *(++dJPtr);
             }
         }
+    }
+    T idV = (T)1/dV;
+    for(unsigned int i = 0; i < 3*Ng; ++i){
+        J[i]*=idV;
     }
 }
 

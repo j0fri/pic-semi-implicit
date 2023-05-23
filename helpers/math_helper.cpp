@@ -44,17 +44,23 @@ std::vector<T> math_helper::linspace(T x1, T x2, unsigned int n){
 template<typename T>
 void math_helper::gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsigned int lda, const T* x,
                        unsigned int incx, T* y, unsigned int incy){
-    for(unsigned int row = 0; row < M; ++row){
-        y[row*incy] = (T)0;
+	T* yPtr = y;
+	for(unsigned int row = 0; row < M; ++row){
+		*yPtr = (T)0;
+        yPtr += incy;
     }
     T colFactor;
-    unsigned int colStart;
+    const T* Aptr = A-1;
+    const T* xPtr = x;
     for(unsigned int col = 0; col < N; ++col){
-        colFactor = x[col*incx]*alpha;
-        colStart = col*lda;
+        colFactor = *(xPtr)*alpha;
+        yPtr = y;
         for(unsigned int row = 0; row < M; ++row){
-            y[row*incy] += colFactor * A[row+colStart];
+            *yPtr += colFactor * *(++Aptr);
+            yPtr += incy;
         }
+        Aptr += lda-M;
+        xPtr += incx;
     }
 }
 

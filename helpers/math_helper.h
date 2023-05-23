@@ -16,7 +16,7 @@ namespace math_helper{
 
     //y = A*x, where A is matrix in column-major format
     template <typename T>
-    void gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsigned int lda, const T* x,
+    inline void gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsigned int lda, const T* x,
               unsigned int incx, T* y, unsigned int incy);
 
     //Returns a velocity magnitude which contains 99.99% of the distribution

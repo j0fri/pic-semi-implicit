@@ -113,7 +113,7 @@ Config<T,2,3> preset_configs::landau2D3VXWaveStatic(unsigned int Nx, unsigned in
                 preset_species::TopHat2D3V(500000,(T)2000,(T)1,(T)0,(T)1,(T)0,(T)1),
            }},
             preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
-            {10,0.01},
+            {1,0.01},
             preset_save_configs::Energies<T,2,3>(0.01),
             {
                     {Config<T,2,3>::BC::Periodic}
