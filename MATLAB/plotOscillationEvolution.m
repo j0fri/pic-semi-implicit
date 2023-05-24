@@ -62,7 +62,7 @@ clf;
 t = linspace(0,T,Nt);
 semilogy(t,localE);
 hold on;
-realEigenvalue = -0.012;
+realEigenvalue = -1.01;
 semilogy(t,exp(realEigenvalue*t)*localE(1),'--')
 xlabel('x');
 ylabel('Local Ex')

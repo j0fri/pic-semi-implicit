@@ -4,7 +4,7 @@ e = 1; %fundamental charge
 Kb = 1; %boltzmann constant
 
 k = 2*pi; %waveparameter
-Te = 0.01; %electron temperature
+Te = 0.08; %electron temperature
 
 omega_p = sqrt(4*pi*n0*e^2/me);
 disp(['Natural frequency: ', num2str(omega_p),', natural period: ', num2str(2*pi/omega_p)]);

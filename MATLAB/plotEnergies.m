@@ -50,7 +50,7 @@ figure(3);
 clf;
 semilogy(t,PE);
 hold on;
-realEigenvalue = -0.2;
+realEigenvalue = -2.25;
 semilogy(t,exp(realEigenvalue*t)*PE(1),'--')
 legend('Field Energy','Linear damping');
 xlabel('Time');
