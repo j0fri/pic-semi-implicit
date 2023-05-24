@@ -41,8 +41,8 @@ int main(int argc, char* argv[]){
 
     //auto config = preset_configs::constVelocityX<double>();
     //auto config = preset_configs::landau2D3VX<double>(50,5);
-    //auto config = preset_configs::landau2D3VXWave<double>(30,2);
-    auto config = preset_configs::landau2D3VXWaveStatic<double>(30,2);
+    auto config = preset_configs::landau2D3VXWave<double>(120,2);
+    //auto config = preset_configs::landau2D3VXWaveStatic<double>(30,2);
     //auto config = preset_configs::magneticGyration<double>();
     //auto config = preset_configs::magneticGyrationX<double>();
     //auto config = preset_configs::constPotentialWell<double>();

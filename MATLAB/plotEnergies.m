@@ -49,7 +49,9 @@ ylabel('Energy');
 figure(3);
 clf;
 semilogy(t,PE);
-hold on
+hold on;
+realEigenvalue = -0.2;
+semilogy(t,exp(realEigenvalue*t)*PE(1),'--')
 legend('Field Energy','Linear damping');
 xlabel('Time');
 ylabel('Energy');

@@ -87,8 +87,8 @@ template <typename T>
 Config<T,2,3> preset_configs::landau2D3VXWave(unsigned int Nx, unsigned int Ny){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::Uniform2D3V<T>(50000,1,-1,1,1,Nx,Ny,1,0.001),
-                   preset_species::Uniform2D3V<T>(50000,2000,1,1,1,Nx,Ny,1,0.001),
+                   preset_species::Uniform2D3V<T>(200000,1,-1,1,1,Nx,Ny,1,0.00001),
+                   preset_species::Uniform2D3V<T>(200000,2000,1,1,1,Nx,Ny,1,0.00001),
              }},
             preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
             {10,0.01},
@@ -100,7 +100,7 @@ Config<T,2,3> preset_configs::landau2D3VXWave(unsigned int Nx, unsigned int Ny){
             true
     };
     //Add perturbation in electric field
-    config.fieldConfig.forcedE[0] += preset_distributions::Sin<T,2>(0,1,(T)2*M_PI,-M_PI/2);
+    config.fieldConfig.forcedE[0] += preset_distributions::Sin<T,2>(0,0.1,(T)2*M_PI,0);
 
     return config;
 }
@@ -109,11 +109,11 @@ template <typename T>
 Config<T,2,3> preset_configs::landau2D3VXWaveStatic(unsigned int Nx, unsigned int Ny){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                preset_species::TopHat2D3V(500000,(T)1,(T)-1,(T)0,(T)1,(T)0,(T)1),
-                preset_species::TopHat2D3V(500000,(T)2000,(T)1,(T)0,(T)1,(T)0,(T)1),
+                preset_species::TopHat2D3V(200000,(T)1,(T)-1,(T)0,(T)1,(T)0,(T)1),
+                preset_species::TopHat2D3V(200000,(T)2000,(T)1,(T)0,(T)1,(T)0,(T)1),
            }},
             preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
-            {1,0.01},
+            {10,0.01},
             preset_save_configs::Energies<T,2,3>(0.01),
             {
                     {Config<T,2,3>::BC::Periodic}
@@ -122,8 +122,7 @@ Config<T,2,3> preset_configs::landau2D3VXWaveStatic(unsigned int Nx, unsigned in
             true
     };
     //Add perturbation in electric field
-    config.fieldConfig.forcedE[0] += preset_distributions::Sin<T,2>(0,0.1,(T)2*M_PI,0);
-
+    config.fieldConfig.forcedE[0] += preset_distributions::Sin<T,2>(0,0.01,(T)2*M_PI,0);
     return config;
 }
 
