@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
 //    po::store(po::parse_command_line(argc, argv, opts), vm);
 
     //auto config = preset_configs::constVelocityX<double>();
-    auto config = preset_configs::landau2D3VX<double>(30,2);
+    auto config = preset_configs::landau2D3VX<double>(120,70);
     //auto config = preset_configs::landau2D3VXWave<double>(30,2);
     //auto config = preset_configs::landau2D3VXWaveStatic<double>(30,2);
     //auto config = preset_configs::magneticGyration<double>();
@@ -48,6 +48,8 @@ int main(int argc, char* argv[]){
     //auto config = preset_configs::constPotentialWell<double>();
     //auto config = preset_configs::constPotentialWellFile<double>();
     //auto config = preset_configs::electronBeam<double>(50,50);
+
+    config.useExplicitScheme = true;
 
 	Simulation<double,2,3> sim(config);
     sim.initialise();

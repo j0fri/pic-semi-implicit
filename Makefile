@@ -6,11 +6,11 @@ CXXFLAGS = -std=c++17 -Wall -O3 -g -I ./
 
 SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h models/Simulation.h models/Species1D1V.h\
 		  models/Field1D1V.h models/Species2D3V.h models/Field2D3V.h models/Vector2.h models/Vector3.h\
-		  models/DistributionGrid.h
+		  models/DistributionGrid.h models/Field2D3VExplicit.h
 
 SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o models/Simulation.o models/Species1D1V.o\
 		  models/Field1D1V.o models/Species2D3V.o models/Field2D3V.o models/Vector2.o models/Vector3.o\
-		  models/DistributionGrid.cpp
+		  models/DistributionGrid.o models/Field2D3VExplicit.o
 
 SIMLIBS = -lboost_program_options -lblas -llapack
 

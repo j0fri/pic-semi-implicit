@@ -43,6 +43,9 @@ protected:
     SpMat Ac; //Complete system matrix (6*Nx*Ny by 6*Nx*Ny)
     Eigen::VectorX<T> C; //System vector: Nx*Ny*6, same order as field
 
+    Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> Esolver; //Electrostatic system solver
+    mutable Eigen::VectorX<T> Ec; //Electrostatic potential system vector: Nx*Ny
+
 public:
     Field2D3V() = delete;
     explicit Field2D3V(const typename Config<T,2,3>::FieldConfig& fieldConfig,
@@ -57,7 +60,7 @@ public:
      * in which case they are only that). For now only works with fully periodic conditions.
      * It assumes that values in Z direction are zero for the derivatives, additionally, all average components of
      * electric field are 0 (before adding forced terms). */
-    void initialise(const std::vector<Species<T,2,3>*>& species, T dt);
+    virtual void initialise(const std::vector<Species<T,2,3>*>& species, T dt);
 
     //Save electric/magnetic field in 3 successive matrices, x, y and z components of the field. Rows are different x
     //values and columns are y values.
@@ -74,9 +77,9 @@ public:
     //Returns a pointer to a Nx by Ny matrix in col-major format (i.e. rows are different x-vals and cols are y-vals)
     //Electrostatic potential is defined to be 0 at 0,0
     std::unique_ptr<const T> getElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
-private:
-    void accumulateJ(const std::vector<Species<T,2,3>*>& species);
-    void accumulateM(const std::vector<Species<T,2,3>*>& species, T dt);
+protected:
+    virtual void accumulateJ(const std::vector<Species<T,2,3>*>& species);
+    virtual void accumulateM(const std::vector<Species<T,2,3>*>& species, T dt);
     virtual void solveAndAdvance(T dt);
     virtual void initialisePeriodicA(T dt);
     virtual void initialiseTwoPlatesA(T dt);
@@ -88,6 +91,8 @@ private:
     virtual void constructTwoPlatesC(T dt);
     std::unique_ptr<const T> getPeriodicElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
     std::unique_ptr<const T> getTwoPlatesElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
+    virtual void initialisePeriodicElectrostaticPotentialSystem();
+    virtual void initialiseTwoPlateElectrostaticPotentialSystem();
 };
 
 

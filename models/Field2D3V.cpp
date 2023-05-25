@@ -11,7 +11,7 @@ Field2D3V<T>::Field2D3V(const typename Config<T,2,3>::FieldConfig &fieldConfig,
                         Ng{fieldConfig.grid.dimensions[0].Nc*fieldConfig.grid.dimensions[1].Nc},
                         Nx{fieldConfig.grid.dimensions[0].Nc}, Ny{fieldConfig.grid.dimensions[1].Nc},
                         A{SpMat(6*Ng, 6*Ng)}, Am{SpMat(6*Ng, 6*Ng)}, Ac{SpMat(6*Ng, 6*Ng)},
-                        C{Eigen::VectorX<T>(6*Ng)}{
+                        C{Eigen::VectorX<T>(6*Ng)}, Esolver{}, Ec{Ng} {
     try{
         field = new T[6*Ng];
         fieldT = new T[6*Ng];
@@ -66,11 +66,13 @@ void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species, T 
     }
 
     if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
+        this->initialisePeriodicElectrostaticPotentialSystem();
         this->initialisePeriodicField(species, dt);
         this->initialisePeriodicA(dt);
         return;
     }
     if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
+        this->initialiseTwoPlateElectrostaticPotentialSystem();
         this->initialiseTwoPlatesField(species, dt);
         this->initialiseTwoPlatesA(dt);
         return;
@@ -774,7 +776,6 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     T dx = this->grid.getSpacings()[0];
     T dy = this->grid.getSpacings()[1];
 
-    static Eigen::VectorX<T> Ec(Ng);
     //Construct system vector: -4 pi rho at every E cell.
     std::fill(Ec.begin(), Ec.end(), (T)0);
     for(auto sPtr: species){
@@ -792,52 +793,7 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     }
     Ec[0]=0; //For potential at 0=0;
 
-    static Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
-    static bool first = true;
-    if(first){
-        typedef Eigen::Triplet<T> Tri;
-        std::vector<Tri> tripletList;
-
-        //Populate system matrix:
-        unsigned int eq;
-        unsigned int gi, gdxi, gmdxi, gdyi, gmdyi;
-        T c1 = (T)1/(dx*dx);
-        T c2 = (T)1/(dy*dy);
-        for(unsigned int j = 0; j < Ny; ++j){
-            for(unsigned int i = 0; i < Nx; ++i){
-                eq = j*Nx+i;
-                if(eq == 0){
-                    continue; //This will be the fixed point
-                }
-                gi = j*Nx+i;
-                gdxi = j*Nx+((i+1)%Nx);
-                gmdxi = j*Nx+((i-1+Nx)%Nx);
-                gdyi = ((j+1)%Ny)*Nx+i;
-                gmdyi = ((j-1+Ny)%Ny)*Nx+i;
-
-                //Poisson equation:
-                tripletList.emplace_back(eq,gdxi,c1);
-                tripletList.emplace_back(eq,gmdxi,c1);
-                tripletList.emplace_back(eq,gdyi,c2);
-                tripletList.emplace_back(eq,gmdyi,c2);
-                tripletList.emplace_back(eq,gi,-2*c1-2*c2);
-            }
-        }
-
-        //Potential is 0 at 0,0 to avoid matrix rank-deficiency
-        tripletList.emplace_back(0,0,1);
-
-        SpMat EA = SpMat(Ng,Ng);
-        EA.setFromTriplets(tripletList.begin(), tripletList.end());
-        EA.makeCompressed();
-
-        solver.analyzePattern(EA);
-        solver.factorize(EA);
-
-        first = false;
-    }
-
-    Eigen::VectorX<T> sol = solver.solve(Ec);
+    Eigen::VectorX<T> sol = Esolver.solve(Ec);
 
     T* sol_out = new T[Ng];
     std::copy(sol.begin(), sol.end(), sol_out);
@@ -847,7 +803,57 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
 template<typename T>
 std::unique_ptr<const T>
 Field2D3V<T>::getTwoPlatesElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
-    //TODO
+    throw std::invalid_argument("Electrostatic potential not implemented for two-plates.");
+}
+
+template<typename T>
+void Field2D3V<T>::initialisePeriodicElectrostaticPotentialSystem() {
+    T dx = this->grid.getSpacings()[0];
+    T dy = this->grid.getSpacings()[1];
+
+    typedef Eigen::Triplet<T> Tri;
+    std::vector<Tri> tripletList;
+
+    //Populate system matrix:
+    unsigned int eq;
+    unsigned int gi, gdxi, gmdxi, gdyi, gmdyi;
+    T c1 = (T)1/(dx*dx);
+    T c2 = (T)1/(dy*dy);
+    for(unsigned int j = 0; j < Ny; ++j){
+        for(unsigned int i = 0; i < Nx; ++i){
+            eq = j*Nx+i;
+            if(eq == 0){
+                continue; //This will be the fixed point
+            }
+            gi = j*Nx+i;
+            gdxi = j*Nx+((i+1)%Nx);
+            gmdxi = j*Nx+((i-1+Nx)%Nx);
+            gdyi = ((j+1)%Ny)*Nx+i;
+            gmdyi = ((j-1+Ny)%Ny)*Nx+i;
+
+            //Poisson equation:
+            tripletList.emplace_back(eq,gdxi,c1);
+            tripletList.emplace_back(eq,gmdxi,c1);
+            tripletList.emplace_back(eq,gdyi,c2);
+            tripletList.emplace_back(eq,gmdyi,c2);
+            tripletList.emplace_back(eq,gi,-2*c1-2*c2);
+        }
+    }
+
+    //Potential is 0 at 0,0 to avoid matrix rank-deficiency
+    tripletList.emplace_back(0,0,1);
+
+    SpMat EA = SpMat(Ng,Ng);
+    EA.setFromTriplets(tripletList.begin(), tripletList.end());
+    EA.makeCompressed();
+
+    Esolver.analyzePattern(EA);
+    Esolver.factorize(EA);
+}
+
+template<typename T>
+void Field2D3V<T>::initialiseTwoPlateElectrostaticPotentialSystem() {
+    throw std::invalid_argument("Electrostatic potential not implemented for two-plates.");
 }
 
 

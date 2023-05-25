@@ -97,6 +97,7 @@ struct Config{
 
     bool verbose = false; //Prints time during simulation
     bool outputConfig = false; //Outputs main config values
+    bool useExplicitScheme = false; //Use explicit scheme
 };
 
 #endif //PIC_SEMI_IMPLICIT_CONFIG_H

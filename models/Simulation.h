@@ -8,6 +8,7 @@
 #include "Field.h"
 #include "Field1D1V.h"
 #include "Field2D3V.h"
+#include "Field2D3VExplicit.h"
 
 
 template <typename T, unsigned int Nd, unsigned int Nv>

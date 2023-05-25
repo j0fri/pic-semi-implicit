@@ -5,38 +5,50 @@
 
 #include "Simulation.h"
 #include "../helpers/string_helper.h"
-#include <iostream>
+
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
-    species = std::vector<Species<T,Nd,Nv>*>(config.speciesConfig.size());
-    for(int i = 0; i < (int)species.size(); ++i){
+    try{
+        species = std::vector<Species<T,Nd,Nv>*>(config.speciesConfig.size());
+        for(int i = 0; i < (int)species.size(); ++i){
+            if constexpr (Nd == 1 && Nv == 1) {
+                species[i] = new Species1D1V<T>(config.speciesConfig[i], config.bcConfig);
+            }else if constexpr(Nd == 2 && Nv == 3){
+                species[i] = new Species2D3V<T>(config.speciesConfig[i], config.bcConfig);
+            }else{
+                state = State::InitialisationError;
+                throw std::invalid_argument("Nd and Nv combination not supported.");
+            }
+        }
+    }catch(const std::bad_alloc& e){
+        std::cout << "Memory allocation exception during species construction." << std::endl;
+        throw;
+    }
+
+    try{
         if constexpr (Nd == 1 && Nv == 1) {
-            species[i] = new Species1D1V<T>(config.speciesConfig[i], config.bcConfig);
-//        }else if(Nd == 2 && Nv == 3){
-//            species[i] = new Species2D3V<T>(config.species[i]);
-        }else if constexpr(Nd == 2 && Nv == 3){
-            species[i] = new Species2D3V<T>(config.speciesConfig[i], config.bcConfig);
+            if(!config.useExplicitScheme){
+                field = new Field1D1V<T>(config.fieldConfig, config.bcConfig);
+            }else{
+                throw std::invalid_argument("Explicit scheme not implemented in 1D1V.");
+            }
+        } else if constexpr (Nd == 2 && Nv == 3){
+
+                if(!config.useExplicitScheme){
+                    field = new Field2D3V<T>(config.fieldConfig, config.bcConfig);
+                }else{
+                    field = new Field2D3VExplicit<T>(config.fieldConfig, config.bcConfig);
+                }
         }else{
             state = State::InitialisationError;
             throw std::runtime_error("Nd and Nv combination not supported.");
         }
+    }catch(const std::bad_alloc& e){
+        std::cout << "Memory allocation exception during field construction." << std::endl;
+        throw;
     }
-    if constexpr (Nd == 1 && Nv == 1) {
-        field = new Field1D1V<T>(config.fieldConfig, config.bcConfig);
-//    }else if(Nd == 2 && Nv == 3){
-//        field = new Field2D3V<T>(config.fieldConfig);
-    } else if constexpr (Nd == 2 && Nv == 3){
-        try{
-            field = new Field2D3V<T>(config.fieldConfig, config.bcConfig);
-        }catch(const std::bad_alloc& e){
-            std::cout << "Memory allocation exception during field construction." << std::endl;
-            throw;
-        }
-    }else{
-        state = State::InitialisationError;
-        throw std::runtime_error("Nd and Nv combination not supported.");
-    }
+
     state = State::Uninitialised;
     timeConfig = config.timeConfig;
     saveConfig = config.saveConfig;
