@@ -19,7 +19,9 @@ template<typename T, unsigned int Nd, unsigned int Nv>
 void Field<T, Nd, Nv>::advanceField(const std::vector<Species<T,Nd,Nv>*>& species, T dt) {
     this->accumulateJ(species);
     this->accumulateM(species, dt);
+    this->joinProcesses();
     this->solveAndAdvance(dt);
+    this->distributeProcesses();
 }
 
 template class Field<float,1,1>;

@@ -1,7 +1,7 @@
 default: sim
 all: sim
 
-CXX = g++
+CXX = mpic++
 CXXFLAGS = -std=c++17 -Wall -O3 -g -I ./
 
 SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h models/Simulation.h models/Species1D1V.h\
@@ -87,7 +87,7 @@ export MANPATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86
 .PHONY: profiler
 profiler: sim
 	-rm -r profiler.er
-	collect -o profiler.er ./sim
+	collect -o profiler.er
 	analyzer profiler.er
 
 

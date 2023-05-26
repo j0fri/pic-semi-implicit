@@ -125,7 +125,14 @@ void Field2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
 template<typename T>
 void Field2D3V<T>::saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,2,3>*> &species) const {
     std::unique_ptr<const T> phi = this->getElectrostaticPotential(species);
-    output_helper::outputColMajorMatrix(&*phi,Nx,Ny,Nx,1,outputFile);
+
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(processId == 0){
+        output_helper::outputColMajorMatrix(&*phi,Nx,Ny,Nx,1,outputFile);
+    }
 }
 
 
@@ -155,7 +162,7 @@ std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vect
         return this->getPeriodicElectrostaticPotential(species);
     }
     if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
-        return this->getPeriodicElectrostaticPotential(species);
+        return this->getTwoPlatesElectrostaticPotential(species);
     }
 
     throw std::invalid_argument("Unsupported boundary conditions in Field2D3V getElectrostaticPotential.");
@@ -348,6 +355,14 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     if(this->onlyForcedE && this->onlyForcedB) {
         //If only forced fields there is no need to solve system
         std::copy(field, field + 6*Ng, fieldT);
+        return;
+    }
+
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(processId > 0){
         return;
     }
 
@@ -777,7 +792,8 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     T dy = this->grid.getSpacings()[1];
 
     //Construct system vector: -4 pi rho at every E cell.
-    std::fill(Ec.begin(), Ec.end(), (T)0);
+    T* EcLocal = new T[Ng];
+    std::fill(EcLocal, EcLocal+Ng, (T)0);
     for(auto sPtr: species){
         const Vector2<unsigned int> g = ((Species2D3V<T>*)sPtr)->getG();
         const Vector2<unsigned int> gp = ((Species2D3V<T>*)sPtr)->getGp();
@@ -785,18 +801,54 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
         const Vector2<T> Wgp = ((Species2D3V<T>*)sPtr)->getWgp();
         T qScaled = -4*M_PI*sPtr->q/(dx*dy); //Gauss units
         for(unsigned int p = 0; p < sPtr->Np; ++p){
-            Ec[g.x[p]+this->Nx*g.y[p]] += qScaled*Wg.x[p]*Wg.y[p];
-            Ec[g.x[p]+this->Nx*gp.y[p]] += qScaled*Wg.x[p]*Wgp.y[p];
-            Ec[gp.x[p]+this->Nx*g.y[p]] += qScaled*Wgp.x[p]*Wg.y[p];
-            Ec[gp.x[p]+this->Nx*gp.y[p]] += qScaled*Wgp.x[p]*Wgp.y[p];
+            EcLocal[g.x[p]+this->Nx*g.y[p]] += qScaled*Wg.x[p]*Wg.y[p];
+            EcLocal[g.x[p]+this->Nx*gp.y[p]] += qScaled*Wg.x[p]*Wgp.y[p];
+            EcLocal[gp.x[p]+this->Nx*g.y[p]] += qScaled*Wgp.x[p]*Wg.y[p];
+            EcLocal[gp.x[p]+this->Nx*gp.y[p]] += qScaled*Wgp.x[p]*Wgp.y[p];
         }
     }
-    Ec[0]=0; //For potential at 0=0;
+    EcLocal[0]=0; //For potential at 0=0;
 
-    Eigen::VectorX<T> sol = Esolver.solve(Ec);
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    T* EcTotal = nullptr;
+    if(processId == 0){
+        EcTotal = new T[Ng];
+        std::fill(EcTotal, EcTotal+Ng, (T)0);
+    }
+
+    if constexpr(std::is_same<double, T>::value){
+        MPI_Reduce(EcLocal, EcTotal, Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }else if constexpr(std::is_same<float, T>::value){
+        MPI_Reduce(EcLocal, EcTotal, Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    }else{
+        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
+    }
+    delete[] EcLocal;
+
+    Eigen::VectorX<T> sol;
+    if(processId == 0){
+        std::copy(EcTotal, EcTotal+Ng, Ec.begin());
+        delete[] EcTotal;
+        sol = Esolver.solve(Ec);
+    }
 
     T* sol_out = new T[Ng];
-    std::copy(sol.begin(), sol.end(), sol_out);
+
+    if(processId == 0){
+        std::copy(sol.begin(), sol.end(), sol_out);
+    }
+
+    if constexpr(std::is_same<double, T>::value){
+        MPI_Bcast(sol_out, Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }else if constexpr(std::is_same<float, T>::value){
+        MPI_Bcast(sol_out, Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    }else{
+        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
+    }
+
     return std::unique_ptr<const T>(sol_out);
 }
 
@@ -854,6 +906,96 @@ void Field2D3V<T>::initialisePeriodicElectrostaticPotentialSystem() {
 template<typename T>
 void Field2D3V<T>::initialiseTwoPlateElectrostaticPotentialSystem() {
     throw std::invalid_argument("Electrostatic potential not implemented for two-plates.");
+}
+
+template<typename T>
+void Field2D3V<T>::joinProcesses() {
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(numProcesses == 1){
+        return;
+    }
+
+    T* totalJ = nullptr;
+    T* totalMg = nullptr;
+    T* totalMgdx = nullptr;
+    T* totalMgdy = nullptr;
+    T* totalMgdxdy = nullptr;
+    T* totalMgmdxdy = nullptr;
+
+    if(processId == 0){
+        totalJ = new T[3*Ng];
+        totalMg = new T[9*Ng];
+        totalMgdx = new T[9*Ng];
+        totalMgdy = new T[9*Ng];
+        totalMgdxdy = new T[9*Ng];
+        totalMgmdxdy = new T[9*Ng];
+
+        std::fill(totalJ, totalJ + 3*Ng, (T)0);
+        std::fill(totalMg, totalMg + 9*Ng, (T)0);
+        std::fill(totalMgdx, totalMgdx + 9*Ng, (T)0);
+        std::fill(totalMgdy, totalMgdy + 9*Ng, (T)0);
+        std::fill(totalMgdxdy, totalMgdxdy + 9*Ng, (T)0);
+        std::fill(totalMgmdxdy, totalMgmdxdy + 9*Ng, (T)0);
+    }
+    
+    //MPI_Barrier(MPI_COMM_WORLD);
+    if constexpr(std::is_same<double, T>::value){
+        MPI_Reduce(J, totalJ, 3*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mg, totalMg, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgdx, totalMgdx, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgdy, totalMgdy, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgdxdy, totalMgdxdy, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgmdxdy, totalMgmdxdy, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }else if constexpr(std::is_same<float, T>::value){
+        MPI_Reduce(J, totalJ, 3*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mg, totalMg, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgdx, totalMgdx, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgdy, totalMgdy, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgdxdy, totalMgdxdy, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(Mgmdxdy, totalMgmdxdy, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    }else{
+        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
+    }
+    
+    if(processId == 0){
+        std::copy(totalJ, totalJ + 3*Ng, J);
+        std::copy(totalMg, totalMg + 9*Ng, Mg);
+        std::copy(totalMgdx, totalMgdx + 9*Ng, Mgdx);
+        std::copy(totalMgdy, totalMgdy + 9*Ng, Mgdy);
+        std::copy(totalMgdxdy, totalMgdxdy + 9*Ng, Mgdxdy);
+        std::copy(totalMgmdxdy, totalMgmdxdy + 9*Ng, Mgmdxdy);
+        
+        delete[] totalJ;
+        delete[] totalMg;
+        delete[] totalMgdx;
+        delete[] totalMgdy;
+        delete[] totalMgdxdy;
+        delete[] totalMgmdxdy;
+    }
+}
+
+template<typename T>
+void Field2D3V<T>::distributeProcesses() {
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(numProcesses == 1){
+        return;
+    }
+
+    if constexpr(std::is_same<double, T>::value){
+        MPI_Bcast(field, 6*Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(fieldT, 6*Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }else if constexpr(std::is_same<float, T>::value){
+        MPI_Bcast(field, 6*Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(fieldT, 6*Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    }else{
+        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
+    }
 }
 
 

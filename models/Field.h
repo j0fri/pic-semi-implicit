@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <array>
+#include <mpi.h>
 
 #include "Grid.h"
 #include "Distribution.h"
@@ -44,7 +45,9 @@ public:
 private:
     virtual void accumulateJ(const std::vector<Species<T,Nd,Nv>*>& species) = 0;
     virtual void accumulateM(const std::vector<Species<T,Nd,Nv>*>& species, T dt) = 0;
+    virtual void joinProcesses() = 0;
     virtual void solveAndAdvance(T dt) = 0;
+    virtual void distributeProcesses() = 0;
 };
 
 

@@ -80,7 +80,9 @@ public:
 protected:
     virtual void accumulateJ(const std::vector<Species<T,2,3>*>& species);
     virtual void accumulateM(const std::vector<Species<T,2,3>*>& species, T dt);
+    virtual void joinProcesses();
     virtual void solveAndAdvance(T dt);
+    virtual void distributeProcesses();
     virtual void initialisePeriodicA(T dt);
     virtual void initialiseTwoPlatesA(T dt);
     virtual void initialisePeriodicField(const std::vector<Species<T,2,3>*>& species, T dt);

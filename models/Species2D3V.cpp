@@ -194,8 +194,24 @@ void Species2D3V<T>::saveVelocityDistribution(std::ofstream &outputFile) const {
 
 template<typename T>
 void Species2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
-    outputFile << this->m << " " << this->q << std::endl;
-    outputFile << this->getTotalKineticEnergy() << std::endl;
+    T localSpeciesEnergy = this->getTotalKineticEnergy();
+    T totalSpeciesEnergy = (T)0;
+
+    if constexpr(std::is_same<double, T>::value){
+        MPI_Reduce(&localSpeciesEnergy, &totalSpeciesEnergy, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }else if constexpr(std::is_same<float, T>::value){
+        MPI_Reduce(&localSpeciesEnergy, &totalSpeciesEnergy, 1, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    }else{
+        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
+    }
+
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+    if(processId == 0){
+        outputFile << this->m << " " << this->q << std::endl;
+        outputFile << totalSpeciesEnergy << std::endl;
+    }
 }
 
 template<typename T>
@@ -219,37 +235,132 @@ void Species2D3V<T>::initialiseVelocities() {
 
 template<typename T>
 void Species2D3V<T>::initialisePositions(std::ifstream &file) {
-    try{
-        if(!file.is_open()){
-            throw std::invalid_argument("Initial position file not open.");
-        }
-        for(auto ptr = pos.x; ptr < pos.x + 2*this->Np; ++ptr){
-            if(file.eof()){
-                throw std::invalid_argument("Initial position file contains less columns than Np.");
+    T* allX = nullptr;
+    T* allY = nullptr;
+
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(processId == 0){
+        allX = new T[this->totalNp];
+        allY = new T[this->totalNp];
+
+        try{
+            if(!file.is_open()){
+                throw std::invalid_argument("Initial position file not open.");
             }
-            file >> *ptr;
+            for(auto ptr = allX; ptr < allX + this->totalNp; ++ptr){
+                if(file.eof()){
+                    throw std::invalid_argument("Initial position file contains less columns than Np.");
+                }
+                file >> *ptr;
+            }
+            for(auto ptr = allY; ptr < allY + this->totalNp; ++ptr){
+                if(file.eof()){
+                    throw std::invalid_argument("Initial position file contains less columns than Np.");
+                }
+                file >> *ptr;
+            }
+        }catch(const std::exception& e){
+            std::cout << "Initial position file has incorrect format." << std::endl;
+            throw;
         }
-    }catch(const std::exception& e){
-        std::cout << "Initial position file has incorrect format." << std::endl;
-        throw;
+    }
+
+    int sendcounts[numProcesses];
+    int displacements[numProcesses];
+    int baseCount = this->totalNp/numProcesses;
+    int missing = this->totalNp - baseCount*numProcesses;
+    for(int i = 0; i < numProcesses; ++i){
+        sendcounts[i] = i < missing ? baseCount + 1 : baseCount;
+        displacements[i] = i > 0 ? displacements[i-1] + sendcounts[i-1] : 0;
+    }
+
+    if constexpr(std::is_same<double, T>::value){
+        MPI_Scatterv(allX, sendcounts, displacements, MPI_DOUBLE, pos.x, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(allY, sendcounts, displacements, MPI_DOUBLE, pos.y, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }else if constexpr(std::is_same<float, T>::value){
+        MPI_Scatterv(allX, sendcounts, displacements, MPI_FLOAT, pos.x, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(allY, sendcounts, displacements, MPI_FLOAT, pos.y, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    }else{
+        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
+    }
+
+    if(processId == 0){
+        delete[] allX;
+        delete[] allY;
     }
 }
 
 template<typename T>
 void Species2D3V<T>::initialiseVelocities(std::ifstream &file) {
-    try{
-        if(!file.is_open()){
-            throw std::invalid_argument("Initial velocity file not open.");
-        }
-        for(auto ptr = vel.x; ptr < vel.x + 3*this->Np; ++ptr){
-            if(file.eof()){
-                throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+    T* allX = nullptr;
+    T* allY = nullptr;
+    T* allZ = nullptr;
+
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(processId == 0){
+        allX = new T[this->totalNp];
+        allY = new T[this->totalNp];
+        allZ = new T[this->totalNp];
+        
+        try{
+            if(!file.is_open()){
+                throw std::invalid_argument("Initial velocity file not open.");
             }
-            file >> *ptr;
+            for(auto ptr = allX; ptr < allX + this->totalNp; ++ptr){
+                if(file.eof()){
+                    throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+                }
+                file >> *ptr;
+            }
+            for(auto ptr = allY; ptr < allY + this->totalNp; ++ptr){
+                if(file.eof()){
+                    throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+                }
+                file >> *ptr;
+            }
+            for(auto ptr = allZ; ptr < allZ + this->totalNp; ++ptr){
+                if(file.eof()){
+                    throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+                }
+                file >> *ptr;
+            }
+        }catch(const std::exception& e){
+            std::cout << "Initial velocity file has incorrect format." << std::endl;
+            throw;
         }
-    }catch(const std::exception& e){
-        std::cout << "Initial velocity file has incorrect format." << std::endl;
-        throw;
+    }
+
+    int sendcounts[numProcesses];
+    int displacements[numProcesses];
+    int baseCount = this->totalNp/numProcesses;
+    int missing = this->totalNp - baseCount*numProcesses;
+    for(int i = 0; i < numProcesses; ++i){
+        sendcounts[i] = i < missing ? baseCount + 1 : baseCount;
+        displacements[i] = i > 0 ? displacements[i-1] + sendcounts[i-1] : 0;
+    }
+
+    if constexpr(std::is_same<double, T>::value){
+        MPI_Scatterv(allX, sendcounts, displacements, MPI_DOUBLE, vel.x, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(allY, sendcounts, displacements, MPI_DOUBLE, vel.y, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(allZ, sendcounts, displacements, MPI_DOUBLE, vel.z, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }else if constexpr(std::is_same<float, T>::value){
+        MPI_Scatterv(allX, sendcounts, displacements, MPI_FLOAT, vel.x, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(allY, sendcounts, displacements, MPI_FLOAT, vel.y, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(allZ, sendcounts, displacements, MPI_FLOAT, vel.z, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    }else{
+        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
+    }
+
+    if(processId == 0){
+        delete[] allX;
+        delete[] allY;
+        delete[] allZ;
     }
 }
 

@@ -6,6 +6,11 @@
 #include "../helpers/output_helper.h"
 
 int main(int argc, char* argv[]){
+    int status = MPI_Init(&argc, &argv);
+    if(status != MPI_SUCCESS){
+        throw std::runtime_error("MPI initialisation error.");
+    }
+
     auto config = preset_configs::landauFile<double>();
     Simulation<double,2,3> sim(config);
     sim.initialise();
@@ -29,4 +34,6 @@ int main(int argc, char* argv[]){
             std::cout << fileName << " files NOT SAME" << std::endl;
         }
     }
+
+    MPI_Finalize();
 }

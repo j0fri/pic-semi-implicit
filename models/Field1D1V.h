@@ -41,7 +41,9 @@ public:
 private:
     void accumulateJ(const std::vector<Species<T,1,1>*>& species);
     void accumulateM(const std::vector<Species<T,1,1>*>& species, T dt);
+    void joinProcesses();
     void solveAndAdvance(T dt);
+    void distributeProcesses();
 };
 
 

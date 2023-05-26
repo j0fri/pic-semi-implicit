@@ -28,6 +28,7 @@ public:
     const typename Config<T,Nd,Nv>::BCConfig bcConfig;
     const std::array<std::optional<DistributionGrid<T,Nd-1>>, 2*Nd> bcPositionGenerator;
     const std::array<std::optional<DistributionGrid<T,1>>, 2*Nd> bcNormalVelocityGenerator;
+    const unsigned int totalNp; //Number of particles among all processes
 
 	Species() = delete;
 	explicit Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speciesConfig,
@@ -53,6 +54,10 @@ private:
 	virtual void initialiseVelocities() = 0;
 	virtual void initialisePositions(std::ifstream &file) = 0;
     virtual void initialiseVelocities(std::ifstream &file) = 0;
+
+    //Calculate the appropriate number of particles for the given number of processors
+    static unsigned int calculateLocalNp(unsigned int Np);
 };
+
 
 #endif //PIC_SEMI_IMPLICIT_SPECIES_H

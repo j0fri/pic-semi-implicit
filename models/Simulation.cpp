@@ -89,89 +89,94 @@ void Simulation<T, Nd, Nv>::initialise() {
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::clearOutputFiles(){
-    if(saveConfig.savePosition){
-        std::ofstream speciesPositionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!speciesPositionFile.is_open()){
-            throw std::runtime_error("Could not open species position output file.");
-        }
-        speciesPositionFile.close();
-    }
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 
-    if(saveConfig.savePositionDistribution){
-        std::ofstream speciesPositionDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionDistributionFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!speciesPositionDistributionFile.is_open()){
-            throw std::runtime_error("Could not open species position distribution output file.");
+    if(processId == 0){
+        if(saveConfig.savePosition){
+            std::ofstream speciesPositionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!speciesPositionFile.is_open()){
+                throw std::runtime_error("Could not open species position output file.");
+            }
+            speciesPositionFile.close();
         }
-        speciesPositionDistributionFile.close();
-    }
 
-    if(saveConfig.saveVelocity){
-        std::ofstream speciesVelocityFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!speciesVelocityFile.is_open()){
-            throw std::runtime_error("Could not open species velocity output file.");
+        if(saveConfig.savePositionDistribution){
+            std::ofstream speciesPositionDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionDistributionFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!speciesPositionDistributionFile.is_open()){
+                throw std::runtime_error("Could not open species position distribution output file.");
+            }
+            speciesPositionDistributionFile.close();
         }
-        speciesVelocityFile.close();
-    }
 
-    if(saveConfig.saveVelocityDistribution){
-        std::ofstream speciesVelocityDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityDistributionFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!speciesVelocityDistributionFile.is_open()){
-            throw std::runtime_error("Could not open species velocity distribution output file.");
+        if(saveConfig.saveVelocity){
+            std::ofstream speciesVelocityFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!speciesVelocityFile.is_open()){
+                throw std::runtime_error("Could not open species velocity output file.");
+            }
+            speciesVelocityFile.close();
         }
-        speciesVelocityDistributionFile.close();
-    }
-    
-    if(saveConfig.saveSpeciesEnergy){
-        std::ofstream speciesEnergyFile(saveConfig.outputFilesDirectory + saveConfig.speciesEnergyFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!speciesEnergyFile.is_open()){
-            throw std::runtime_error("Could not open species energy file.");
-        }
-        speciesEnergyFile.close();
-    }
 
-    if(saveConfig.saveElectricField){
-        std::ofstream electricFieldFile(saveConfig.outputFilesDirectory + saveConfig.electricFieldFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!electricFieldFile.is_open()){
-            throw std::runtime_error("Could not open electric field file.");
+        if(saveConfig.saveVelocityDistribution){
+            std::ofstream speciesVelocityDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityDistributionFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!speciesVelocityDistributionFile.is_open()){
+                throw std::runtime_error("Could not open species velocity distribution output file.");
+            }
+            speciesVelocityDistributionFile.close();
         }
-        electricFieldFile.close();
-    }
 
-    if(saveConfig.saveMagneticField){
-        std::ofstream magneticFieldFile(saveConfig.outputFilesDirectory + saveConfig.magneticFieldFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!magneticFieldFile.is_open()){
-            throw std::runtime_error("Could not open magnetic field file.");
+        if(saveConfig.saveSpeciesEnergy){
+            std::ofstream speciesEnergyFile(saveConfig.outputFilesDirectory + saveConfig.speciesEnergyFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!speciesEnergyFile.is_open()){
+                throw std::runtime_error("Could not open species energy file.");
+            }
+            speciesEnergyFile.close();
         }
-        magneticFieldFile.close();
-    }
-    
-    if(saveConfig.saveFieldEnergy){
-        std::ofstream fieldEnergyFile(saveConfig.outputFilesDirectory + saveConfig.fieldEnergyFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!fieldEnergyFile.is_open()){
-            throw std::runtime_error("Could not open field energy file.");
-        }
-        fieldEnergyFile.close();
-    }
 
-    if(saveConfig.saveElectrostaticPotential){
-        std::ofstream electrostaticPotentialFile(saveConfig.outputFilesDirectory + saveConfig.electrostaticPotentialFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!electrostaticPotentialFile.is_open()){
-            throw std::runtime_error("Could not open electrostatic potential file.");
+        if(saveConfig.saveElectricField){
+            std::ofstream electricFieldFile(saveConfig.outputFilesDirectory + saveConfig.electricFieldFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!electricFieldFile.is_open()){
+                throw std::runtime_error("Could not open electric field file.");
+            }
+            electricFieldFile.close();
         }
-        electrostaticPotentialFile.close();
-    }
 
-    if(saveConfig.saveCurrent){
-        std::ofstream currentFile(saveConfig.outputFilesDirectory + saveConfig.currentFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
-        if(!currentFile.is_open()){
-            throw std::runtime_error("Could not open current file.");
+        if(saveConfig.saveMagneticField){
+            std::ofstream magneticFieldFile(saveConfig.outputFilesDirectory + saveConfig.magneticFieldFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!magneticFieldFile.is_open()){
+                throw std::runtime_error("Could not open magnetic field file.");
+            }
+            magneticFieldFile.close();
         }
-        currentFile.close();
+
+        if(saveConfig.saveFieldEnergy){
+            std::ofstream fieldEnergyFile(saveConfig.outputFilesDirectory + saveConfig.fieldEnergyFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!fieldEnergyFile.is_open()){
+                throw std::runtime_error("Could not open field energy file.");
+            }
+            fieldEnergyFile.close();
+        }
+
+        if(saveConfig.saveElectrostaticPotential){
+            std::ofstream electrostaticPotentialFile(saveConfig.outputFilesDirectory + saveConfig.electrostaticPotentialFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!electrostaticPotentialFile.is_open()){
+                throw std::runtime_error("Could not open electrostatic potential file.");
+            }
+            electrostaticPotentialFile.close();
+        }
+
+        if(saveConfig.saveCurrent){
+            std::ofstream currentFile(saveConfig.outputFilesDirectory + saveConfig.currentFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!currentFile.is_open()){
+                throw std::runtime_error("Could not open current file.");
+            }
+            currentFile.close();
+        }
     }
 }
 
 
-//TODO: check no more calls needed
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::run() {
     this->checkValidState();
@@ -182,7 +187,7 @@ void Simulation<T,Nd,Nv>::run() {
             if(verbose){
                 std::cout << "t: " << t << std::endl;
             }
-            if (t*1.0000001 >= nextSave){
+            if (t >= nextSave){
                 this->save();
                 nextSave += saveConfig.saveInterval;
             }
@@ -205,50 +210,116 @@ void Simulation<T,Nd,Nv>::run() {
 //TODO: add capability to save specific species only
 template<typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::save(){
-    if(saveConfig.savePosition){
-        std::ofstream speciesPositionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!speciesPositionFile.is_open()){
-            throw std::runtime_error("Could not open species position output file.");
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(numProcesses > 1){
+        if(saveConfig.savePosition){
+            throw std::invalid_argument("savePosition not allowed with more than one process");
         }
-        for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
-            species[i]->savePosition(speciesPositionFile);
+        if(saveConfig.savePositionDistribution){
+            throw std::invalid_argument("savePositionDistribution not allowed with more than one process");
         }
-        speciesPositionFile.close();
+        if(saveConfig.saveVelocity){
+            throw std::invalid_argument("saveVelocity not allowed with more than one process");
+        }
+        if(saveConfig.saveVelocityDistribution){
+            throw std::invalid_argument("saveVelocityDistribution not allowed with more than one process");
+        }
     }
 
-    if(saveConfig.savePositionDistribution){
-        std::ofstream speciesPositionDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionDistributionFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!speciesPositionDistributionFile.is_open()){
-            throw std::runtime_error("Could not open species position distribution output file.");
+    MPI_Barrier(MPI_COMM_WORLD);
+    if(processId == 0){
+        if(saveConfig.savePosition){
+            std::ofstream speciesPositionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!speciesPositionFile.is_open()){
+                throw std::runtime_error("Could not open species position output file.");
+            }
+            for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
+                species[i]->savePosition(speciesPositionFile);
+            }
+            speciesPositionFile.close();
         }
-        for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
-            species[i]->savePositionDistribution(speciesPositionDistributionFile, field);
-        }
-        speciesPositionDistributionFile.close();
-    }
 
-    if(saveConfig.saveVelocity){
-        std::ofstream speciesVelocityFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!speciesVelocityFile.is_open()){
-            throw std::runtime_error("Could not open species velocity output file.");
+        if(saveConfig.savePositionDistribution){
+            std::ofstream speciesPositionDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionDistributionFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!speciesPositionDistributionFile.is_open()){
+                throw std::runtime_error("Could not open species position distribution output file.");
+            }
+            for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
+                species[i]->savePositionDistribution(speciesPositionDistributionFile, field);
+            }
+            speciesPositionDistributionFile.close();
         }
-        for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
-            species[i]->saveVelocity(speciesVelocityFile);
-        }
-        speciesVelocityFile.close();
-    }
 
-    if(saveConfig.saveVelocityDistribution){
-        std::ofstream speciesVelocityDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityDistributionFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!speciesVelocityDistributionFile.is_open()){
-            throw std::runtime_error("Could not open species velocity distribution output file.");
+        if(saveConfig.saveVelocity){
+            std::ofstream speciesVelocityFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!speciesVelocityFile.is_open()){
+                throw std::runtime_error("Could not open species velocity output file.");
+            }
+            for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
+                species[i]->saveVelocity(speciesVelocityFile);
+            }
+            speciesVelocityFile.close();
         }
-        for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
-            species[i]->saveVelocityDistribution(speciesVelocityDistributionFile);
-        }
-        speciesVelocityDistributionFile.close();
-    }
 
+        if(saveConfig.saveVelocityDistribution){
+            std::ofstream speciesVelocityDistributionFile(saveConfig.outputFilesDirectory + saveConfig.speciesVelocityDistributionFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!speciesVelocityDistributionFile.is_open()){
+                throw std::runtime_error("Could not open species velocity distribution output file.");
+            }
+            for(unsigned int i = 0; i < (unsigned int)species.size(); ++i){
+                species[i]->saveVelocityDistribution(speciesVelocityDistributionFile);
+            }
+            speciesVelocityDistributionFile.close();
+        }
+
+        if(saveConfig.saveElectricField){
+            std::ofstream electricFieldFile(saveConfig.outputFilesDirectory + saveConfig.electricFieldFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!electricFieldFile.is_open()){
+                throw std::runtime_error("Could not open electric field file.");
+            }
+            field->saveElectricField(electricFieldFile);
+            electricFieldFile.close();
+        }
+
+        if(saveConfig.saveMagneticField){
+            std::ofstream magneticFieldFile(saveConfig.outputFilesDirectory + saveConfig.magneticFieldFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!magneticFieldFile.is_open()){
+                throw std::runtime_error("Could not open magnetic field file.");
+            }
+            field->saveMagneticField(magneticFieldFile);
+            magneticFieldFile.close();
+        }
+
+        if(saveConfig.saveFieldEnergy){
+            std::ofstream fieldEnergyFile(saveConfig.outputFilesDirectory + saveConfig.fieldEnergyFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!fieldEnergyFile.is_open()){
+                throw std::runtime_error("Could not open field energy file.");
+            }
+            field->saveEnergy(fieldEnergyFile);
+            fieldEnergyFile.close();
+        }
+        if(saveConfig.saveCurrent){
+            std::ofstream currentFile(saveConfig.outputFilesDirectory + saveConfig.currentFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!currentFile.is_open()){
+                throw std::runtime_error("Could not open current file.");
+            }
+            field->saveCurrent(currentFile);
+            currentFile.close();
+        }
+    }
+    //Save electrostatic potential runs on all processes as all the charges are needed.
+    if(saveConfig.saveElectrostaticPotential){
+        std::ofstream electrostaticPotentialFile(saveConfig.outputFilesDirectory + saveConfig.electrostaticPotentialFileName + saveConfig.outputFilesSubscript, std::ios::app);
+        if(!electrostaticPotentialFile.is_open()){
+            throw std::runtime_error("Could not open electrostatic potential file.");
+        }
+        field->saveElectrostaticPotential(electrostaticPotentialFile, species);
+        electrostaticPotentialFile.close();
+    }
+    //Save species energy runs on all processes as all the particles are needed.
     if(saveConfig.saveSpeciesEnergy){
         std::ofstream speciesEnergyFile(saveConfig.outputFilesDirectory + saveConfig.speciesEnergyFileName + saveConfig.outputFilesSubscript, std::ios::app);
         if(!speciesEnergyFile.is_open()){
@@ -259,51 +330,7 @@ void Simulation<T,Nd,Nv>::save(){
         }
         speciesEnergyFile.close();
     }
-
-    if(saveConfig.saveElectricField){
-        std::ofstream electricFieldFile(saveConfig.outputFilesDirectory + saveConfig.electricFieldFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!electricFieldFile.is_open()){
-            throw std::runtime_error("Could not open electric field file.");
-        }
-        field->saveElectricField(electricFieldFile);
-        electricFieldFile.close();
-    }
-
-    if(saveConfig.saveMagneticField){
-        std::ofstream magneticFieldFile(saveConfig.outputFilesDirectory + saveConfig.magneticFieldFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!magneticFieldFile.is_open()){
-            throw std::runtime_error("Could not open magnetic field file.");
-        }
-        field->saveMagneticField(magneticFieldFile);
-        magneticFieldFile.close();
-    }
-
-    if(saveConfig.saveFieldEnergy){
-        std::ofstream fieldEnergyFile(saveConfig.outputFilesDirectory + saveConfig.fieldEnergyFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!fieldEnergyFile.is_open()){
-            throw std::runtime_error("Could not open field energy file.");
-        }
-        field->saveEnergy(fieldEnergyFile);
-        fieldEnergyFile.close();
-    }
-
-    if(saveConfig.saveElectrostaticPotential){
-        std::ofstream electrostaticPotentialFile(saveConfig.outputFilesDirectory + saveConfig.electrostaticPotentialFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!electrostaticPotentialFile.is_open()){
-            throw std::runtime_error("Could not open electrostatic potential file.");
-        }
-        field->saveElectrostaticPotential(electrostaticPotentialFile, species);
-        electrostaticPotentialFile.close();
-    }
-
-    if(saveConfig.saveCurrent){
-        std::ofstream currentFile(saveConfig.outputFilesDirectory + saveConfig.currentFileName + saveConfig.outputFilesSubscript, std::ios::app);
-        if(!currentFile.is_open()){
-            throw std::runtime_error("Could not open current file.");
-        }
-        field->saveCurrent(currentFile);
-        currentFile.close();
-    }
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
