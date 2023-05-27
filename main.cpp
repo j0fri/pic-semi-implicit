@@ -53,10 +53,8 @@ int main(int argc, char* argv[]){
     //auto config = preset_configs::constPotentialWell<double>();
     //auto config = preset_configs::constPotentialWellFile<double>();
     //auto config = preset_configs::electronBeam<double>(50,50);
+    //auto config = preset_configs::fiveParticles<double>();
 
-    config.useExplicitScheme = false;
-    config.saveConfig.saveElectrostaticPotential = true;
-    config.saveConfig.saveElectricField = true;
 
 	Simulation<double,2,3> sim(config);
     sim.initialise();

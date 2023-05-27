@@ -12,6 +12,7 @@ int main(int argc, char* argv[]){
     }
 
     auto config = preset_configs::landauFile<double>();
+    config.saveConfig.saveElectrostaticPotential = true;
     Simulation<double,2,3> sim(config);
     sim.initialise();
     sim.run();
@@ -25,13 +26,19 @@ int main(int argc, char* argv[]){
             "electrostaticPotential"
     };
 
-    for(auto fileName: fileNames){
-        std::ifstream refFile("referenceOutputs/landau/" + fileName + ".txt", std::ios::in);
-        std::ifstream file("outputs/" + fileName + ".txt", std::ios::in);
-        if(output_helper::testSameFileContent<double>(file,refFile, std::pow(10,-12))){
-            std::cout << fileName << " files SAME" << std::endl;
-        }else{
-            std::cout << fileName << " files NOT SAME" << std::endl;
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
+    if(processId == 0){
+        for(auto fileName: fileNames){
+            std::ifstream refFile("referenceOutputs/landau/" + fileName + ".txt", std::ios::in);
+            std::ifstream file("outputs/" + fileName + ".txt", std::ios::in);
+            if(output_helper::testSameFileContent<double>(file,refFile, std::pow(10,-12))){
+                std::cout << fileName << " files SAME" << std::endl;
+            }else{
+                std::cout << fileName << " files NOT SAME" << std::endl;
+            }
         }
     }
 

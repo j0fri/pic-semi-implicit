@@ -102,6 +102,10 @@ void Field2D3V<T>::saveMagneticField(std::ofstream &outputFile) const {
 
 template<typename T>
 void Field2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
     T e0 = this->e0;
     T mu0 = (T)1/(this->c*this->c*this->e0);
     T totalE = 0;
@@ -191,7 +195,7 @@ void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
             pVel[2] = vel.z[p];
             //Bottom-left cell
             unsigned int gi = g.x[p]+g.y[p]*Nx;
-            alphaPtr = alpha+9*gi;
+            alphaPtr = alpha+9*p;
             math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wg.y[p]),alphaPtr,3,pVel,1,dJ,1);
             jPtr = J + 3*gi-1;
             dJPtr = dJ-1;
@@ -200,7 +204,6 @@ void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
             }
             //Bottom-right cell (dx)
             gi = gp.x[p]+g.y[p]*Nx;
-            alphaPtr = alpha+9*gi;
             math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wg.y[p]),alphaPtr,3,pVel,1,dJ,1);
             jPtr = J + 3*gi-1;
             dJPtr = dJ-1;
@@ -209,7 +212,6 @@ void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
             }
             //Top-left cell (dy)
             gi = g.x[p]+gp.y[p]*Nx;
-            alphaPtr = alpha+9*gi;
             math_helper::gemv(3,3,(T)(sPtr->q*wg.x[p]*wgp.y[p]),alphaPtr,3,pVel,1,dJ,1);
             jPtr = J + 3*gi-1;
             dJPtr = dJ-1;
@@ -218,7 +220,6 @@ void Field2D3V<T>::accumulateJ(const std::vector<Species<T,2,3>*> &species) {
             }
             //Top-right cell (dx, dy)
             gi = gp.x[p]+gp.y[p]*Nx;
-            alphaPtr = alpha+9*gi;
             math_helper::gemv(3,3,(T)(sPtr->q*wgp.x[p]*wgp.y[p]),alphaPtr,3,pVel,1,dJ,1);
             jPtr = J + 3*gi-1;
             dJPtr = dJ-1;

@@ -49,7 +49,7 @@ Config<T,2,3> preset_configs::landau2D3VX(unsigned int Nx, unsigned int Ny){
         }},
         preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
         {10,0.02},
-        preset_save_configs::Energies<T,2,3>(0.02),
+        {false, false, false, false, true, true, true, true, true, false, 0.02, "outputs/"},
         {
            {Config<T,2,3>::BC::Periodic}
         },
@@ -72,8 +72,8 @@ Config<T,2,3> preset_configs::landauFile(){
                                                    "./inputs/landau/ionVelocities.txt")
            }},
             preset_fields::Default2D3V<T>(1,1,30,5,1,1),
-            {10,0.1},
-            preset_save_configs::Energies<T,2,3>(0.1),
+            {100,0.2},
+            preset_save_configs::Energies<T,2,3>(0.2),
             {
                 {Config<T,2,3>::BC::Periodic}
             },
@@ -92,7 +92,7 @@ Config<T,2,3> preset_configs::landau2D3VXWave(unsigned int Nx, unsigned int Ny){
              }},
             preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
             {4,0.02},
-            {false, true, false, false, true, true, true, true, true, true, 0.02, "outputs/"},
+            {false, false, false, false, true, true, true, true, true, false, 0.02, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -279,4 +279,23 @@ Config<T,2,3> preset_configs::electronBeam(unsigned int Nx, unsigned int Ny) {
     };
 
     return config;
+}
+
+template <typename T>
+Config<T,2,3> preset_configs::fiveParticles(){
+    Config<T,2,3> config{
+            std::vector<typename Config<T,2,3>::SpeciesConfig>{{
+                   preset_species::fromFile<double>(5,(T)1,(T)1,"./inputs/fiveParticles/speciesPosition.txt",
+                                                    "./inputs/fiveParticles/speciesVelocity.txt")
+           }},
+            preset_fields::Default2D3V((T)1, (T)1, 5, 5, (T)1, (T)1),
+            {10,0.1},
+            {false, false, false, false, true, true, false, true, true, false, 0.1, "outputs/"},
+            {
+                    {Config<T,2,3>::BC::Periodic}
+            },
+            true,
+            true
+    };
+   return config;
 }

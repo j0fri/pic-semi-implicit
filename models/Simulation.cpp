@@ -174,6 +174,7 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
             currentFile.close();
         }
     }
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 

@@ -55,6 +55,9 @@ namespace preset_configs {
     //Electron beam with no background ions
     template <typename T>
     Config<T,2,3> electronBeam(unsigned int Nx, unsigned int Ny);
+
+    template <typename T>
+    Config<T,2,3> fiveParticles();
 }
 
 #include "preset_configs.cpp"
