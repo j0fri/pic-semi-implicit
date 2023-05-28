@@ -87,7 +87,7 @@ export MANPATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86
 .PHONY: profiler
 profiler: sim
 	-rm -r profiler.er
-	collect -o profiler.er
+	collect -o profiler.er -M OMPT mpiexec --np 4 -- ./sim
 	analyzer profiler.er
 
 

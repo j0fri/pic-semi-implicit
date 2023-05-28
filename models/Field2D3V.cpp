@@ -1,3 +1,4 @@
+#include <mpi/mpi.h>
 #include "Field2D3V.h"
 #include "Species2D3V.h"
 #include "../helpers/math_helper.h"
@@ -13,14 +14,17 @@ Field2D3V<T>::Field2D3V(const typename Config<T,2,3>::FieldConfig &fieldConfig,
                         A{SpMat(6*Ng, 6*Ng)}, Am{SpMat(6*Ng, 6*Ng)}, Ac{SpMat(6*Ng, 6*Ng)},
                         C{Eigen::VectorX<T>(6*Ng)}, Esolver{}, Ec{Ng} {
     try{
-        field = new T[6*Ng];
-        fieldT = new T[6*Ng];
-        J = new T[3*Ng];
-        Mg = new T[9*Ng];
-        Mgdx = new T[9*Ng];
-        Mgdy = new T[9*Ng];
-        Mgdxdy = new T[9*Ng];
-        Mgmdxdy = new T[9*Ng];
+        //The following variables are memory-allocated to be contiguous in memory, so they are more easily passed by MPI
+        field = new T[12*Ng];
+        fieldT = field+6*Ng;
+
+        //The following variables are memory-allocated to be contiguous in memory, so they are more easily passed by MPI
+        J = new T[48*Ng];
+        Mg = J+3*Ng;
+        Mgdx = Mg+9*Ng;
+        Mgdy = Mgdx+9*Ng;
+        Mgdxdy = Mgdy+9*Ng;
+        Mgmdxdy = Mgdxdy+9*Ng;
     }catch(const std::bad_alloc& e){
         std::cerr << "Error during field memory allocation of O(Nx*Ny) variables." << std::endl;
         throw;
@@ -30,14 +34,9 @@ Field2D3V<T>::Field2D3V(const typename Config<T,2,3>::FieldConfig &fieldConfig,
 
 template<typename T>
 Field2D3V<T>::~Field2D3V() {
+    //Only these two are necessary as there were only two allocations
     delete[] field;
-    delete[] fieldT;
     delete[] J;
-    delete[] Mg;
-    delete[] Mgdx;
-    delete[] Mgdy;
-    delete[] Mgdxdy;
-    delete[] Mgmdxdy;
 }
 
 
@@ -920,61 +919,25 @@ void Field2D3V<T>::joinProcesses() {
     }
 
     T* totalJ = nullptr;
-    T* totalMg = nullptr;
-    T* totalMgdx = nullptr;
-    T* totalMgdy = nullptr;
-    T* totalMgdxdy = nullptr;
-    T* totalMgmdxdy = nullptr;
-
     if(processId == 0){
-        totalJ = new T[3*Ng];
-        totalMg = new T[9*Ng];
-        totalMgdx = new T[9*Ng];
-        totalMgdy = new T[9*Ng];
-        totalMgdxdy = new T[9*Ng];
-        totalMgmdxdy = new T[9*Ng];
-
-        std::fill(totalJ, totalJ + 3*Ng, (T)0);
-        std::fill(totalMg, totalMg + 9*Ng, (T)0);
-        std::fill(totalMgdx, totalMgdx + 9*Ng, (T)0);
-        std::fill(totalMgdy, totalMgdy + 9*Ng, (T)0);
-        std::fill(totalMgdxdy, totalMgdxdy + 9*Ng, (T)0);
-        std::fill(totalMgmdxdy, totalMgmdxdy + 9*Ng, (T)0);
+        totalJ = new T[48*Ng];
+        std::fill(totalJ, totalJ + 48*Ng, (T)0);
     }
-    
-    //MPI_Barrier(MPI_COMM_WORLD);
+
     if constexpr(std::is_same<double, T>::value){
-        MPI_Reduce(J, totalJ, 3*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mg, totalMg, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgdx, totalMgdx, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgdy, totalMgdy, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgdxdy, totalMgdxdy, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgmdxdy, totalMgmdxdy, 9*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        //Reduce J, Mg, Mgdx, Mgdy, Mgdxdy, Mgmdxdy as they were allocated contiguously
+        MPI_Reduce(J, totalJ, 48*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }else if constexpr(std::is_same<float, T>::value){
-        MPI_Reduce(J, totalJ, 3*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mg, totalMg, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgdx, totalMgdx, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgdy, totalMgdy, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgdxdy, totalMgdxdy, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(Mgmdxdy, totalMgmdxdy, 9*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+        //Reduce J, Mg, Mgdx, Mgdy, Mgdxdy, Mgmdxdy as they were allocated contiguously
+        MPI_Reduce(J, totalJ, 48*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
     }else{
         throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }
     
     if(processId == 0){
-        std::copy(totalJ, totalJ + 3*Ng, J);
-        std::copy(totalMg, totalMg + 9*Ng, Mg);
-        std::copy(totalMgdx, totalMgdx + 9*Ng, Mgdx);
-        std::copy(totalMgdy, totalMgdy + 9*Ng, Mgdy);
-        std::copy(totalMgdxdy, totalMgdxdy + 9*Ng, Mgdxdy);
-        std::copy(totalMgmdxdy, totalMgmdxdy + 9*Ng, Mgmdxdy);
-        
+        //Only done for J as variables are contiguous in memory
+        std::copy(totalJ, totalJ + 48*Ng, J);
         delete[] totalJ;
-        delete[] totalMg;
-        delete[] totalMgdx;
-        delete[] totalMgdy;
-        delete[] totalMgdxdy;
-        delete[] totalMgmdxdy;
     }
 }
 
@@ -989,11 +952,11 @@ void Field2D3V<T>::distributeProcesses() {
     }
 
     if constexpr(std::is_same<double, T>::value){
-        MPI_Bcast(field, 6*Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Bcast(fieldT, 6*Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        //Broadcast field and fieldT as they are contiguous in memory
+        MPI_Bcast(field, 12*Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }else if constexpr(std::is_same<float, T>::value){
-        MPI_Bcast(field, 6*Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(fieldT, 6*Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        //Broadcast field and fieldT as they are contiguous in memory
+        MPI_Bcast(field, 12*Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
     }else{
         throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }

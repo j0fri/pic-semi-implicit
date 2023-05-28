@@ -2,6 +2,7 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <mpi/mpi.h>
 
 #include "Simulation.h"
 #include "../helpers/string_helper.h"
@@ -181,11 +182,16 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::run() {
     this->checkValidState();
+
+    int processId, numProcesses;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
     try{
         T t = 0;
         T nextSave = 0;
         while(t <= timeConfig.total){
-            if(verbose){
+            if(verbose && processId == 0){
                 std::cout << "t: " << t << std::endl;
             }
             if (t >= nextSave){
@@ -230,7 +236,6 @@ void Simulation<T,Nd,Nv>::save(){
         }
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
     if(processId == 0){
         if(saveConfig.savePosition){
             std::ofstream speciesPositionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionFileName + saveConfig.outputFilesSubscript, std::ios::app);
@@ -331,7 +336,6 @@ void Simulation<T,Nd,Nv>::save(){
         }
         speciesEnergyFile.close();
     }
-    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
