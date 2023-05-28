@@ -9,7 +9,13 @@
 
 
 template <typename T, unsigned int Nd, unsigned int Nv>
-Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config) {
+Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config): processId(0), numProcesses(0) {
+    int rankStatus = MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    int sizeStatus = MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+    if(rankStatus != MPI_SUCCESS || sizeStatus != MPI_SUCCESS){
+        throw std::runtime_error("Could not obtain MPI rank during simulations construction.");
+    }
+
     try{
         species = std::vector<Species<T,Nd,Nv>*>(config.speciesConfig.size());
         for(int i = 0; i < (int)species.size(); ++i){
@@ -90,10 +96,6 @@ void Simulation<T, Nd, Nv>::initialise() {
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::clearOutputFiles(){
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
     if(processId == 0){
         if(saveConfig.savePosition){
             std::ofstream speciesPositionFile(saveConfig.outputFilesDirectory + saveConfig.speciesPositionFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
@@ -183,10 +185,6 @@ template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::run() {
     this->checkValidState();
 
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
     try{
         T t = 0;
         T nextSave = 0;
@@ -217,10 +215,6 @@ void Simulation<T,Nd,Nv>::run() {
 //TODO: add capability to save specific species only
 template<typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::save(){
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
     if(numProcesses > 1){
         if(saveConfig.savePosition){
             throw std::invalid_argument("savePosition not allowed with more than one process");

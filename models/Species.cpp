@@ -1,16 +1,18 @@
 #include "Species.h"
 #include <iostream>
+#include <mpi/mpi.h>
 
 template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speciesConfig,
                             const typename Config<T,Nd,Nv>::BCConfig& bcConfig)
-    : Np(Species::calculateLocalNp(speciesConfig.Np)), m(speciesConfig.m/speciesConfig.Np), q(speciesConfig.q/speciesConfig.Np),
+    : processId(0), numProcesses(0), Np(Species::calculateLocalNp(speciesConfig.Np, processId, numProcesses)),
+    m(speciesConfig.m/speciesConfig.Np), q(speciesConfig.q/speciesConfig.Np),
     initialXDist(speciesConfig.xDist), initialXGrid(speciesConfig.initialXGrid), initialVDist(speciesConfig.vDist),
     initialVGrid(speciesConfig.initialVGrid), initialisePositionFromFile(speciesConfig.initialisePositionFromFile),
     initialPositionFileName(speciesConfig.initialPositionFileName), initialiseVelocityFromFile(speciesConfig.initialiseVelocityFromFile),
     initialVelocityFileName(speciesConfig.initialVelocityFileName), bcConfig(bcConfig),
     bcPositionGenerator(speciesConfig.bcPositionGenerator),
-    bcNormalVelocityGenerator(speciesConfig.bcNormalVelocityGenerator), totalNp{speciesConfig.Np} {}
+    bcNormalVelocityGenerator(speciesConfig.bcNormalVelocityGenerator), totalNp{speciesConfig.Np}{}
 
 template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const Species<T, Nd, Nv> &other) = default;
@@ -43,17 +45,19 @@ void Species<T, Nd, Nv>::initialise(){
 }
 
 template<typename T, unsigned int Nd, unsigned int Nv>
-unsigned int Species<T, Nd, Nv>::calculateLocalNp(unsigned int Np) {
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+unsigned int Species<T, Nd, Nv>::calculateLocalNp(unsigned int Np, int processId, int numProcesses) {
+    int rankStatus = MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    int sizeStatus = MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+    if(rankStatus != MPI_SUCCESS || sizeStatus != MPI_SUCCESS){
+        throw std::runtime_error("Could not obtain MPI rank during species construction.");
+    }
 
-    if(numProcesses>Np){
+    if(numProcesses > (int)Np){
         throw std::invalid_argument("Number of particles must be larger than the number of processes.");
     }
 
-    unsigned int baseNp = Np/numProcesses;
-    unsigned int missing = Np-numProcesses*baseNp;
+    int baseNp = (int)Np/numProcesses;
+    int missing = (int)Np-numProcesses*baseNp;
     if(processId < missing){
         return baseNp + 1;
     }else{

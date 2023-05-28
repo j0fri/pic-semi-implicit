@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <mpi/mpi.h>
 #include "Species2D3V.h"
 #include "Field2D3V.h"
 #include "../helpers/math_helper.h"
@@ -156,7 +157,7 @@ void Species2D3V<T>::advanceVelocities(T dt, const Field<T, 2, 3> *field) {
 
 template<typename T>
 void Species2D3V<T>::savePosition(std::ofstream &outputFile) const {
-    if(this->Np > 1000){
+    if(this->Np > 1000 && this->processId==0){
         std::cout << "WARNING: consider disabling savePosition if Np > 1000" << std::endl;
     }
     //outputFile << this->m << " " << this->q << std::endl;
@@ -179,7 +180,7 @@ void Species2D3V<T>::savePositionDistribution(std::ofstream &outputFile, Field<T
 
 template<typename T>
 void Species2D3V<T>::saveVelocity(std::ofstream &outputFile) const {
-    if(this->Np > 1000){
+    if(this->Np > 1000 && this->processId==0){
         std::cout << "WARNING: consider disabling saveVelocity if Np > 1000" << std::endl;
     }
     //outputFile << this->m << " " << this->q << std::endl;
@@ -204,11 +205,8 @@ void Species2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
     }else{
         throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }
-
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-    if(processId == 0){
+    
+    if(this->processId == 0){
         outputFile << this->m << " " << this->q << std::endl;
         outputFile << totalSpeciesEnergy << std::endl;
     }
@@ -238,11 +236,7 @@ void Species2D3V<T>::initialisePositions(std::ifstream &file) {
     T* allX = nullptr;
     T* allY = nullptr;
 
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
-    if(processId == 0){
+    if(this->processId == 0){
         allX = new T[this->totalNp];
         allY = new T[this->totalNp];
 
@@ -268,11 +262,11 @@ void Species2D3V<T>::initialisePositions(std::ifstream &file) {
         }
     }
 
-    int sendcounts[numProcesses];
-    int displacements[numProcesses];
-    int baseCount = this->totalNp/numProcesses;
-    int missing = this->totalNp - baseCount*numProcesses;
-    for(int i = 0; i < numProcesses; ++i){
+    int sendcounts[this->numProcesses];
+    int displacements[this->numProcesses];
+    int baseCount = this->totalNp/this->numProcesses;
+    int missing = this->totalNp - baseCount*this->numProcesses;
+    for(int i = 0; i < this->numProcesses; ++i){
         sendcounts[i] = i < missing ? baseCount + 1 : baseCount;
         displacements[i] = i > 0 ? displacements[i-1] + sendcounts[i-1] : 0;
     }
@@ -287,7 +281,7 @@ void Species2D3V<T>::initialisePositions(std::ifstream &file) {
         throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }
 
-    if(processId == 0){
+    if(this->processId == 0){
         delete[] allX;
         delete[] allY;
     }
@@ -299,11 +293,7 @@ void Species2D3V<T>::initialiseVelocities(std::ifstream &file) {
     T* allY = nullptr;
     T* allZ = nullptr;
 
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
-    if(processId == 0){
+    if(this->processId == 0){
         allX = new T[this->totalNp];
         allY = new T[this->totalNp];
         allZ = new T[this->totalNp];
@@ -336,11 +326,11 @@ void Species2D3V<T>::initialiseVelocities(std::ifstream &file) {
         }
     }
 
-    int sendcounts[numProcesses];
-    int displacements[numProcesses];
-    int baseCount = this->totalNp/numProcesses;
-    int missing = this->totalNp - baseCount*numProcesses;
-    for(int i = 0; i < numProcesses; ++i){
+    int sendcounts[this->numProcesses];
+    int displacements[this->numProcesses];
+    int baseCount = this->totalNp/this->numProcesses;
+    int missing = this->totalNp - baseCount*this->numProcesses;
+    for(int i = 0; i < this->numProcesses; ++i){
         sendcounts[i] = i < missing ? baseCount + 1 : baseCount;
         displacements[i] = i > 0 ? displacements[i-1] + sendcounts[i-1] : 0;
     }
@@ -357,7 +347,7 @@ void Species2D3V<T>::initialiseVelocities(std::ifstream &file) {
         throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }
 
-    if(processId == 0){
+    if(this->processId == 0){
         delete[] allX;
         delete[] allY;
         delete[] allZ;

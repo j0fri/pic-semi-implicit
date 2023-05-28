@@ -16,6 +16,9 @@ class Species;
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 class Field{
+protected:
+    int processId;
+    int numProcesses;
 public:
     const Grid<T,Nd> grid; //Grid (including length and spacing)
 	const T c; //Speed of light

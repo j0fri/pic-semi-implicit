@@ -16,6 +16,8 @@ class Simulation {
 public:
     enum State{Uninitialised, Initialised, InitialisationError, Finalised, RuntimeError};
 private:
+    int processId;
+    int numProcesses;
     State state;
     std::vector<Species<T,Nd,Nv>*> species;
     Field<T,Nd,Nv>* field;

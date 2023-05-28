@@ -12,7 +12,7 @@ SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o mo
 		  models/Field1D1V.o models/Species2D3V.o models/Field2D3V.o models/Vector2.o models/Vector3.o\
 		  models/DistributionGrid.o models/Field2D3VExplicit.o
 
-SIMLIBS = -lboost_program_options -lblas -llapack
+SIMLIBS = -lblas -llapack
 
 HELPERHDRS = helpers/math_helper.h helpers/string_helper.h helpers/output_helper.h
 
@@ -81,13 +81,21 @@ samePotentialWellTest: tests/samePotentialWellTest.o $(SIMOBJS) $(TESTOBJS)
 sameLandauTest: tests/sameLandauTest.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: standalone
+standalone: main.o $(SIMOBJS)
+	$(CXX) $(CXXFLAGS) -static -o sim $^ $(SIMLIBS)
+
 export PATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86-bin/developerstudio12.5/bin:$(PATH)
 export MANPATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86-bin/developerstudio12.5/man:$(MANPATH)
 
 .PHONY: profiler
 profiler: sim
 	-rm -r profiler.er
-	collect -o profiler.er -M OMPT mpiexec --np 4 -- ./sim
+	nice -20 collect -o profiler.er -M OMPT mpiexec --np 8 --bind-to none -- ./sim
 	analyzer profiler.er
 
-
+.PHONY: HPCprofiler
+HPCprofiler: sim
+	-rm -r profiler.er
+	collect -o profiler.er -M OMPT mpiexec --np 8 --bind-to none -- ./sim
+	analyzer profiler.er

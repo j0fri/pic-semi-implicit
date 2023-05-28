@@ -210,11 +210,7 @@ void Field1D1V<T>::saveCurrent(std::ofstream &outputFile) const {
 
 template<typename T>
 void Field1D1V<T>::joinProcesses() {
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
-    if(numProcesses == 1){
+    if(this->numProcesses == 1){
         return;
     }
     throw std::invalid_argument("Only 1 process is supported in 1D1V fields.");
@@ -222,11 +218,7 @@ void Field1D1V<T>::joinProcesses() {
 
 template<typename T>
 void Field1D1V<T>::distributeProcesses() {
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
-    if(numProcesses == 1){
+    if(this->numProcesses == 1){
         return;
     }
     throw std::invalid_argument("Only 1 process is supported in 1D1V fields.");

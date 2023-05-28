@@ -42,7 +42,7 @@ Field2D3V<T>::~Field2D3V() {
 
 template<typename T>
 void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species, T dt) {
-    if(this->initialiseFromSpecies){
+    if(this->initialiseFromSpecies && this->processId==0){
         std::cout << "WARNING: when initialising field from species, if periodic boundary conditions are present, ensure the "
                      "charge distribution results in a periodic field." << std::endl;
     }
@@ -101,10 +101,6 @@ void Field2D3V<T>::saveMagneticField(std::ofstream &outputFile) const {
 
 template<typename T>
 void Field2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
     T e0 = this->e0;
     T mu0 = (T)1/(this->c*this->c*this->e0);
     T totalE = 0;
@@ -129,11 +125,7 @@ template<typename T>
 void Field2D3V<T>::saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,2,3>*> &species) const {
     std::unique_ptr<const T> phi = this->getElectrostaticPotential(species);
 
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
-    if(processId == 0){
+    if(this->processId == 0){
         output_helper::outputColMajorMatrix(&*phi,Nx,Ny,Nx,1,outputFile);
     }
 }
@@ -358,11 +350,8 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         return;
     }
 
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 
-    if(processId > 0){
+    if(this->processId > 0){
         return;
     }
 
@@ -809,12 +798,8 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     }
     EcLocal[0]=0; //For potential at 0=0;
 
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
     T* EcTotal = nullptr;
-    if(processId == 0){
+    if(this->processId == 0){
         EcTotal = new T[Ng];
         std::fill(EcTotal, EcTotal+Ng, (T)0);
     }
@@ -829,7 +814,7 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     delete[] EcLocal;
 
     Eigen::VectorX<T> sol;
-    if(processId == 0){
+    if(this->processId == 0){
         std::copy(EcTotal, EcTotal+Ng, Ec.begin());
         delete[] EcTotal;
         sol = Esolver.solve(Ec);
@@ -837,7 +822,7 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
 
     T* sol_out = new T[Ng];
 
-    if(processId == 0){
+    if(this->processId == 0){
         std::copy(sol.begin(), sol.end(), sol_out);
     }
 
@@ -910,16 +895,12 @@ void Field2D3V<T>::initialiseTwoPlateElectrostaticPotentialSystem() {
 
 template<typename T>
 void Field2D3V<T>::joinProcesses() {
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
-    if(numProcesses == 1){
+    if(this->numProcesses == 1){
         return;
     }
 
     T* totalJ = nullptr;
-    if(processId == 0){
+    if(this->processId == 0){
         totalJ = new T[48*Ng];
         std::fill(totalJ, totalJ + 48*Ng, (T)0);
     }
@@ -934,7 +915,7 @@ void Field2D3V<T>::joinProcesses() {
         throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }
     
-    if(processId == 0){
+    if(this->processId == 0){
         //Only done for J as variables are contiguous in memory
         std::copy(totalJ, totalJ + 48*Ng, J);
         delete[] totalJ;
@@ -943,11 +924,7 @@ void Field2D3V<T>::joinProcesses() {
 
 template<typename T>
 void Field2D3V<T>::distributeProcesses() {
-    int processId, numProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
-    if(numProcesses == 1){
+    if(this->numProcesses == 1){
         return;
     }
 

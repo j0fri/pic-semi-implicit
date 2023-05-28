@@ -12,6 +12,9 @@ class Field;
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 class Species{
+protected:
+    int processId;
+    int numProcesses;
 public:
     //TODO: consider making beta an attribute at construction
 	const unsigned int Np;
@@ -56,7 +59,7 @@ private:
     virtual void initialiseVelocities(std::ifstream &file) = 0;
 
     //Calculate the appropriate number of particles for the given number of processors
-    static unsigned int calculateLocalNp(unsigned int Np);
+    static unsigned int calculateLocalNp(unsigned int Np, int processId, int numProcesses);
 };
 
 
