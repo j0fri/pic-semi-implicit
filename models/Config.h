@@ -23,16 +23,9 @@ struct Config{
         bool initialiseVelocityFromFile{};
         std::string initialVelocityFileName;
 
-        //For now only 1 non-periodic boundary
-        std::array<std::optional<DistributionGrid<T,Nd-1>>, 2*Nd> bcPositionGenerator; /*for each dimension, optional generator of
-        new particles, order of boundaries is x=minx, x=maxx, y=miny, ..., ignored if periodic in given dimension,
+        std::optional<DistributionGrid<T,Nd>> bcPositionGenerator; /*optional generator of new particles,
         magnitude/frequency of generator not relevant as created number will correspond to deleted particles*/
-        std::array<std::optional<DistributionGrid<T,1>>, 2*Nd> bcNormalVelocityGenerator; /*for each dimension, optional generator of
-        normal velocity of new particles, order of boundaries is x=minx, x=maxx, y=miny, ..., ignored if periodic
-        in given dimension */
-        std::array<std::optional<T>, 2*Nd> sourceStrength; //for each dimension, how many particles are generated
-
-        /*Currently only xmin can have a positive sourceStrength. */
+        std::optional<DistributionGrid<T,Nv>> bcVelocityGenerator; //optional generator of velocity of new particles
     };
     std::vector<SpeciesConfig> speciesConfig;
 

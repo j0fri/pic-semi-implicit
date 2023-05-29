@@ -6,13 +6,13 @@ template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speciesConfig,
                             const typename Config<T,Nd,Nv>::BCConfig& bcConfig)
     : processId(0), numProcesses(0), Np(Species::calculateLocalNp(speciesConfig.Np, processId, numProcesses)),
-    m(speciesConfig.m/speciesConfig.Np), q(speciesConfig.q/speciesConfig.Np),
-    initialXDist(speciesConfig.xDist), initialXGrid(speciesConfig.initialXGrid), initialVDist(speciesConfig.vDist),
-    initialVGrid(speciesConfig.initialVGrid), initialisePositionFromFile(speciesConfig.initialisePositionFromFile),
-    initialPositionFileName(speciesConfig.initialPositionFileName), initialiseVelocityFromFile(speciesConfig.initialiseVelocityFromFile),
-    initialVelocityFileName(speciesConfig.initialVelocityFileName), bcConfig(bcConfig),
-    bcPositionGenerator(speciesConfig.bcPositionGenerator),
-    bcNormalVelocityGenerator(speciesConfig.bcNormalVelocityGenerator), totalNp{speciesConfig.Np}{}
+      m(speciesConfig.m/speciesConfig.Np), q(speciesConfig.q/speciesConfig.Np),
+      initialXDist(speciesConfig.xDist), initialXGrid(speciesConfig.initialXGrid), initialVDist(speciesConfig.vDist),
+      initialVGrid(speciesConfig.initialVGrid), initialisePositionFromFile(speciesConfig.initialisePositionFromFile),
+      initialPositionFileName(speciesConfig.initialPositionFileName), initialiseVelocityFromFile(speciesConfig.initialiseVelocityFromFile),
+      initialVelocityFileName(speciesConfig.initialVelocityFileName), bcConfig(bcConfig),
+      bcPositionGenerator(speciesConfig.bcPositionGenerator),
+      bcVelocityGenerator(speciesConfig.bcVelocityGenerator), totalNp{speciesConfig.Np}{}
 
 template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const Species<T, Nd, Nv> &other) = default;

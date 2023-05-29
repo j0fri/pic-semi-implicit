@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <cmath>
+#include "math_helper.h"
 
 
 //TODO: ref: Statistical Physics (2nd Edition), F. Mandl, Manchester Physics, John Wiley & Sons, 2008, ISBN 9780471915331
@@ -62,6 +63,19 @@ Distribution<T,Nd> preset_distributions::ShiftedBoltzmann(T m, T Kb, T T0, const
         });
     }
     return Distribution<T,Nd>(fun);
+}
+
+
+template <typename T, unsigned int Nd>
+DistributionGrid<T,Nd> preset_distributions::ShiftedBoltzmannGrid(T m, T Kb, T T0, const std::array<T,Nd>& u0){
+    auto dist = preset_distributions::ShiftedBoltzmann<T,Nd>(m, Kb, T0, u0);
+    Grid<T,Nd> grid{};
+    for(unsigned int dim = 0; dim < Nd; ++ dim){
+        grid.dimensions[dim] = {-math_helper::boltzmannBounds(m,Kb,T0)+u0[dim],
+                                -math_helper::boltzmannBounds(m,Kb,T0)+u0[dim],
+                                100};
+    }
+    return DistributionGrid<T,Nd>(dist, grid);
 }
 
 

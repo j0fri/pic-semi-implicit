@@ -87,8 +87,8 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
         this->handlePeriodicBC(field, 1);
     }
     if(this->bcConfig.type==Config<T,2,3>::BC::Diode){
-        this->handlePeriodicBC(field, 0);
-        this->handleNonPeriodicBC(field, 1);
+        this->handleNonPeriodicBC(field, 0);
+        this->handlePeriodicBC(field, 1);
     }
 
     this->computeWeights(field);
@@ -117,10 +117,6 @@ void Species2D3V<T>::handlePeriodicBC(const Field<T, 2, 3> *field, unsigned int 
 
 template<typename T>
 void Species2D3V<T>::handleNonPeriodicBC(const Field<T, 2, 3> *field, unsigned int dim) {
-    if(dim!=0){
-        throw std::invalid_argument("Only 1 non-periodic B.C. in x supported in 2D3V species.");
-    }
-
     T* ptr = pos.x;
     T min = field->grid.dimensions[dim].min;
     T max = field->grid.dimensions[dim].max;
@@ -131,17 +127,17 @@ void Species2D3V<T>::handleNonPeriodicBC(const Field<T, 2, 3> *field, unsigned i
         }
     }
 
-    auto positions = this->bcPositionGenerator[0].value().generate(particlesOutsideDomain.size());
-    auto normalVelocities = this->bcNormalVelocityGenerator[0].value().generate(particlesOutsideDomain.size());
+    auto positions = this->bcPositionGenerator.value().generate(particlesOutsideDomain.size());
+    auto velocities = this->bcVelocityGenerator.value().generate(particlesOutsideDomain.size());
 
     unsigned int particle;
     for(unsigned int i = 0; i < (unsigned int) particlesOutsideDomain.size(); ++i){
         particle = particlesOutsideDomain[i];
-        pos.x[particle] = (T)0;
-        pos.y[particle] = positions[i][0];
-        vel.x[particle] = normalVelocities[i][0];
-        vel.y[particle] = (T)0;
-        vel.z[particle] = (T)0;
+        pos.x[particle] = positions[i][0];
+        pos.y[particle] = positions[i][1];
+        vel.x[particle] = velocities[i][0];
+        vel.y[particle] = velocities[i][1];
+        vel.z[particle] = velocities[i][2];
     }
 }
 

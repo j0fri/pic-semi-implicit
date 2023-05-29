@@ -309,7 +309,8 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
      T qi = 1;
      T Kb = 1;
      T T0 = 0.01;
-     T uex0 = 1;
+     T uex0 = 1; //Initial electron velocity
+     T ve0 = 0.1; //Starting velocity for electron
      T totalT = 10;
      T dt = 0.1;
      T e0 = 1;
@@ -329,7 +330,16 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             false,
             "",
             false,
-            ""
+            "",
+             //Position generation:
+            DistributionGrid<T,2>(
+                    preset_distributions::Uniform<T,2>((T)1),
+                    Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{
+                          {(T)0,(T)0,1},
+                          {-Ly/2,Ly/2,1},
+                    }}}
+            ),
+            preset_distributions::ShiftedBoltzmannGrid<T,3>(me,Kb,T0,{ve0,0.0,0.0}),
     };
     typename Config<T,2,3>::SpeciesConfig ionConfig{
             Np/2,
@@ -346,7 +356,16 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             false,
             "",
             false,
-            ""
+            "",
+            //Position generation:
+            DistributionGrid<T,2>(
+                    preset_distributions::Uniform<T,2>((T)1),
+                    Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{
+                            {(T)0,Lx,1},
+                            {-Ly/2,Ly/2,1},
+                    }}}
+            ),
+            preset_distributions::ShiftedBoltzmannGrid<T,3>(mi,Kb,T0,{0.0,0.0,0.0}),
     };
     typename Config<T,2,3>::FieldConfig fieldConfig{
             Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,Lx,Nx},{-Ly/2,Ly/2,Ny}}}},

@@ -12,6 +12,9 @@ namespace preset_distributions{
     template <typename T, unsigned int Nd>
     Distribution<T,Nd> ShiftedBoltzmann(T m, T Kb, T T0, const std::array<T,Nd>& u0);
 
+    template <typename T, unsigned int Nd>
+    DistributionGrid<T,Nd> ShiftedBoltzmannGrid(T m, T Kb, T T0, const std::array<T,Nd>& u0);
+
     //Uniform distribution in Nd dimension, input is the constant
     template <typename T, unsigned int Nd>
     Distribution<T,Nd> Uniform(T a);

@@ -29,8 +29,8 @@ public:
     const bool initialiseVelocityFromFile;
     const std::string initialVelocityFileName;
     const typename Config<T,Nd,Nv>::BCConfig bcConfig;
-    const std::array<std::optional<DistributionGrid<T,Nd-1>>, 2*Nd> bcPositionGenerator;
-    const std::array<std::optional<DistributionGrid<T,1>>, 2*Nd> bcNormalVelocityGenerator;
+    const std::optional<DistributionGrid<T,Nd>> bcPositionGenerator;
+    const std::optional<DistributionGrid<T,Nv>> bcVelocityGenerator;
     const unsigned int totalNp; //Number of particles among all processes
 
 	Species() = delete;
