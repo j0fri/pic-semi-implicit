@@ -86,7 +86,7 @@ void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
         this->handlePeriodicBC(field, 0);
         this->handlePeriodicBC(field, 1);
     }
-    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
+    if(this->bcConfig.type==Config<T,2,3>::BC::Diode){
         this->handlePeriodicBC(field, 0);
         this->handleNonPeriodicBC(field, 1);
     }
@@ -361,7 +361,7 @@ void Species2D3V<T>::computeWeights(const Field<T,2,3>* field) {
         this->computePeriodicWeights(field, 1);
         return;
     }
-    if(this->bcConfig.type == Config<T,2,3>::BC::TwoPlates){
+    if(this->bcConfig.type == Config<T,2,3>::BC::Diode){
         this->computeNonPeriodicWeights(field, 0);
         this->computePeriodicWeights(field, 1);
         return;

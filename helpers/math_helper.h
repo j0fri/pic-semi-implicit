@@ -22,7 +22,6 @@ namespace math_helper{
     //Returns a velocity magnitude which contains 99.99% of the distribution
     template <typename T>
     T boltzmannBounds(T m, T Kb, T T0);
-
 }
 
 #include "math_helper.cpp"

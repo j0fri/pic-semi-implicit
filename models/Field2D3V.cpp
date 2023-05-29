@@ -70,10 +70,10 @@ void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species, T 
         this->initialisePeriodicA(dt);
         return;
     }
-    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
+    if(this->bcConfig.type==Config<T,2,3>::BC::Diode){
         this->initialiseTwoPlateElectrostaticPotentialSystem();
-        this->initialiseTwoPlatesField(species, dt);
-        this->initialiseTwoPlatesA(dt);
+        this->initialiseDiodeField(species, dt);
+        this->initialiseDiodeA(dt);
         return;
     }
 
@@ -156,8 +156,8 @@ std::unique_ptr<const T> Field2D3V<T>::getElectrostaticPotential(const std::vect
     if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
         return this->getPeriodicElectrostaticPotential(species);
     }
-    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
-        return this->getTwoPlatesElectrostaticPotential(species);
+    if(this->bcConfig.type==Config<T,2,3>::BC::Diode){
+        return this->getDiodeElectrostaticPotential(species);
     }
 
     throw std::invalid_argument("Unsupported boundary conditions in Field2D3V getElectrostaticPotential.");
@@ -359,9 +359,9 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
         this->constructPeriodicAc(dt);
         this->constructPeriodicC(dt);
     }
-    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
-        this->constructTwoPlatesAc(dt);
-        this->constructTwoPlatesC(dt);
+    if(this->bcConfig.type==Config<T,2,3>::BC::Diode){
+        this->constructDiodeAc(dt);
+        this->constructDiodeC(dt);
     }
 
     Eigen::LeastSquaresConjugateGradient<SpMat> lscg;
@@ -498,7 +498,7 @@ void Field2D3V<T>::initialisePeriodicA(T dt) {
 
 
 template<typename T>
-void Field2D3V<T>::initialiseTwoPlatesA(T dt) {
+void Field2D3V<T>::initialiseDiodeA(T dt) {
     //TODO
 }
 
@@ -542,7 +542,7 @@ void Field2D3V<T>::initialisePeriodicField(const std::vector<Species<T,2,3>*>& s
 
 
 template<typename T>
-void Field2D3V<T>::initialiseTwoPlatesField(const std::vector<Species<T,2,3>*>& species, T dt) {
+void Field2D3V<T>::initialiseDiodeField(const std::vector<Species<T,2,3>*>& species, T dt) {
     //TODO
 }
 
@@ -643,7 +643,7 @@ void Field2D3V<T>::constructPeriodicAc(T dt) {
 
 
 template<typename T>
-void Field2D3V<T>::constructTwoPlatesAc(T dt) {
+void Field2D3V<T>::constructDiodeAc(T dt) {
     typedef Eigen::Triplet<T> Tri;
     std::vector<Tri> tripletList;
 
@@ -769,7 +769,7 @@ void Field2D3V<T>::constructPeriodicC(T dt) {
 
 
 template<typename T>
-void Field2D3V<T>::constructTwoPlatesC(T dt) {
+void Field2D3V<T>::constructDiodeC(T dt) {
     //TODO
 }
 
@@ -839,7 +839,7 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
 
 template<typename T>
 std::unique_ptr<const T>
-Field2D3V<T>::getTwoPlatesElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
+Field2D3V<T>::getDiodeElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
     throw std::invalid_argument("Electrostatic potential not implemented for two-plates.");
 }
 

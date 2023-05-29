@@ -30,8 +30,8 @@ void Field2D3VExplicit<T>::solveAndAdvance(T dt) {
     if(this->bcConfig.type==Config<T,2,3>::BC::Periodic){
         this->constructPeriodicC(dt);
     }
-    if(this->bcConfig.type==Config<T,2,3>::BC::TwoPlates){
-        this->constructTwoPlatesC(dt);
+    if(this->bcConfig.type==Config<T,2,3>::BC::Diode){
+        this->constructDiodeC(dt);
     }
 
     Eigen::VectorX<T> sol = solver.solve(this->C);

@@ -83,15 +83,13 @@ struct Config{
     };
     SaveConfig saveConfig;
 
-    enum BC{Periodic, TwoPlates};
+    enum BC{Periodic, Diode};
     struct BCConfig{
         BC type;
-
-        struct TwoPlates{
-            T leftRho;
-            T rightRho;
+        struct Diode{
+            T voltage;
         };
-        std::optional<TwoPlates> twoPlates;
+        std::optional<Diode> diode;
     };
     BCConfig bcConfig;
 

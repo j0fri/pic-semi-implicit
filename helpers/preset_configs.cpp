@@ -271,7 +271,7 @@ Config<T,2,3> preset_configs::electronBeam(unsigned int Nx, unsigned int Ny) {
             {10,0.01},
             {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
             {
-                {Config<T,2,3>::BC::TwoPlates}, //X non-periodic
+                {Config<T,2,3>::BC::Diode}, //X non-periodic
                 {(T)0,(T)0} //Potential zero at non-periodic boundaries
             },
             true,
@@ -297,5 +297,94 @@ Config<T,2,3> preset_configs::fiveParticles(){
             true,
             true
     };
-   return config;
+    return config;
+}
+
+template <typename T>
+Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx, unsigned int Ny){
+     T V = 1;
+     T me = 1;
+     T qe = -1;
+     T mi = 2000;
+     T qi = 1;
+     T Kb = 1;
+     T T0 = 0.01;
+     T uex0 = 1;
+     T totalT = 10;
+     T dt = 0.1;
+     T e0 = 1;
+     T c = 1;
+     typename Config<T,2,3>::SpeciesConfig electronConfig{
+            Np/2,
+            me,
+            qe,
+            preset_distributions::Uniform<double,2>(1),
+            Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,Lx,Nx},{-Ly/2,Ly/2,Ny}}}},
+            preset_distributions::ShiftedBoltzmann<double,3>(me,Kb,T0,{uex0,(T)0,(T)0}),
+            Grid<T,3>{std::array<typename Grid<T,3>::Dim,3>{{
+                    {-math_helper::boltzmannBounds(me,Kb,T0)+uex0,math_helper::boltzmannBounds(me,Kb,T0)+uex0,100},
+                    {-math_helper::boltzmannBounds(me,Kb,T0),math_helper::boltzmannBounds(me,Kb,T0),100},
+                    {-math_helper::boltzmannBounds(me,Kb,T0),math_helper::boltzmannBounds(me,Kb,T0),100}
+            }}},
+            false,
+            "",
+            false,
+            ""
+    };
+    typename Config<T,2,3>::SpeciesConfig ionConfig{
+            Np/2,
+            mi,
+            qi,
+            preset_distributions::Uniform<double,2>(1),
+            Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,Lx,Nx},{-Ly/2,Ly/2,Ny}}}},
+            preset_distributions::Boltzmann<double,3>(mi,Kb,T0),
+            Grid<T,3>{std::array<typename Grid<T,3>::Dim,3>{{
+                    {-math_helper::boltzmannBounds(mi,Kb,T0),math_helper::boltzmannBounds(mi,Kb,T0),100},
+                    {-math_helper::boltzmannBounds(mi,Kb,T0),math_helper::boltzmannBounds(mi,Kb,T0),100},
+                    {-math_helper::boltzmannBounds(mi,Kb,T0),math_helper::boltzmannBounds(mi,Kb,T0),100}
+            }}},
+            false,
+            "",
+            false,
+            ""
+    };
+    typename Config<T,2,3>::FieldConfig fieldConfig{
+            Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,Lx,Nx},{-Ly/2,Ly/2,Ny}}}},
+            c,
+            e0,
+
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
+            false,
+            false,
+            true
+    };
+    //Linear initial Ex goes from 0 at 0 to -4/3V at Lx:
+    fieldConfig.forcedE[0] = Distribution<T,2>(std::function([=](const std::array<T,2>& arr) {
+        return arr[0]/Lx*(-(T)4/3*V);
+    }));
+    //Child-Langmuir current:
+    T Jcl = -std::sqrt(2)/(9*M_PI*Lx*Lx)*me*c*c*c/qi*std::pow(qi*V/(me*c*c),1.5);
+    T C = (T)4*M_PI/c*Jcl;
+    //Linear initial Bz with slope C and 0 at 0:
+    fieldConfig.forcedB[2] = Distribution<T,2>(std::function([=](const std::array<T,2>& arr) {
+        return arr[1]*C;
+    }));
+
+    Config<T,2,3> config{
+            std::vector<typename Config<T,2,3>::SpeciesConfig>{{
+                   ionConfig,
+                   electronConfig
+            }},
+            fieldConfig,
+            {totalT,dt},
+            preset_save_configs::Energies<T,2,3>(dt),
+            {
+                    Config<T,2,3>::BC::Diode,
+                    Config<double, 2, 3>::BCConfig::Diode{(T)0}
+            },
+            true,
+            true
+    };
+    return config;
 }

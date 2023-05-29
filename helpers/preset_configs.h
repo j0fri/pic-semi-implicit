@@ -58,6 +58,9 @@ namespace preset_configs {
 
     template <typename T>
     Config<T,2,3> fiveParticles();
+
+    template <typename T>
+    Config<T,2,3> diode(unsigned int Np, T Lx, T Ly, unsigned int Nx, unsigned int Ny);
 }
 
 #include "preset_configs.cpp"
