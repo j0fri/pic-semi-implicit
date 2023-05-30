@@ -89,6 +89,10 @@ benchmark1: tests/benchmark1.o $(SIMOBJS) $(TESTOBJS)
 benchmark2: tests/benchmark2.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: benchmark3
+benchmark3: tests/benchmark3.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: standalone
 standalone: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -static -o sim $^ $(SIMLIBS)
@@ -99,7 +103,7 @@ export MANPATH := /home/jf1519/Downloads/tmp/OracleDeveloperStudio12.5-linux-x86
 .PHONY: profiler
 profiler: sim
 	-rm -r profiler.er
-	nice -20 collect -o profiler.er -M OMPT mpiexec --np 8 --bind-to none -- ./sim
+	nice -20 collect -o profiler.er -M OMPT mpiexec --np 2 --bind-to none -- ./sim
 	analyzer profiler.er
 
 .PHONY: HPCprofiler
