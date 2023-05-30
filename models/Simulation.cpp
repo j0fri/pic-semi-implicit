@@ -5,6 +5,7 @@
 #include <string>
 #include <mpi/mpi.h>
 #include <chrono>
+#include <filesystem>
 
 #include "Simulation.h"
 #include "../helpers/string_helper.h"
@@ -64,6 +65,8 @@ Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config): processId(0), nu
     bcConfig = config.bcConfig;
     verbose = config.verbose;
 
+    //Create output folder if it doesn't exist
+    std::filesystem::create_directories(saveConfig.outputFilesDirectory);
     if(config.outputConfig){
         this->outputConfig(config);
     }
