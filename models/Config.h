@@ -58,6 +58,7 @@ struct Config{
         bool saveFieldEnergy{};
         bool saveElectrostaticPotential{};
         bool saveCurrent{};
+        bool saveRuntime{true};
         T saveInterval;
         std::string outputFilesDirectory{"outputs/"};
         std::string outputFilesSubscript{".txt"}; //Will be appended to every output file
@@ -73,6 +74,7 @@ struct Config{
         std::string fieldEnergyFileName{"fieldEnergy"};
         std::string electrostaticPotentialFileName{"electrostaticPotential"};
         std::string currentFileName{"current"};
+        std::string runtimeFileName{"runtime"};
     };
     SaveConfig saveConfig;
 

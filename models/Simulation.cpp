@@ -1,8 +1,10 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <array>
 #include <string>
 #include <mpi/mpi.h>
+#include <chrono>
 
 #include "Simulation.h"
 #include "../helpers/string_helper.h"
@@ -79,6 +81,7 @@ Simulation<T,Nd,Nv>::~Simulation(){
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T, Nd, Nv>::initialise() {
+    auto begin = std::chrono::steady_clock::now();
     try{
         for(int i = 0; i < (int)species.size(); ++i){
             species[i]->initialise();
@@ -91,6 +94,8 @@ void Simulation<T, Nd, Nv>::initialise() {
         std::cout << "Exception thrown during initialisation: " << exception.what() << std::endl;
         state = State::InitialisationError;
     }
+    auto end = std::chrono::steady_clock::now();
+    initialisationTime = (T)std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/10e9;
 }
 
 
@@ -176,6 +181,14 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
             }
             currentFile.close();
         }
+
+        if(saveConfig.saveRuntime){
+            std::ofstream runtimeFile(saveConfig.outputFilesDirectory + saveConfig.runtimeFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!runtimeFile.is_open()){
+                throw std::runtime_error("Could not open runtime file.");
+            }
+            runtimeFile.close();
+        }
     }
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -183,8 +196,8 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::run() {
+    auto begin = std::chrono::steady_clock::now();
     this->checkValidState();
-
     try{
         T t = 0;
         T nextSave = 0;
@@ -205,9 +218,15 @@ void Simulation<T,Nd,Nv>::run() {
             }
             t += timeConfig.step;
         }
+        state = State::Finalised;
     }catch(const std::exception& exception){
         std::cout << "Exception thrown during simulation: " << exception.what() << std::endl;
         state = State::RuntimeError;
+    }
+    auto end = std::chrono::steady_clock::now();
+    simulationTime = (T)std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/10e9;
+    if(state == State::Finalised){
+        this->saveRuntime();
     }
 }
 
@@ -386,6 +405,20 @@ void Simulation<T, Nd, Nv>::outputConfig(const Config<T, Nd, Nv> &config) const 
         }
         if(row < 1){
             configFile << std::endl;
+        }
+    }
+}
+
+template<typename T, unsigned int Nd, unsigned int Nv>
+void Simulation<T, Nd, Nv>::saveRuntime() {
+    if(processId == 0){
+        if(saveConfig.saveRuntime){
+            std::ofstream runtimeFile(saveConfig.outputFilesDirectory + saveConfig.runtimeFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!runtimeFile.is_open()){
+                throw std::runtime_error("Could not open runtime file.");
+            }
+            runtimeFile << std::setprecision(10) << initialisationTime << " " << simulationTime << std::endl;
+            runtimeFile.close();
         }
     }
 }

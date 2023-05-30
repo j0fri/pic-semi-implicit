@@ -7,7 +7,7 @@ Config<T,1,1> preset_configs::landau1D1V(){
         }},
         preset_fields::Default1D1V<T>(4*M_PI,30,1,1),
         {10,0.01},
-        {false, true, false, false, true, false, false, true, false, false, 0.1, "outputs/"},
+        {false, true, false, false, true, false, false, true, false, false, true, 0.1, "outputs/"},
         {{Config<T,1,1>::BC::Periodic}}, //Only periodic boundary conditions
         true,
         false
@@ -27,7 +27,7 @@ Config<T,2,3> preset_configs::constVelocityX(){
     }},
     preset_fields::Default2D3V<T>(1,1,10,10,1,1),
     {10,0.1},
-    {false, true, false, false, true, true, true, true, true, false, 0.1, "outputs/"},
+    {false, true, false, false, true, true, true, true, true, false, true, 0.1, "outputs/"},
     {
            {Config<T,2,3>::BC::Periodic}
     },
@@ -49,7 +49,7 @@ Config<T,2,3> preset_configs::landau2D3VX(unsigned int Nx, unsigned int Ny){
         }},
         preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
         {10,0.05},
-        {false, false, false, false, true, true, true, true, true, false, 0.05, "outputs/"},
+        {false, false, false, false, true, true, true, true, true, false, true, 0.05, "outputs/"},
         {
            {Config<T,2,3>::BC::Periodic}
         },
@@ -92,7 +92,7 @@ Config<T,2,3> preset_configs::landau2D3VXWave(unsigned int Nx, unsigned int Ny){
              }},
             preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
             {4,0.02},
-            {false, false, false, false, true, true, true, true, true, false, 0.02, "outputs/"},
+            {false, false, false, false, true, true, true, true, true, false, true, 0.02, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -134,7 +134,7 @@ Config<T,2,3> preset_configs::constAccelerationX(){
             }},
             preset_fields::ConstE2D3V<T>(0,(T)1,20,20),
             {10,0.1},
-            {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
+            {false, true, false, false, false, true, true, false, true, true, true, 0.1, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -152,7 +152,7 @@ Config<T,2,3> preset_configs::magneticGyration(){
            }},
             preset_fields::ConstB2D3V<T>(2,(T)1,20,20),
             {10,0.1},
-            {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
+            {false, true, false, false, false, true, true, false, true, true, true, 0.1, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -171,7 +171,7 @@ Config<T,2,3> preset_configs::magneticGyrationX(){
             }},
             preset_fields::ConstB2D3V<T>(0,(T)1,20,20),
             {10,0.1},
-            {false, true, false, false, false, true, true, false, true, true, 0.1, "outputs/"},
+            {false, true, false, false, false, true, true, false, true, true, true, 0.1, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -190,7 +190,7 @@ Config<T,2,3> preset_configs::constPotentialWell(){
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
             {100,0.1},
-            {false, true, false, false, true, true, true, true, false, true, 0.1, "outputs/"},
+            {false, true, false, false, true, true, true, true, false, true, true, 0.1, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -212,7 +212,7 @@ Config<T,2,3> preset_configs::constPotentialWellFile(){
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
             {10,0.1},
-            {true, true, true, false, false, true, true, false, true, true, 10, "outputs/"},
+            {true, true, true, false, false, true, true, false, true, true, true, 10, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -269,7 +269,7 @@ Config<T,2,3> preset_configs::electronBeam(unsigned int Nx, unsigned int Ny) {
             }},
             fieldConfig,
             {10,0.01},
-            {false, true, false, false, true, true, true, true, true, true, 0.1, "outputs/"},
+            {false, true, false, false, true, true, true, true, true, true, true, 0.1, "outputs/"},
             {
                 {Config<T,2,3>::BC::Diode}, //X non-periodic
                 {(T)0,(T)0} //Potential zero at non-periodic boundaries
@@ -290,7 +290,7 @@ Config<T,2,3> preset_configs::fiveParticles(){
            }},
             preset_fields::Default2D3V((T)1, (T)1, 5, 5, (T)1, (T)1),
             {10,0.1},
-            {false, false, false, false, true, true, false, true, true, false, 0.1, "outputs/"},
+            {false, false, false, false, true, true, false, true, true, false, true, 0.1, "outputs/"},
             {
                     {Config<T,2,3>::BC::Periodic}
             },
@@ -397,7 +397,7 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             }},
             fieldConfig,
             {totalT,dt},
-            {false, false, false, false, true, true, true, true, false, false, dt, "outputs/"},
+            {false, false, false, false, true, true, true, true, false, false, true, dt, "outputs/"},
             {
                     Config<T,2,3>::BC::Diode,
                     Config<double, 2, 3>::BCConfig::Diode{(T)0}

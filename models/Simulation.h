@@ -25,7 +25,10 @@ private:
     typename Config<T,Nd,Nv>::SaveConfig saveConfig;
     typename Config<T,Nd,Nv>::BCConfig bcConfig;
     bool verbose;
+    T initialisationTime;
+    T simulationTime;
 
+    void saveRuntime();
 public:
     Simulation() = delete;
     explicit Simulation(const Config<T,Nd,Nv>& config);
