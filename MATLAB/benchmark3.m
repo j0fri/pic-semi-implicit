@@ -53,14 +53,14 @@ explicitEnergies = explicitEnergies(sortIdx);
 
 figure('DefaultAxesFontSize',22);
 clf;
-loglog(10./double(semiimplicitNts),semiimplicitEnergies,'-','color','k');
+loglog(double(semiimplicitNts),semiimplicitEnergies,'-','color','k');
 hold on;
 %loglog(semiimplicitNts*10,double(semiimplicitNts).^2*semiimplicitRuntimes(end)/double(semiimplicitNts(end))^2,'--','color','k')
-loglog(10./double(explicitNts),explicitEnergies,'.','color','k');
+loglog(double(explicitNts),explicitEnergies,'--','color','k');
 %loglog(explicitNts*10,double(explicitNts)*explicitRuntimes(end)/double(explicitNts(end)),'-.','color','k')
 grid on;
 axis square;
-xlabel('Time step');
+xlabel('Time steps');
 ylabel('Energy Change')
 legend('Semi-implicit scheme', 'Explicit scheme');
 
@@ -69,7 +69,7 @@ clf;
 loglog(semiimplicitRuntimes,semiimplicitEnergies,'-','color','k');
 hold on;
 %loglog(semiimplicitNts*10,double(semiimplicitNts).^2*semiimplicitRuntimes(end)/double(semiimplicitNts(end))^2,'--','color','k')
-loglog(explicitRuntimes,explicitEnergies,'.','color','k');
+loglog(explicitRuntimes,explicitEnergies,'--','color','k');
 %loglog(explicitNts*10,double(explicitNts)*explicitRuntimes(end)/double(explicitNts(end)),'-.','color','k')
 grid on;
 axis square;

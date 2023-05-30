@@ -33,11 +33,11 @@ figure('DefaultAxesFontSize',22);
 clf;
 loglog(semiimplicitNps*10,semiimplicitRuntimes,'-','color','k');
 hold on;
-loglog(semiimplicitNps*10,double(semiimplicitNps).^2*semiimplicitRuntimes(end)/double(semiimplicitNps(end))^2,'--','color','k')
-loglog(explicitNps*10,explicitRuntimes,'.','color','k');
+%loglog(semiimplicitNps*10,double(semiimplicitNps)*semiimplicitRuntimes(end)/double(semiimplicitNps(end)),'--','color','k')
+loglog(explicitNps*10,explicitRuntimes,'--','color','k');
 loglog(explicitNps*10,double(explicitNps)*explicitRuntimes(end)/double(explicitNps(end)),'-.','color','k')
 grid on;
 axis square;
 xlabel('N{p}');
 ylabel('Runtime per step (s)')
-legend('Semi-implicit scheme', 'Explicit scheme');
+legend('Semi-implicit scheme', 'Explicit scheme', 'O(Np)');

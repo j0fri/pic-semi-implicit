@@ -40,4 +40,4 @@ grid on;
 axis square;
 xlabel('N{g}');
 ylabel('Runtime per step (s)')
-legend('Semi-implicit scheme', 'Explicit scheme');
+legend('Semi-implicit scheme', 'O(Ng^2)', 'Explicit scheme', 'O(Ng)');
