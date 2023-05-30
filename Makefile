@@ -81,8 +81,12 @@ samePotentialWellTest: tests/samePotentialWellTest.o $(SIMOBJS) $(TESTOBJS)
 sameLandauTest: tests/sameLandauTest.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
-.PHONY: benchmarks
-benchmarks: tests/benchmarks.o $(SIMOBJS) $(TESTOBJS)
+.PHONY: benchmark1
+benchmark1: tests/benchmark1.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: benchmark2
+benchmark2: tests/benchmark2.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 .PHONY: standalone
