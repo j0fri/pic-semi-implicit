@@ -94,7 +94,7 @@ protected:
     std::unique_ptr<const T> getPeriodicElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
     std::unique_ptr<const T> getDiodeElectrostaticPotential(const std::vector<Species<T,2,3>*> &species) const;
     virtual void initialisePeriodicElectrostaticPotentialSystem();
-    virtual void initialiseTwoPlateElectrostaticPotentialSystem();
+    virtual void initialiseDiodeElectrostaticPotentialSystem();
 };
 
 

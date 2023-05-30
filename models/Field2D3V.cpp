@@ -71,7 +71,7 @@ void Field2D3V<T>::initialise(const std::vector<Species<T, 2, 3> *> &species, T 
         return;
     }
     if(this->bcConfig.type==Config<T,2,3>::BC::Diode){
-        this->initialiseTwoPlateElectrostaticPotentialSystem();
+        //this->initialiseDiodeElectrostaticPotentialSystem();
         this->initialiseDiodeField(species, dt);
         this->initialiseDiodeA(dt);
         return;
@@ -840,7 +840,7 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
 template<typename T>
 std::unique_ptr<const T>
 Field2D3V<T>::getDiodeElectrostaticPotential(const std::vector<Species<T, 2, 3> *> &species) const {
-    throw std::invalid_argument("Electrostatic potential not implemented for two-plates.");
+    throw std::invalid_argument("Electrostatic potential not implemented for diode.");
 }
 
 template<typename T>
@@ -889,8 +889,8 @@ void Field2D3V<T>::initialisePeriodicElectrostaticPotentialSystem() {
 }
 
 template<typename T>
-void Field2D3V<T>::initialiseTwoPlateElectrostaticPotentialSystem() {
-    throw std::invalid_argument("Electrostatic potential not implemented for two-plates.");
+void Field2D3V<T>::initialiseDiodeElectrostaticPotentialSystem() {
+    throw std::invalid_argument("Electrostatic potential not implemented for diode.");
 }
 
 template<typename T>

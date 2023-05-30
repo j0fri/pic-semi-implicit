@@ -309,12 +309,13 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
      T qi = 1;
      T Kb = 1;
      T T0 = 0.01;
-     T uex0 = 1; //Initial electron velocity
-     T ve0 = 0.1; //Starting velocity for electron
-     T totalT = 10;
-     T dt = 0.1;
+     T ve0 = 0.001; //Starting velocity for electron
+     T totalT = 1.0;
+     T dt = 0.01;
      T e0 = 1;
      T c = 1;
+     T Jcl = -std::sqrt(2)/(9*M_PI*Lx*Lx)*me*c*c*c/qi*std::pow(qi*V/(me*c*c),1.5);
+     T uex0 = Jcl/qe; //Initial electron velocity
      typename Config<T,2,3>::SpeciesConfig electronConfig{
             Np/2,
             me,
@@ -335,7 +336,7 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             DistributionGrid<T,2>(
                     preset_distributions::Uniform<T,2>((T)1),
                     Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{
-                          {(T)0,(T)0,1},
+                          {(T)0,Lx/100000,1},
                           {-Ly/2,Ly/2,1},
                     }}}
             ),
@@ -376,14 +377,13 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             {preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0),preset_distributions::Uniform<T,2>(0)},
             false,
             false,
-            true
+            false
     };
     //Linear initial Ex goes from 0 at 0 to -4/3V at Lx:
     fieldConfig.forcedE[0] = Distribution<T,2>(std::function([=](const std::array<T,2>& arr) {
         return arr[0]/Lx*(-(T)4/3*V);
     }));
     //Child-Langmuir current:
-    T Jcl = -std::sqrt(2)/(9*M_PI*Lx*Lx)*me*c*c*c/qi*std::pow(qi*V/(me*c*c),1.5);
     T C = (T)4*M_PI/c*Jcl;
     //Linear initial Bz with slope C and 0 at 0:
     fieldConfig.forcedB[2] = Distribution<T,2>(std::function([=](const std::array<T,2>& arr) {
@@ -397,7 +397,7 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             }},
             fieldConfig,
             {totalT,dt},
-            preset_save_configs::Energies<T,2,3>(dt),
+            {false, false, false, false, true, true, true, true, false, false, dt, "outputs/"},
             {
                     Config<T,2,3>::BC::Diode,
                     Config<double, 2, 3>::BCConfig::Diode{(T)0}

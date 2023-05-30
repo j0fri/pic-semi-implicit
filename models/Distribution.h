@@ -32,6 +32,8 @@ private:
 		std::array<T,Nd> getCentre() const;
 	};
 	std::vector<Cell> generateMesh(const Grid<T,Nd>& config) const;
+    std::vector<std::array<T, Nd>> generate(int Np, const Grid<T,Nd>& grid, T particleIncreaseGenerationFactor) const;
+
 };
 
 

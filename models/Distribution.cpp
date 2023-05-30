@@ -29,64 +29,16 @@ Distribution<T,Nd>::Distribution(const std::function<T(std::array<T,Nd>)>& f) : 
 
 template <typename T, unsigned int Nd>
 std::vector<std::array<T, Nd>> Distribution<T,Nd>::generate(int Np, const Grid<T,Nd>& grid) const{
-    //TODO: move seeding to Simulation class
-    static auto randEngine = std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()); //Only seed once
-    std::uniform_int_distribution<int> distribution(0, RAND_MAX);
-    auto generate = std::bind(distribution, randEngine);
-
-    auto cells = this->generateMesh(grid);
-    int Nc = cells.size();
-
-    //Calculate sum of density function to normalize
-	T total = 0;
-	for (int i = 0; i < Nc; ++i) {
-        cells[i].objectiveNp = this->f(cells[i].getCentre());
-		if (cells[i].objectiveNp<0){
-			throw std::runtime_error("Negative density function at cell centre.");
-		}
-		total += cells[i].objectiveNp;
-	}
-	T scaling = 1.0 / total;
-
-    //Allocate particles to each cell
-	int totalParticles = 0;
-	for (int i = 0; i < Nc; ++i) {
-        cells[i].objectiveNp *= Np * scaling * PARTICLE_GENERATION_INCREASE_FACTOR;
-        cells[i].Np = std::floor(cells[i].objectiveNp); //Always add at least floor(Npdes)
-        T remainder = cells[i].objectiveNp - cells[i].Np;
-        if((double)generate()/RAND_MAX < remainder){
-            ++cells[i].Np; //Add 1 particle with remainder (decimal of Npdes) probability
+    T particleIncreaseGenerationFactor = PARTICLE_GENERATION_INCREASE_FACTOR;
+    for(int i = 0; i < 5; ++i){
+        try{
+            return this->generate(Np, grid, particleIncreaseGenerationFactor);
+        }catch(const std::runtime_error& e){
+            particleIncreaseGenerationFactor *= 2;
         }
-		totalParticles += cells[i].Np;
-	}
-
-    //Check enough particles
-    if(totalParticles < Np){
-        std::cout << "Cells " << cells.size() << std::endl;
-        throw std::runtime_error("Generated particles less than Np. Consider increasing "
-                                 "PARTICLE_GENERATION_INCREASE_FACTOR.");
     }
-
-    std::vector<std::array<T,Nd>> out(totalParticles);
-    int particleCounter = 0;
-	//Distribute particles inside each cell
-	for(int i = 0; i < Nc; ++i) {
-        const auto& left = cells[i].left;
-        const auto& right = cells[i].right;
-        for(unsigned int j = 0; j < cells[i].Np; ++j){
-            out[particleCounter] = std::array<T,Nd>();
-            for(unsigned int k = 0; k < Nd; ++k){
-                out[particleCounter][k] = (double)generate()/RAND_MAX*(right[k]-left[k])+left[k];
-            }
-            ++particleCounter;
-        }
-	}
-
-    //Randomly remove excess particles
-    std::shuffle(out.begin(),out.end(),randEngine);
-    out.resize(Np);
-
-    return out;
+    throw std::runtime_error("Generated particles less than Np. Consider increasing "
+                             "PARTICLE_GENERATION_INCREASE_FACTOR.");
 }
 
 
@@ -120,6 +72,68 @@ std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(
         cells[i] = {left, right, 0, 0};
     }
     return cells;
+}
+
+template<typename T, unsigned int Nd>
+std::vector<std::array<T, Nd>>
+Distribution<T, Nd>::generate(int Np, const Grid<T, Nd> &grid, T particleIncreaseGenerationFactor) const {
+    //TODO: move seeding to Simulation class
+    static auto randEngine = std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()); //Only seed once
+    std::uniform_int_distribution<int> distribution(0, RAND_MAX);
+    auto generate = std::bind(distribution, randEngine);
+
+    auto cells = this->generateMesh(grid);
+    int Nc = cells.size();
+
+    //Calculate sum of density function to normalize
+    T total = 0;
+    for (int i = 0; i < Nc; ++i) {
+        cells[i].objectiveNp = this->f(cells[i].getCentre());
+        if (cells[i].objectiveNp<0){
+            throw std::runtime_error("Negative density function at cell centre.");
+        }
+        total += cells[i].objectiveNp;
+    }
+    T scaling = 1.0 / total;
+
+    //Allocate particles to each cell
+    int totalParticles = 0;
+    for (int i = 0; i < Nc; ++i) {
+        cells[i].objectiveNp *= Np * scaling * particleIncreaseGenerationFactor;
+        cells[i].Np = std::floor(cells[i].objectiveNp); //Always add at least floor(Npdes)
+        T remainder = cells[i].objectiveNp - cells[i].Np;
+        if((double)generate()/RAND_MAX < remainder){
+            ++cells[i].Np; //Add 1 particle with remainder (decimal of Npdes) probability
+        }
+        totalParticles += cells[i].Np;
+    }
+
+    //Check enough particles
+    if(totalParticles < Np){
+        throw std::runtime_error("Generated particles less than Np. Consider increasing "
+                                 "PARTICLE_GENERATION_INCREASE_FACTOR.");
+    }
+
+    std::vector<std::array<T,Nd>> out(totalParticles);
+    int particleCounter = 0;
+    //Distribute particles inside each cell
+    for(int i = 0; i < Nc; ++i) {
+        const auto& left = cells[i].left;
+        const auto& right = cells[i].right;
+        for(unsigned int j = 0; j < cells[i].Np; ++j){
+            out[particleCounter] = std::array<T,Nd>();
+            for(unsigned int k = 0; k < Nd; ++k){
+                out[particleCounter][k] = (double)generate()/RAND_MAX*(right[k]-left[k])+left[k];
+            }
+            ++particleCounter;
+        }
+    }
+
+    //Randomly remove excess particles
+    std::shuffle(out.begin(),out.end(),randEngine);
+    out.resize(Np);
+
+    return out;
 }
 
 
