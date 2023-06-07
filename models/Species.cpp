@@ -12,7 +12,14 @@ Species<T, Nd, Nv>::Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speci
       initialPositionFileName(speciesConfig.initialPositionFileName), initialiseVelocityFromFile(speciesConfig.initialiseVelocityFromFile),
       initialVelocityFileName(speciesConfig.initialVelocityFileName), bcConfig(bcConfig),
       bcPositionGenerator(speciesConfig.bcPositionGenerator),
-      bcVelocityGenerator(speciesConfig.bcVelocityGenerator), totalNp{speciesConfig.Np}{}
+      bcVelocityGenerator(speciesConfig.bcVelocityGenerator), totalNp{speciesConfig.Np}{
+
+    int rankStatus = MPI_Comm_rank(MPI_COMM_WORLD, &processId);
+    int sizeStatus = MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+    if(rankStatus != MPI_SUCCESS || sizeStatus != MPI_SUCCESS){
+        throw std::runtime_error("Could not obtain MPI rank during field construction.");
+    }
+}
 
 template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const Species<T, Nd, Nv> &other) = default;
