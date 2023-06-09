@@ -37,7 +37,8 @@ public:
 	virtual ~Field();
 	
 	virtual void initialise(const std::vector<Species<T,Nd,Nv>*>& species, T dt) = 0;
-	virtual void advanceField(const std::vector<Species<T,Nd,Nv>*>& species, T dt);
+    virtual void accumulateParticles(const std::vector<Species<T,Nd,Nv>*>& species, T dt);
+	virtual void advanceField(T dt);
 
 	virtual void saveElectricField(std::ofstream& outputFile) const = 0;
     virtual void saveMagneticField(std::ofstream& outputFile) const = 0;

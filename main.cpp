@@ -56,6 +56,7 @@ int main(int argc, char* argv[]){
     //auto config = preset_configs::fiveParticles<double>();
     //auto config = preset_configs::diode<double>(100000,1,2,10,10);
 
+    config.useExplicitScheme = false;
 
 	Simulation<double,2,3> sim(config);
     sim.initialise();

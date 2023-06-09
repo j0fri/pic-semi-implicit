@@ -18,7 +18,7 @@ Distribution<T,Nd> preset_distributions::Boltzmann(T m, T Kb, T T0){
         });
     }
     if constexpr (Nd == 2){
-        T a1 = 2*M_PI*Kb*T0;
+        T a1 = m/(2*M_PI*Kb*T0);
         T a2 = m/(2*Kb*T0);
         fun = std::function([=](const std::array<T,Nd>& arr){
             return a1 * std::exp(-a2*(arr[0]*arr[0]+arr[1]*arr[1]));

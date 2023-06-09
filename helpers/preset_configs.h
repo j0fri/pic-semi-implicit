@@ -61,6 +61,9 @@ namespace preset_configs {
 
     template <typename T>
     Config<T,2,3> diode(unsigned int Np, T Lx, T Ly, unsigned int Nx, unsigned int Ny);
+
+    template <typename T>
+    Config<T,2,3> langmuir(unsigned int Np, unsigned int Nx, unsigned int Ny, T dt);
 }
 
 #include "preset_configs.cpp"

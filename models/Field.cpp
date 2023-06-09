@@ -24,9 +24,13 @@ template <typename T, unsigned int Nd, unsigned int Nv>
 Field<T,Nd,Nv>::~Field() = default;
 
 template<typename T, unsigned int Nd, unsigned int Nv>
-void Field<T, Nd, Nv>::advanceField(const std::vector<Species<T,Nd,Nv>*>& species, T dt) {
+void Field<T, Nd, Nv>::accumulateParticles(const std::vector<Species<T, Nd, Nv> *> &species, T dt) {
     this->accumulateJ(species);
     this->accumulateM(species, dt);
+}
+
+template<typename T, unsigned int Nd, unsigned int Nv>
+void Field<T, Nd, Nv>::advanceField(T dt) {
     this->joinProcesses();
     this->solveAndAdvance(dt);
     this->distributeProcesses();

@@ -75,6 +75,9 @@ struct Config{
         std::string electrostaticPotentialFileName{"electrostaticPotential"};
         std::string currentFileName{"current"};
         std::string runtimeFileName{"runtime"};
+
+        //If true, saves at all times, ignoring saveInterval
+        bool saveAllTimes{false};
     };
     SaveConfig saveConfig;
 

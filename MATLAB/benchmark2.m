@@ -35,7 +35,7 @@ loglog(semiimplicitNps*10,semiimplicitRuntimes,'-','color','k');
 hold on;
 %loglog(semiimplicitNps*10,double(semiimplicitNps)*semiimplicitRuntimes(end)/double(semiimplicitNps(end)),'--','color','k')
 loglog(explicitNps*10,explicitRuntimes,'--','color','k');
-loglog(explicitNps*10,double(explicitNps)*explicitRuntimes(end)/double(explicitNps(end)),'-.','color','k')
+loglog(explicitNps*10,double(explicitNps)*explicitRuntimes(end)/double(explicitNps(end)),'-.','color','r')
 grid on;
 axis square;
 xlabel('N{p}');

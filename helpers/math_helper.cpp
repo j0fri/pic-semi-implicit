@@ -66,5 +66,5 @@ void math_helper::gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsi
 
 template <typename T>
 T math_helper::boltzmannBounds(T m, T Kb, T T0) {
-    return (T)4.2 * std::sqrt(Kb*T0/m);
+    return (T)10 * std::sqrt(Kb*T0/m);
 }

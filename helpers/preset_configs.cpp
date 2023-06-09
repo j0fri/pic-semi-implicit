@@ -44,8 +44,8 @@ template <typename T>
 Config<T,2,3> preset_configs::landau2D3VX(unsigned int Nx, unsigned int Ny){
     Config<T,2,3> config{
         std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-               preset_species::Uniform2D3V<T>(10000,1,-1,1,1,Nx,Ny,1,0.08),
-               preset_species::Uniform2D3V<T>(10000,2000,1,1,1,Nx,Ny,1,0.08),
+               preset_species::Uniform2D3V<T>(100000,1,-1,1,1,Nx,Ny,1,0.01),
+               preset_species::Uniform2D3V<T>(100000,2000,1,1,1,Nx,Ny,1,0.01),
         }},
         preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
         {10,0.01},
@@ -405,5 +405,27 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             true,
             true
     };
+    return config;
+}
+
+template <typename T>
+Config<T,2,3> preset_configs::langmuir(unsigned int Np, unsigned int Nx, unsigned int Ny, T dt){
+    Config<T,2,3> config{
+            std::vector<typename Config<T,2,3>::SpeciesConfig>{{
+                   preset_species::Uniform2D3V<T>(Np/2,1,-1,1,1,Nx,Ny,1,0.000000000000000000001),
+                   preset_species::Uniform2D3V<T>(Np/2,2000,1,1,1,Nx,Ny,1,0.000000000000000000001),
+            }},
+            preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
+            {10,dt},
+            preset_save_configs::Energies<T,2,3>(dt),
+            {
+                    {Config<T,2,3>::BC::Periodic}
+            },
+            true,
+            true
+    };
+    //Add perturbation in electrons
+    config.speciesConfig[0].xDist += preset_distributions::Sin<T,2>(0,0.1,(T)2*M_PI,0);
+
     return config;
 }

@@ -27,6 +27,7 @@ private:
     bool verbose;
     T initialisationTime;
     T simulationTime;
+    T systemSolveTime;
 
     void saveRuntime();
 public:

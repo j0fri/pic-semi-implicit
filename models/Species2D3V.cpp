@@ -201,7 +201,7 @@ void Species2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
     }else{
         throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }
-    
+
     if(this->processId == 0){
         outputFile << this->m << " " << this->q << std::endl;
         outputFile << totalSpeciesEnergy << std::endl;

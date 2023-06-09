@@ -93,6 +93,35 @@ benchmark2: tests/benchmark2.o $(SIMOBJS) $(TESTOBJS)
 benchmark3: tests/benchmark3.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: langmuir
+langmuir: tests/langmuir.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: langmuir2
+langmuir2: tests/langmuir2.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: langmuir3
+langmuir3: tests/langmuir3.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: langmuir4
+langmuir4: tests/langmuir4.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: runtimeNp
+runtimeNp: tests/runtimeNp.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: runtimeNg
+runtimeNg: tests/runtimeNg.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: hotspots
+hotspots: tests/hotspots.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+
 .PHONY: standalone
 standalone: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -static -o sim $^ $(SIMLIBS)

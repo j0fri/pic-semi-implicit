@@ -200,6 +200,9 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
 template <typename T, unsigned int Nd, unsigned int Nv>
 void Simulation<T,Nd,Nv>::run() {
     auto begin = std::chrono::steady_clock::now();
+    auto tempCounter = begin;
+    auto tempCounter2 = begin;
+    systemSolveTime = 0;
     this->checkValidState();
     try{
         T t = 0;
@@ -208,14 +211,20 @@ void Simulation<T,Nd,Nv>::run() {
             if(verbose && processId == 0){
                 std::cout << "t: " << t << std::endl;
             }
-            if (t >= nextSave){
+            if (saveConfig.saveAllTimes || t >= nextSave){
                 this->save();
                 nextSave += saveConfig.saveInterval;
             }
             for(Species<T,Nd,Nv>* sPtr: species){
                 sPtr->advancePositions(timeConfig.step, field);
             }
-            field->advanceField(species, timeConfig.step);
+            field->accumulateParticles(species, timeConfig.step);
+
+            tempCounter = std::chrono::steady_clock::now();
+            field->advanceField(timeConfig.step);
+            tempCounter2 = std::chrono::steady_clock::now();
+            systemSolveTime += (T)std::chrono::duration_cast<std::chrono::nanoseconds>(tempCounter2-tempCounter).count()/10e9;
+
             for(Species<T,Nd,Nv>* sPtr: species){
                 sPtr->advanceVelocities(timeConfig.step, field);
             }
@@ -420,7 +429,7 @@ void Simulation<T, Nd, Nv>::saveRuntime() {
             if(!runtimeFile.is_open()){
                 throw std::runtime_error("Could not open runtime file.");
             }
-            runtimeFile << std::setprecision(10) << initialisationTime << " " << simulationTime << std::endl;
+            runtimeFile << std::setprecision(10) << initialisationTime << " " << simulationTime << " " << systemSolveTime << std::endl;
             runtimeFile.close();
         }
     }
