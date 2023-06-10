@@ -121,6 +121,9 @@ runtimeNg: tests/runtimeNg.o $(SIMOBJS) $(TESTOBJS)
 hotspots: tests/hotspots.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: optratio
+optratio: tests/optratio.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
 .PHONY: standalone
 standalone: main.o $(SIMOBJS)
