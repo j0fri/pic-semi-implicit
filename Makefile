@@ -125,6 +125,10 @@ hotspots: tests/hotspots.o $(SIMOBJS) $(TESTOBJS)
 optratio: tests/optratio.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: optratio2
+optratio2: tests/optratio2.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: standalone
 standalone: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -static -o sim $^ $(SIMLIBS)
