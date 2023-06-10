@@ -16,12 +16,13 @@ int main(int argc, char* argv[]){
 
     double runtimePerStepObj = 1e-3;
     for(auto power: Powers){
-        int Np = 100000;
-        int Ng = std::max((int)std::sqrt(Np/std::pow(10,power)),2);
-        if(Ng > 1000){
-            Np = std::max((int)(1000*1000*std::pow(10,power)),1);
-            Ng = 1000;
+        int Np;
+        if(power < -3.5){
+            Np = 1000;
+        }else{
+            Np = 100000;
         }
+        int Ng = std::max((int)std::sqrt(Np/std::pow(10,power)),2);
         double dt = 0.01;
         auto dummyConfig = preset_configs::langmuir(Np,Ng/2,2,dt);
         dummyConfig.saveConfig.saveAllTimes = true;
@@ -52,6 +53,10 @@ int main(int argc, char* argv[]){
         int actualNp = (int)(Np*runtimePerStepObj/runtimePerStep);
         int actualNg = (int)std::sqrt(actualNp/std::pow(10,power));
 
+        if(actualNp < 10){
+            continue;
+        }
+
         auto config = preset_configs::langmuir(actualNp,actualNg/2,2,dt);
         config.saveConfig.saveAllTimes = true;
         config.timeConfig.total = 1;
@@ -75,12 +80,11 @@ int main(int argc, char* argv[]){
 
     runtimePerStepObj = 1e-4;
     for(auto power: Powers){
+        if(power > 3){
+            continue;
+        }
         int Np = 10000;
         int Ng = std::max((int)std::sqrt(Np/std::pow(10,power)),2);
-        if(Ng > 1000){
-            Np = std::max((int)(1000*1000*std::pow(10,power)),1);
-            Ng = 1000;
-        }
         double dt = 0.01;
         auto dummyConfig = preset_configs::langmuir(Np,Ng/2,2,dt);
         dummyConfig.saveConfig.saveAllTimes = true;
@@ -111,6 +115,10 @@ int main(int argc, char* argv[]){
         int actualNp = (int)(Np*runtimePerStepObj/runtimePerStep);
         int actualNg = (int)std::sqrt(actualNp/std::pow(10,power));
 
+        if(actualNp < 10){
+            continue;
+        }
+
         auto config = preset_configs::langmuir(actualNp,actualNg/2,2,dt);
         config.saveConfig.saveAllTimes = true;
         config.timeConfig.total = 1;
@@ -136,10 +144,6 @@ int main(int argc, char* argv[]){
     for(auto power: Powers){
         int Np = 100000;
         int Ng = std::max((int)std::sqrt(Np/std::pow(10,power)),2);
-        if(Ng > 1000){
-            Np = std::max((int)(1000*1000*std::pow(10,power)),1);
-            Ng = 1000;
-        }
         double dt = 0.01;
         auto dummyConfig = preset_configs::langmuir(Np,Ng/2,2,dt);
         dummyConfig.saveConfig.saveAllTimes = true;
@@ -169,6 +173,10 @@ int main(int argc, char* argv[]){
         double runtimePerStep = runTime/10;
         int actualNp = (int)(Np*runtimePerStepObj/runtimePerStep);
         int actualNg = (int)std::sqrt(actualNp/std::pow(10,power));
+
+        if(actualNp < 10){
+            continue;
+        }
 
         auto config = preset_configs::langmuir(actualNp,actualNg/2,2,dt);
         config.saveConfig.saveAllTimes = true;
