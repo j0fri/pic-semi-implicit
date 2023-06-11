@@ -5,12 +5,13 @@
 #include "../helpers/preset_configs.h"
 #include "../helpers/output_helper.h"
 
-double getRuntimePerStep(double dt, int Np, int Ng){
+double getRuntimePerStep(double dt, int Np, int Ng, bool exp = false){
     std::cout << "Np=" << Np << std::endl;
     auto config = preset_configs::langmuir(Np,Ng/2,2,dt);
     config.saveConfig.outputFilesDirectory = "./outputs/optratio2/dummy/";
     config.saveConfig.saveAllTimes = true;
-    config.timeConfig.total = dt*10;
+    config.timeConfig.total = dt*100;
+    config.useExplicitScheme = exp;
 
     Simulation<double,2,3> sim(config);
     sim.initialise();
@@ -27,24 +28,10 @@ double getRuntimePerStep(double dt, int Np, int Ng){
     dummyRuntimes >> runTime;
     dummyRuntimes.close();
 
-    return runTime/10;
+    return runTime/100;
 }
 
 int searchNp(double NpNt, double NpNg2, double totalRuntime){
-//    std::vector<double> Nps;
-//    std::vector<double> Nps;
-//    for(int i = 0; i < 7; ++i){
-//        Np
-//        Nps.push_back((int)(2*std::pow(10,(double)i)));
-//
-//        runtimes.push_back(getRuntimePerStep())
-//    }
-//
-//    tk::spline s(X,Y);
-//    double x=1.5;
-//    double y=s(x);
-
-
     int Np = std::max((int)NpNt+1,1000);
 
     int Np1 = Np;
@@ -96,26 +83,34 @@ int main(int argc, char* argv[]){
         throw std::runtime_error("MPI initialisation error.");
     }
 
-    std::vector<double> Powers = {-3,-2,-1,0,0.3,0.6,1,1.5,2,2.5,3,3.5,4};
+    int testNp = 100000;
+//    std::vector<double> Nts = {1,2,5,10,30,60,100,250,500,1000};
+//    std::vector<double> Nts = {5,7,10,15,22,30,45,60,80,100,250,500,750,1000,1250,1500,2000,2500};
+    std::vector<double> Nts = {10,20,100,316,1000,3100,10000,31000,100000,310000,1000000};
     int id = 0;
 
-    double totalRuntime = 0.1;
+    double totalRuntimeObj = 0.1;
+    double runtimePerStep = getRuntimePerStep(0.01,testNp,30);
+    double C = totalRuntimeObj*testNp/runtimePerStep;
+
     double NpNg2 = 100;
 
-    for(auto power: Powers){
-        double NpNt = std::pow(10,power);
-        int Np = searchNp(NpNt,NpNg2,totalRuntime);
-        int Nt = (double)Np/NpNt;
-        //int Ng = (int)std::sqrt(Np/NpNg2);
-        int Ng = 30;
-
+    for(auto Nt: Nts){
+        int Np = (int)(C/Nt);
+        if(Np > 2000000 || Np < 5){
+            std::cout << "SKIPPING" << std::endl;
+            continue;
+        }
+        std::cout << "Np: " << Np << std::endl;
+        int Ng = std::max((int)std::sqrt(Np/NpNg2),30);
+        std::cout << "Ng: " << Ng << std::endl;
         if(Ng < 2){
             throw std::runtime_error("Not enough Ng");
         }
 
-        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)0.1/Nt);
+        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 0.1;
+        config.timeConfig.total = 1;
         std::stringstream ss;
         ss << "./outputs/optratio2/semiimplicit1/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
@@ -134,22 +129,26 @@ int main(int argc, char* argv[]){
     }
     id = 0;
 
-    Powers = {-2,-1,0,0.3,0.6,1,1.5,2,2.5,3,3.5,4};
-    totalRuntime=0.01;
-    for(auto power: Powers){
-        double NpNt = std::pow(10,power);
-        int Np = std::max(searchNp(NpNt,NpNg2,totalRuntime),2);
-        int Nt = (double)Np/NpNt;
-        //int Ng = (int)std::sqrt(Np/NpNg2);
-        int Ng = 100;
+    totalRuntimeObj = 0.01;
+    runtimePerStep = getRuntimePerStep(0.01,testNp,30);
+    C = totalRuntimeObj*testNp/runtimePerStep;
 
+    for(auto Nt: Nts){
+        int Np = (int)(C/Nt);
+        if(Np > 2000000 || Np < 5){
+            std::cout << "SKIPPING" << std::endl;
+            continue;
+        }
+        std::cout << "Np: " << Np << std::endl;
+        int Ng = std::max((int)std::sqrt(Np/NpNg2),30);
+        std::cout << "Ng: " << Ng << std::endl;
         if(Ng < 2){
             throw std::runtime_error("Not enough Ng");
         }
 
-        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)0.1/Nt);
+        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 0.1;
+        config.timeConfig.total = 1;
         std::stringstream ss;
         ss << "./outputs/optratio2/semiimplicit2/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
@@ -168,27 +167,28 @@ int main(int argc, char* argv[]){
     }
     id = 0;
 
-    Powers = {-3,-2,-1,0,0.3,0.6,1,1.5,2,2.5,3,3.5,4};
+    totalRuntimeObj = 1;
+    runtimePerStep = getRuntimePerStep(0.01,testNp,30);
+    C = totalRuntimeObj*testNp/runtimePerStep;
 
-    totalRuntime = 0.1;
-    NpNg2 = 100;
-
-    for(auto power: Powers){
-        double NpNt = std::pow(10,power);
-        int Np = searchNp(NpNt,NpNg2,totalRuntime);
-        int Nt = (double)Np/NpNt;
-        //int Ng = (int)std::sqrt(Np/NpNg2);
-        int Ng = 30;
-
+    for(auto Nt: Nts){
+        int Np = (int)(C/Nt);
+        if(Np > 2000000 || Np < 5){
+            std::cout << "SKIPPING" << std::endl;
+            continue;
+        }
+        std::cout << "Np: " << Np << std::endl;
+        int Ng = std::max((int)std::sqrt(Np/NpNg2),30);
+        std::cout << "Ng: " << Ng << std::endl;
         if(Ng < 2){
             throw std::runtime_error("Not enough Ng");
         }
 
-        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)0.1/Nt);
+        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 0.1;
+        config.timeConfig.total = 1;
         std::stringstream ss;
-        ss << "./outputs/optratio2/explicit2/" << id << "/";
+        ss << "./outputs/optratio2/semiimplicit3/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
         Simulation<double,2,3> sim(config);
         sim.initialise();
@@ -205,25 +205,30 @@ int main(int argc, char* argv[]){
     }
     id = 0;
 
-    Powers = {-2,-1,0,0.3,0.6,1,1.5,2,2.5,3,3.5,4};
-    totalRuntime=0.01;
-    for(auto power: Powers){
-        double NpNt = std::pow(10,power);
-        int Np = std::max(searchNp(NpNt,NpNg2,totalRuntime),2);
-        int Nt = (double)Np/NpNt;
-        //int Ng = (int)std::sqrt(Np/NpNg2);
-        int Ng = 100;
+    totalRuntimeObj = 0.1;
+    runtimePerStep = getRuntimePerStep(0.01,testNp,30,true);
+    C = totalRuntimeObj*testNp/runtimePerStep;
 
+    for(auto Nt: Nts){
+        int Np = (int)(C/Nt);
+        if(Np > 2000000 || Np < 5){
+            std::cout << "SKIPPING" << std::endl;
+            continue;
+        }
+        std::cout << "Np: " << Np << std::endl;
+        int Ng = std::max((int)std::sqrt(Np/NpNg2),30);
+        std::cout << "Ng: " << Ng << std::endl;
         if(Ng < 2){
             throw std::runtime_error("Not enough Ng");
         }
 
-        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)0.1/Nt);
+        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 0.1;
+        config.timeConfig.total = 1;
         std::stringstream ss;
-        ss << "./outputs/optratio2/explicit2/" << id << "/";
+        ss << "./outputs/optratio2/explicit1/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
+        config.useExplicitScheme = true;
         Simulation<double,2,3> sim(config);
         sim.initialise();
         sim.run();
@@ -239,6 +244,83 @@ int main(int argc, char* argv[]){
     }
     id = 0;
 
+    totalRuntimeObj = 0.01;
+    runtimePerStep = getRuntimePerStep(0.01,testNp,30,true);
+    C = totalRuntimeObj*testNp/runtimePerStep;
+
+    for(auto Nt: Nts){
+        int Np = (int)(C/Nt);
+        if(Np > 2000000 || Np < 5){
+            std::cout << "SKIPPING" << std::endl;
+            continue;
+        }
+        std::cout << "Np: " << Np << std::endl;
+        int Ng = std::max((int)std::sqrt(Np/NpNg2),30);
+        std::cout << "Ng: " << Ng << std::endl;
+        if(Ng < 2){
+            throw std::runtime_error("Not enough Ng");
+        }
+
+        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
+        config.saveConfig.saveAllTimes = true;
+        config.timeConfig.total = 1;
+        std::stringstream ss;
+        ss << "./outputs/optratio2/explicit2/" << id << "/";
+        config.saveConfig.outputFilesDirectory = ss.str();
+        config.useExplicitScheme = true;
+        Simulation<double,2,3> sim(config);
+        sim.initialise();
+        sim.run();
+
+        std::stringstream ss2;
+        ss2 << ss.str();
+        ss2 << "Np.txt";
+        std::ofstream npfile(ss2.str());
+        npfile << Np;
+        npfile.close();
+
+        id += 1;
+    }
+    id = 0;
+
+    totalRuntimeObj = 1;
+    runtimePerStep = getRuntimePerStep(0.01,testNp,30,true);
+    C = totalRuntimeObj*testNp/runtimePerStep;
+
+    for(auto Nt: Nts){
+        int Np = (int)(C/Nt);
+        if(Np > 2000000 || Np < 5){
+            std::cout << "SKIPPING" << std::endl;
+            continue;
+        }
+        std::cout << "Np: " << Np << std::endl;
+        int Ng = std::max((int)std::sqrt(Np/NpNg2),30);
+        std::cout << "Ng: " << Ng << std::endl;
+        if(Ng < 2){
+            throw std::runtime_error("Not enough Ng");
+        }
+
+        auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
+        config.saveConfig.saveAllTimes = true;
+        config.timeConfig.total = 1;
+        std::stringstream ss;
+        ss << "./outputs/optratio2/explicit3/" << id << "/";
+        config.saveConfig.outputFilesDirectory = ss.str();
+        config.useExplicitScheme = true;
+        Simulation<double,2,3> sim(config);
+        sim.initialise();
+        sim.run();
+
+        std::stringstream ss2;
+        ss2 << ss.str();
+        ss2 << "Np.txt";
+        std::ofstream npfile(ss2.str());
+        npfile << Np;
+        npfile.close();
+
+        id += 1;
+    }
+    id = 0;
 
     MPI_Finalize();
 }
