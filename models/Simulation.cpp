@@ -192,6 +192,14 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
             }
             runtimeFile.close();
         }
+        
+        if(saveConfig.saveSolverSteps){
+            std::ofstream solverStepsFile(saveConfig.outputFilesDirectory + saveConfig.solverStepsFileName + saveConfig.outputFilesSubscript, std::ios::trunc);
+            if(!solverStepsFile.is_open()){
+                throw std::runtime_error("Could not open solverSteps file.");
+            }
+            solverStepsFile.close();
+        }
     }
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -339,6 +347,15 @@ void Simulation<T,Nd,Nv>::save(){
             }
             field->saveCurrent(currentFile);
             currentFile.close();
+        }
+        if(saveConfig.saveSolverSteps){
+            std::ofstream solverStepsFile(saveConfig.outputFilesDirectory + saveConfig.solverStepsFileName + saveConfig.outputFilesSubscript, std::ios::app);
+            if(!solverStepsFile.is_open()){
+                throw std::runtime_error("Could not open solverSteps file.");
+            }
+            int lastSolverSteps = field->getSolverSteps();
+            solverStepsFile << lastSolverSteps << std::endl;
+            solverStepsFile.close();
         }
     }
     //Save electrostatic potential runs on all processes as all the charges are needed.

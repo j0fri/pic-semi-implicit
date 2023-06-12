@@ -12,7 +12,7 @@ Field2D3V<T>::Field2D3V(const typename Config<T,2,3>::FieldConfig &fieldConfig,
                         Ng{fieldConfig.grid.dimensions[0].Nc*fieldConfig.grid.dimensions[1].Nc},
                         Nx{fieldConfig.grid.dimensions[0].Nc}, Ny{fieldConfig.grid.dimensions[1].Nc},
                         A{SpMat(6*Ng, 6*Ng)}, Am{SpMat(6*Ng, 6*Ng)}, Ac{SpMat(6*Ng, 6*Ng)},
-                        C{Eigen::VectorX<T>(6*Ng)}, Esolver{}, Ec{Ng} {
+                        C{Eigen::VectorX<T>(6*Ng)}, Esolver{}, Ec{Ng}, lastSolverSteps(0) {
     try{
         //The following variables are memory-allocated to be contiguous in memory, so they are more easily passed by MPI
         field = new T[12*Ng];
@@ -365,9 +365,13 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     }
 
     Eigen::LeastSquaresConjugateGradient<SpMat> lscg;
-    lscg.setTolerance((T)1e-8);
+    lscg.setTolerance(this->solverTolerance);
     lscg.compute(Ac);
     Eigen::VectorX<T> sol = lscg.solve(C);
+    if(lscg.info()!=Eigen::Success){
+        throw std::runtime_error("System solver failed to converge.");
+    }
+    lastSolverSteps = lscg.iterations();
 
     unsigned int lda = 6*Ng;
     unsigned int eq = 0;
@@ -939,6 +943,10 @@ void Field2D3V<T>::distributeProcesses() {
     }
 }
 
+template<typename T>
+int Field2D3V<T>::getSolverSteps() const {
+    return lastSolverSteps;
+}
 
 template class Field2D3V<float>;
 template class Field2D3V<double>;

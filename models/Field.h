@@ -29,6 +29,7 @@ public:
     const bool onlyForcedB; //If true, magnetic field is only forcedB, if false, forcedB is added to PDE sol
     const bool initialiseFromSpecies;
     const typename Config<T,Nd,Nv>::BCConfig bcConfig;
+    const T solverTolerance;
 
 	Field() = delete;
 	explicit Field(const typename Config<T,Nd,Nv>::FieldConfig& fieldConfig,
@@ -46,6 +47,7 @@ public:
     virtual void saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,Nd,Nv>*>& species) const = 0;
     virtual void saveCurrent(std::ofstream& outputFile) const = 0;
 
+    virtual int getSolverSteps() const;
 private:
     virtual void accumulateJ(const std::vector<Species<T,Nd,Nv>*>& species) = 0;
     virtual void accumulateM(const std::vector<Species<T,Nd,Nv>*>& species, T dt) = 0;

@@ -38,6 +38,7 @@ struct Config{
         bool onlyForcedE; //If true, electric field is only forcedE, if false, forcedE is added to PDE sol
         bool onlyForcedB; //If true, magnetic field is only forcedB, if false, forcedB is added to PDE sol
         bool initialiseFromSpecies; //If true, fields are initialised to satisfy divergence laws.
+        std::optional<T> solverTolerance;
     };
     FieldConfig fieldConfig;
 
@@ -78,6 +79,9 @@ struct Config{
 
         //If true, saves at all times, ignoring saveInterval
         bool saveAllTimes{false};
+
+        bool saveSolverSteps = false;
+        std::string solverStepsFileName{"solverSteps"};
     };
     SaveConfig saveConfig;
 

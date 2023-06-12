@@ -46,6 +46,7 @@ protected:
     Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> Esolver; //Electrostatic system solver
     mutable Eigen::VectorX<T> Ec; //Electrostatic potential system vector: Nx*Ny
 
+    int lastSolverSteps;
 public:
     Field2D3V() = delete;
     explicit Field2D3V(const typename Config<T,2,3>::FieldConfig& fieldConfig,
@@ -70,6 +71,8 @@ public:
     void saveEnergy(std::ofstream& outputFile) const;
     void saveElectrostaticPotential(std::ofstream &outputFile, const std::vector<Species<T,2,3>*> &species) const;
     void saveCurrent(std::ofstream& outputFile) const;
+
+    int getSolverSteps() const;
 
     const T* getField() const;
     const T* getFieldT() const;
