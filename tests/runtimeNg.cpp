@@ -11,7 +11,7 @@ int main(int argc, char* argv[]){
         throw std::runtime_error("MPI initialisation error.");
     }
 
-    std::vector<double> Factors = {1,1.7783,3.162,5.623,10,17.783,31.623,56.234,100,177.83};
+    std::vector<double> Factors = {1,1.7783,3.162,5.623,10,17.783,23.71,31.623,42.16,56.234,75,100,133.3};
     int id = 0;
 
     for(auto Factor: Factors){

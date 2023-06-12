@@ -86,7 +86,7 @@ int main(int argc, char* argv[]){
     int testNp = 100000;
 //    std::vector<double> Nts = {1,2,5,10,30,60,100,250,500,1000};
 //    std::vector<double> Nts = {5,7,10,15,22,30,45,60,80,100,250,500,750,1000,1250,1500,2000,2500};
-    std::vector<double> Nts = {10,20,100,316,1000,3100,10000,31000,100000,310000,1000000};
+    std::vector<double> Nts = {10,20,100,316,1000,3100,10000,31000,100000};
     int id = 0;
 
     double totalRuntimeObj = 0.1;
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]){
     double NpNg2 = 100;
 
     for(auto Nt: Nts){
-        int Np = (int)(C/Nt);
+        int Np = (int)(C/Nt/10);
         if(Np > 2000000 || Np < 5){
             std::cout << "SKIPPING" << std::endl;
             continue;
@@ -110,7 +110,7 @@ int main(int argc, char* argv[]){
 
         auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 1;
+        config.timeConfig.total = 10;
         std::stringstream ss;
         ss << "./outputs/optratio2/semiimplicit1/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
@@ -134,7 +134,7 @@ int main(int argc, char* argv[]){
     C = totalRuntimeObj*testNp/runtimePerStep;
 
     for(auto Nt: Nts){
-        int Np = (int)(C/Nt);
+        int Np = (int)(C/Nt/10);
         if(Np > 2000000 || Np < 5){
             std::cout << "SKIPPING" << std::endl;
             continue;
@@ -148,7 +148,7 @@ int main(int argc, char* argv[]){
 
         auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 1;
+        config.timeConfig.total = 10;
         std::stringstream ss;
         ss << "./outputs/optratio2/semiimplicit2/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]){
     C = totalRuntimeObj*testNp/runtimePerStep;
 
     for(auto Nt: Nts){
-        int Np = (int)(C/Nt);
+        int Np = (int)(C/Nt/10);
         if(Np > 2000000 || Np < 5){
             std::cout << "SKIPPING" << std::endl;
             continue;
@@ -186,7 +186,7 @@ int main(int argc, char* argv[]){
 
         auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 1;
+        config.timeConfig.total = 10;
         std::stringstream ss;
         ss << "./outputs/optratio2/semiimplicit3/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]){
     C = totalRuntimeObj*testNp/runtimePerStep;
 
     for(auto Nt: Nts){
-        int Np = (int)(C/Nt);
+        int Np = (int)(C/Nt/10);
         if(Np > 2000000 || Np < 5){
             std::cout << "SKIPPING" << std::endl;
             continue;
@@ -224,7 +224,7 @@ int main(int argc, char* argv[]){
 
         auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 1;
+        config.timeConfig.total = 10;
         std::stringstream ss;
         ss << "./outputs/optratio2/explicit1/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
@@ -249,7 +249,7 @@ int main(int argc, char* argv[]){
     C = totalRuntimeObj*testNp/runtimePerStep;
 
     for(auto Nt: Nts){
-        int Np = (int)(C/Nt);
+        int Np = (int)(C/Nt/10);
         if(Np > 2000000 || Np < 5){
             std::cout << "SKIPPING" << std::endl;
             continue;
@@ -263,7 +263,7 @@ int main(int argc, char* argv[]){
 
         auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 1;
+        config.timeConfig.total = 10;
         std::stringstream ss;
         ss << "./outputs/optratio2/explicit2/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
@@ -288,7 +288,7 @@ int main(int argc, char* argv[]){
     C = totalRuntimeObj*testNp/runtimePerStep;
 
     for(auto Nt: Nts){
-        int Np = (int)(C/Nt);
+        int Np = (int)(C/Nt/10);
         if(Np > 2000000 || Np < 5){
             std::cout << "SKIPPING" << std::endl;
             continue;
@@ -302,7 +302,7 @@ int main(int argc, char* argv[]){
 
         auto config = preset_configs::langmuir(Np,Ng/2,2,(double)10/Nt);
         config.saveConfig.saveAllTimes = true;
-        config.timeConfig.total = 1;
+        config.timeConfig.total = 10;
         std::stringstream ss;
         ss << "./outputs/optratio2/explicit3/" << id << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
