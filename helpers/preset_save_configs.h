@@ -6,6 +6,9 @@
 namespace preset_save_configs{
     template<typename T, unsigned int Nd, unsigned int Nv>
     typename Config<T,Nd,Nv>::SaveConfig Energies(T dt);
+
+    template<typename T, unsigned int Nd, unsigned int Nv>
+    typename Config<T,Nd,Nv>::SaveConfig None();
 }
 
 #include "preset_save_configs.cpp"

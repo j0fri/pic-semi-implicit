@@ -12,7 +12,7 @@ SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o mo
 		  models/Field1D1V.o models/Species2D3V.o models/Field2D3V.o models/Vector2.o models/Vector3.o\
 		  models/DistributionGrid.o models/Field2D3VExplicit.o
 
-SIMLIBS = -lblas -llapack
+SIMLIBS =
 
 HELPERHDRS = helpers/math_helper.h helpers/string_helper.h helpers/output_helper.h
 
@@ -34,6 +34,7 @@ HDRS = $(SIMHDRS) $(VISHDRS) $(TESTHDRS) $(HELPERHDRS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 main.o: main.cpp $(HDRS) $(PRESETHDRS) $(HELPERCPPS) $(PRESETHDRS) $(PRESETCPPS)
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 sim: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -o sim $^ $(SIMLIBS)

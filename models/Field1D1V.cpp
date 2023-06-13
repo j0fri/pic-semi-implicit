@@ -3,15 +3,15 @@
 #include "Field1D1V.h"
 #include "Species1D1V.h"
 
-#define F77NAME(x) x##_
-extern "C" {
-void F77NAME(dgesv)(const int& n, const int& nrhs, const double * A,
-                    const int& lda, int * ipiv, double * B,
-                    const int& ldb, int& info);
-void F77NAME(sgesv)(const int& n, const int& nrhs, const float * A,
-                    const int& lda, int * ipiv, float * B,
-                    const int& ldb, int& info);
-}
+//#define F77NAME(x) x##_
+//extern "C" {
+//void F77NAME(dgesv)(const int& n, const int& nrhs, const double * A,
+//                    const int& lda, int * ipiv, double * B,
+//                    const int& ldb, int& info);
+//void F77NAME(sgesv)(const int& n, const int& nrhs, const float * A,
+//                    const int& lda, int * ipiv, float * B,
+//                    const int& ldb, int& info);
+//}
 
 
 //TODO: tidy initialisation of nullptrs
@@ -97,11 +97,13 @@ void Field1D1V<T>::solveAndAdvance(T dt) {
     int* pivots = new int[Nx];
     int info = 0;
 
-    if constexpr (std::is_same<T,float>::value){
-        F77NAME(sgesv)((int)Nx, 1, A, (int)Nx, pivots, C, (int)Nx, info);
-    }else if constexpr (std::is_same<T,double>::value){
-        F77NAME(dgesv)((int)Nx, 1, A, (int)Nx, pivots, C, (int)Nx, info);
-    }
+//    if constexpr (std::is_same<T,float>::value){
+//        F77NAME(sgesv)((int)Nx, 1, A, (int)Nx, pivots, C, (int)Nx, info);
+//    }else if constexpr (std::is_same<T,double>::value){
+//        F77NAME(dgesv)((int)Nx, 1, A, (int)Nx, pivots, C, (int)Nx, info);
+//    }
+
+    throw std::runtime_error("Implement without BLAS/LAPACK.");
 
 
     std::copy(C, C+Nx, Et);

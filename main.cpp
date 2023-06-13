@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
 //    po::store(po::parse_command_line(argc, argv, opts), vm);
 
     //auto config = preset_configs::constVelocityX<double>();
-    auto config = preset_configs::landau2D3VX<double>(64,10);
+    auto config = preset_configs::landau2D3VX<double>(30,2);
     //auto config = preset_configs::landau2D3VXWave<double>(30,2);
     //auto config = preset_configs::landau2D3VXWaveStatic<double>(30,2);
     //auto config = preset_configs::magneticGyration<double>();
@@ -57,6 +57,9 @@ int main(int argc, char* argv[]){
     //auto config = preset_configs::diode<double>(100000,1,2,10,10);
 
     config.useExplicitScheme = false;
+//    config.saveConfig.saveSolverSteps = true;
+//    config.fieldConfig.solverTolerance = 1e-2;
+    config.saveConfig=preset_save_configs::None<double,2,3>();
 
 	Simulation<double,2,3> sim(config);
     sim.initialise();
