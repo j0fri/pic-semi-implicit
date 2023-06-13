@@ -408,8 +408,8 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
 template<typename T>
 void Field2D3V<T>::initialisePeriodicA(T dt) {
     unsigned int eq = 0;
-    unsigned int xi = 0;
-    unsigned int yi = 0;
+    int xi = 0;
+    int yi = 0;
     unsigned int gi, gdxi, gdxdyi, gdyi, gmdxi, gmdxmdyi, gmdyi;
     T dx = this->grid.getSpacings()[0];
     T dy = this->grid.getSpacings()[1];
@@ -490,7 +490,7 @@ void Field2D3V<T>::initialisePeriodicA(T dt) {
 
         //Advance indices:
         ++xi;
-        if(xi == Nx){
+        if(xi == (int)Nx){
             xi = 0;
             ++yi;
         }

@@ -134,6 +134,10 @@ optratio2: tests/optratio2.o $(SIMOBJS) $(TESTOBJS)
 optaccuracy: tests/optaccuracy.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: tolerance
+tolerance: tests/tolerance.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: standalone
 standalone: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -static -o sim $^ $(SIMLIBS)
