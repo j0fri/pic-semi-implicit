@@ -23,10 +23,12 @@ double getRuntimePerStep(double dt, int Np, int Ng, bool exp = false){
     }
 
     auto config = preset_configs::langmuir(Np,Ng/2,2,dt);
-    config.saveConfig.outputFilesDirectory = "./outputs/parallelScaling/dummy/";
-    config.saveConfig.saveAllTimes = true;
+    config.saveConfig = preset_save_configs::None<double,2,3>();
+    config.saveConfig.saveRuntime = true;
+    config.saveConfig.saveInterval = dt;
     config.timeConfig.total = dt*steps;
     config.useExplicitScheme = exp;
+    config.saveConfig.outputFilesDirectory = "./outputs/parallelScaling/dummy/";
 
     Simulation<double,2,3> sim(config);
     sim.initialise();
@@ -72,7 +74,9 @@ int main(int argc, char* argv[]){
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(10000000,30,3,0.1);
-        config.saveConfig.saveAllTimes = true;
+        config.saveConfig = preset_save_configs::None<double,2,3>();
+        config.saveConfig.saveRuntime = true;
+        config.saveConfig.saveInterval = 0.1;
         config.timeConfig.total = steps*0.1;
         std::stringstream ss;
         ss << "./outputs/parallelScaling/particleHeavy/" << numProcesses << "/";
@@ -90,7 +94,9 @@ int main(int argc, char* argv[]){
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(1000000,100,20,0.1);
-        config.saveConfig.saveAllTimes = true;
+        config.saveConfig = preset_save_configs::None<double,2,3>();
+        config.saveConfig.saveRuntime = true;
+        config.saveConfig.saveInterval = 0.1;
         config.timeConfig.total = steps*0.1;
         std::stringstream ss;
         ss << "./outputs/parallelScaling/balanced/" << numProcesses << "/";
@@ -108,7 +114,9 @@ int main(int argc, char* argv[]){
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(25000,100,50,0.1);
-        config.saveConfig.saveAllTimes = true;
+        config.saveConfig = preset_save_configs::None<double,2,3>();
+        config.saveConfig.saveRuntime = true;
+        config.saveConfig.saveInterval = 0.1;
         config.timeConfig.total = steps*0.1;
         std::stringstream ss;
         ss << "./outputs/parallelScaling/gridHeavy/" << numProcesses << "/";
@@ -126,10 +134,13 @@ int main(int argc, char* argv[]){
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(1000000,30,3,0.1);
-        config.saveConfig.saveAllTimes = true;
+        config.saveConfig = preset_save_configs::None<double,2,3>();
+        config.saveConfig.saveRuntime = true;
+        config.saveConfig.saveInterval = 0.1;
         config.timeConfig.total = steps*0.1;
         std::stringstream ss;
         ss << "./outputs/parallelScaling/explicit/" << numProcesses << "/";
+        config.saveConfig.outputFilesDirectory = ss.str();
         config.saveConfig.outputFilesDirectory = ss.str();
 
         Simulation<double,2,3> sim(config);
