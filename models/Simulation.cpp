@@ -3,7 +3,7 @@
 #include <vector>
 #include <array>
 #include <string>
-#include <mpi/mpi.h>
+
 #include <chrono>
 #include <filesystem>
 
@@ -13,12 +13,6 @@
 
 template <typename T, unsigned int Nd, unsigned int Nv>
 Simulation<T,Nd,Nv>::Simulation(const Config<T,Nd,Nv>& config): processId(0), numProcesses(0) {
-    int rankStatus = MPI_Comm_rank(MPI_COMM_WORLD, &processId);
-    int sizeStatus = MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-    if(rankStatus != MPI_SUCCESS || sizeStatus != MPI_SUCCESS){
-        throw std::runtime_error("Could not obtain MPI rank during simulations construction.");
-    }
-
     try{
         species = std::vector<Species<T,Nd,Nv>*>(config.speciesConfig.size());
         for(int i = 0; i < (int)species.size(); ++i){
@@ -201,7 +195,6 @@ void Simulation<T,Nd,Nv>::clearOutputFiles(){
             solverStepsFile.close();
         }
     }
-    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 

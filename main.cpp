@@ -1,6 +1,4 @@
-#include <iostream>
 #include <boost/program_options.hpp>
-#include <mpi/mpi.h>
 
 #include "models/Config.h"
 #include "models/Simulation.h"
@@ -9,10 +7,6 @@
 //namespace po = boost::program_options;
 
 int main(int argc, char* argv[]){
-    int status = MPI_Init(&argc, &argv);
-    if(status != MPI_SUCCESS){
-        throw std::runtime_error("MPI initialisation error.");
-    }
 //	po::options_description opts("Available options.");
 //	opts.add_options()
 //		("mode", po::value<int>(), "Input preset mode.")
@@ -45,7 +39,7 @@ int main(int argc, char* argv[]){
 //    po::store(po::parse_command_line(argc, argv, opts), vm);
 
     //auto config = preset_configs::constVelocityX<double>();
-    auto config = preset_configs::landau2D3VX<double>(30,2);
+//    auto config = preset_configs::landau2D3VX<double>(60,3);
     //auto config = preset_configs::landau2D3VXWave<double>(30,2);
     //auto config = preset_configs::landau2D3VXWaveStatic<double>(30,2);
     //auto config = preset_configs::magneticGyration<double>();
@@ -55,8 +49,7 @@ int main(int argc, char* argv[]){
     //auto config = preset_configs::electronBeam<double>(50,50);
     //auto config = preset_configs::fiveParticles<double>();
     //auto config = preset_configs::diode<double>(100000,1,2,10,10);
-
-    config.useExplicitScheme = false;
+    auto config = preset_configs::langmuir(1000000,60,3,0.1);
 //    config.saveConfig.saveSolverSteps = true;
 //    config.fieldConfig.solverTolerance = 1e-2;
     config.saveConfig=preset_save_configs::None<double,2,3>();
@@ -64,6 +57,4 @@ int main(int argc, char* argv[]){
 	Simulation<double,2,3> sim(config);
     sim.initialise();
     sim.run();
-
-    MPI_Finalize();
 }

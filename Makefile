@@ -1,8 +1,8 @@
 default: sim
 all: sim
 
-CXX = mpic++
-CXXFLAGS = -std=c++17 -Wall -O3 -g -I ./
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -O3 -g -ftree-vectorize -I ./
 
 SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h models/Simulation.h models/Species1D1V.h\
 		  models/Field1D1V.h models/Species2D3V.h models/Field2D3V.h models/Vector2.h models/Vector3.h\

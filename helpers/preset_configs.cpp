@@ -44,8 +44,8 @@ template <typename T>
 Config<T,2,3> preset_configs::landau2D3VX(unsigned int Nx, unsigned int Ny){
     Config<T,2,3> config{
         std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-               preset_species::Uniform2D3V<T>(100000,1,-1,1,1,Nx,Ny,1,0.01),
-               preset_species::Uniform2D3V<T>(100000,2000,1,1,1,Nx,Ny,1,0.01),
+               preset_species::Uniform2D3V<T>(500000,1,-1,1,1,Nx,Ny,1,0.01),
+               preset_species::Uniform2D3V<T>(500000,2000,1,1,1,Nx,Ny,1,0.01),
         }},
         preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
         {10,0.1},

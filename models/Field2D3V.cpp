@@ -1,4 +1,4 @@
-#include <mpi/mpi.h>
+
 #include "Field2D3V.h"
 #include "Species2D3V.h"
 #include "../helpers/math_helper.h"
@@ -803,24 +803,11 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
     EcLocal[0]=0; //For potential at 0=0;
 
     T* EcTotal = nullptr;
-    if(this->processId == 0){
-        EcTotal = new T[Ng];
-        std::fill(EcTotal, EcTotal+Ng, (T)0);
-    }
-
-    if constexpr(std::is_same<double, T>::value){
-        MPI_Reduce(EcLocal, EcTotal, Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    }else if constexpr(std::is_same<float, T>::value){
-        MPI_Reduce(EcLocal, EcTotal, Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    }else{
-        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
-    }
-    delete[] EcLocal;
+    EcTotal = EcLocal;
 
     Eigen::VectorX<T> sol;
     if(this->processId == 0){
         std::copy(EcTotal, EcTotal+Ng, Ec.begin());
-        delete[] EcTotal;
         sol = Esolver.solve(Ec);
     }
 
@@ -828,14 +815,6 @@ Field2D3V<T>::getPeriodicElectrostaticPotential(const std::vector<Species<T, 2, 
 
     if(this->processId == 0){
         std::copy(sol.begin(), sol.end(), sol_out);
-    }
-
-    if constexpr(std::is_same<double, T>::value){
-        MPI_Bcast(sol_out, Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    }else if constexpr(std::is_same<float, T>::value){
-        MPI_Bcast(sol_out, Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    }else{
-        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
     }
 
     return std::unique_ptr<const T>(sol_out);
@@ -899,48 +878,12 @@ void Field2D3V<T>::initialiseDiodeElectrostaticPotentialSystem() {
 
 template<typename T>
 void Field2D3V<T>::joinProcesses() {
-    if(this->numProcesses == 1){
-        return;
-    }
-
-    T* totalJ = nullptr;
-    if(this->processId == 0){
-        totalJ = new T[48*Ng];
-        std::fill(totalJ, totalJ + 48*Ng, (T)0);
-    }
-
-    if constexpr(std::is_same<double, T>::value){
-        //Reduce J, Mg, Mgdx, Mgdy, Mgdxdy, Mgmdxdy as they were allocated contiguously
-        MPI_Reduce(J, totalJ, 48*Ng, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    }else if constexpr(std::is_same<float, T>::value){
-        //Reduce J, Mg, Mgdx, Mgdy, Mgdxdy, Mgmdxdy as they were allocated contiguously
-        MPI_Reduce(J, totalJ, 48*Ng, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    }else{
-        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
-    }
-    
-    if(this->processId == 0){
-        //Only done for J as variables are contiguous in memory
-        std::copy(totalJ, totalJ + 48*Ng, J);
-        delete[] totalJ;
-    }
+    return;
 }
 
 template<typename T>
 void Field2D3V<T>::distributeProcesses() {
-    if(this->numProcesses == 1){
-        return;
-    }
-
-    if constexpr(std::is_same<double, T>::value){
-        //Broadcast field and fieldT as they are contiguous in memory
-        MPI_Bcast(field, 12*Ng, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    }else if constexpr(std::is_same<float, T>::value){
-        //Broadcast field and fieldT as they are contiguous in memory
-        MPI_Bcast(field, 12*Ng, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    }else{
-        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
-    }
+    return;
 }
 
 template<typename T>

@@ -4,7 +4,6 @@
 #include <fstream>
 #include <vector>
 #include <array>
-#include <mpi.h>
 
 #include "Grid.h"
 #include "Distribution.h"

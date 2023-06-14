@@ -2,7 +2,6 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <mpi/mpi.h>
 #include "Species2D3V.h"
 #include "Field2D3V.h"
 #include "../helpers/math_helper.h"
@@ -194,18 +193,10 @@ void Species2D3V<T>::saveEnergy(std::ofstream &outputFile) const {
     T localSpeciesEnergy = this->getTotalKineticEnergy();
     T totalSpeciesEnergy = (T)0;
 
-    if constexpr(std::is_same<double, T>::value){
-        MPI_Reduce(&localSpeciesEnergy, &totalSpeciesEnergy, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    }else if constexpr(std::is_same<float, T>::value){
-        MPI_Reduce(&localSpeciesEnergy, &totalSpeciesEnergy, 1, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    }else{
-        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
-    }
+    totalSpeciesEnergy = localSpeciesEnergy;
 
-    if(this->processId == 0){
-        outputFile << this->m << " " << this->q << std::endl;
-        outputFile << totalSpeciesEnergy << std::endl;
-    }
+    outputFile << this->m << " " << this->q << std::endl;
+    outputFile << totalSpeciesEnergy << std::endl;
 }
 
 template<typename T>
@@ -232,50 +223,33 @@ void Species2D3V<T>::initialisePositions(std::ifstream &file) {
     T* allX = nullptr;
     T* allY = nullptr;
 
-    if(this->processId == 0){
-        allX = new T[this->totalNp];
-        allY = new T[this->totalNp];
+    allX = new T[this->totalNp];
+    allY = new T[this->totalNp];
 
-        try{
-            if(!file.is_open()){
-                throw std::invalid_argument("Initial position file not open.");
-            }
-            for(auto ptr = allX; ptr < allX + this->totalNp; ++ptr){
-                if(file.eof()){
-                    throw std::invalid_argument("Initial position file contains less columns than Np.");
-                }
-                file >> *ptr;
-            }
-            for(auto ptr = allY; ptr < allY + this->totalNp; ++ptr){
-                if(file.eof()){
-                    throw std::invalid_argument("Initial position file contains less columns than Np.");
-                }
-                file >> *ptr;
-            }
-        }catch(const std::exception& e){
-            std::cout << "Initial position file has incorrect format." << std::endl;
-            throw;
+    try{
+        if(!file.is_open()){
+            throw std::invalid_argument("Initial position file not open.");
         }
+        for(auto ptr = allX; ptr < allX + this->totalNp; ++ptr){
+            if(file.eof()){
+                throw std::invalid_argument("Initial position file contains less columns than Np.");
+            }
+            file >> *ptr;
+        }
+        for(auto ptr = allY; ptr < allY + this->totalNp; ++ptr){
+            if(file.eof()){
+                throw std::invalid_argument("Initial position file contains less columns than Np.");
+            }
+            file >> *ptr;
+        }
+    }catch(const std::exception& e){
+        std::cout << "Initial position file has incorrect format." << std::endl;
+        throw;
     }
 
-    int sendcounts[this->numProcesses];
-    int displacements[this->numProcesses];
-    int baseCount = this->totalNp/this->numProcesses;
-    int missing = this->totalNp - baseCount*this->numProcesses;
-    for(int i = 0; i < this->numProcesses; ++i){
-        sendcounts[i] = i < missing ? baseCount + 1 : baseCount;
-        displacements[i] = i > 0 ? displacements[i-1] + sendcounts[i-1] : 0;
-    }
 
-    if constexpr(std::is_same<double, T>::value){
-        MPI_Scatterv(allX, sendcounts, displacements, MPI_DOUBLE, pos.x, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Scatterv(allY, sendcounts, displacements, MPI_DOUBLE, pos.y, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    }else if constexpr(std::is_same<float, T>::value){
-        MPI_Scatterv(allX, sendcounts, displacements, MPI_FLOAT, pos.x, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
-        MPI_Scatterv(allY, sendcounts, displacements, MPI_FLOAT, pos.y, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    }else{
-        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
-    }
+    std::copy(allX,allX + this->Np,pos.x);
+    std::copy(allY,allY + this->Np,pos.y);
 
     if(this->processId == 0){
         delete[] allX;
@@ -289,59 +263,42 @@ void Species2D3V<T>::initialiseVelocities(std::ifstream &file) {
     T* allY = nullptr;
     T* allZ = nullptr;
 
-    if(this->processId == 0){
-        allX = new T[this->totalNp];
-        allY = new T[this->totalNp];
-        allZ = new T[this->totalNp];
-        
-        try{
-            if(!file.is_open()){
-                throw std::invalid_argument("Initial velocity file not open.");
-            }
-            for(auto ptr = allX; ptr < allX + this->totalNp; ++ptr){
-                if(file.eof()){
-                    throw std::invalid_argument("Initial velocity file contains less columns than Np.");
-                }
-                file >> *ptr;
-            }
-            for(auto ptr = allY; ptr < allY + this->totalNp; ++ptr){
-                if(file.eof()){
-                    throw std::invalid_argument("Initial velocity file contains less columns than Np.");
-                }
-                file >> *ptr;
-            }
-            for(auto ptr = allZ; ptr < allZ + this->totalNp; ++ptr){
-                if(file.eof()){
-                    throw std::invalid_argument("Initial velocity file contains less columns than Np.");
-                }
-                file >> *ptr;
-            }
-        }catch(const std::exception& e){
-            std::cout << "Initial velocity file has incorrect format." << std::endl;
-            throw;
+    allX = new T[this->totalNp];
+    allY = new T[this->totalNp];
+    allZ = new T[this->totalNp];
+
+    try{
+        if(!file.is_open()){
+            throw std::invalid_argument("Initial velocity file not open.");
         }
+        for(auto ptr = allX; ptr < allX + this->totalNp; ++ptr){
+            if(file.eof()){
+                throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+            }
+            file >> *ptr;
+        }
+        for(auto ptr = allY; ptr < allY + this->totalNp; ++ptr){
+            if(file.eof()){
+                throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+            }
+            file >> *ptr;
+        }
+        for(auto ptr = allZ; ptr < allZ + this->totalNp; ++ptr){
+            if(file.eof()){
+                throw std::invalid_argument("Initial velocity file contains less columns than Np.");
+            }
+            file >> *ptr;
+        }
+    }catch(const std::exception& e){
+        std::cout << "Initial velocity file has incorrect format." << std::endl;
+        throw;
     }
 
-    int sendcounts[this->numProcesses];
-    int displacements[this->numProcesses];
-    int baseCount = this->totalNp/this->numProcesses;
-    int missing = this->totalNp - baseCount*this->numProcesses;
-    for(int i = 0; i < this->numProcesses; ++i){
-        sendcounts[i] = i < missing ? baseCount + 1 : baseCount;
-        displacements[i] = i > 0 ? displacements[i-1] + sendcounts[i-1] : 0;
-    }
 
-    if constexpr(std::is_same<double, T>::value){
-        MPI_Scatterv(allX, sendcounts, displacements, MPI_DOUBLE, vel.x, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Scatterv(allY, sendcounts, displacements, MPI_DOUBLE, vel.y, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Scatterv(allZ, sendcounts, displacements, MPI_DOUBLE, vel.z, (int)this->Np, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    }else if constexpr(std::is_same<float, T>::value){
-        MPI_Scatterv(allX, sendcounts, displacements, MPI_FLOAT, vel.x, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
-        MPI_Scatterv(allY, sendcounts, displacements, MPI_FLOAT, vel.y, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
-        MPI_Scatterv(allZ, sendcounts, displacements, MPI_FLOAT, vel.z, (int)this->Np, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    }else{
-        throw std::invalid_argument("Parallel processes only supported for DOUBLE or FLOAT.");
-    }
+    std::copy(allX,allX+this->Np,vel.x);
+    std::copy(allY,allY+this->Np,vel.y);
+    std::copy(allZ,allZ+this->Np,vel.z);
+
 
     if(this->processId == 0){
         delete[] allX;
