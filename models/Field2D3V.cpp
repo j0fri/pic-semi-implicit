@@ -1,4 +1,4 @@
-#include <mpi/mpi.h>
+#include <mpi.h>
 #include "Field2D3V.h"
 #include "Species2D3V.h"
 #include "../helpers/math_helper.h"

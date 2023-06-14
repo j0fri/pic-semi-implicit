@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <mpi/mpi.h>
+#include <mpi.h>
 #include "Species2D3V.h"
 #include "Field2D3V.h"
 #include "../helpers/math_helper.h"

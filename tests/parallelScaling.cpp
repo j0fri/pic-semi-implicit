@@ -1,5 +1,5 @@
 #include <iostream>
-#include <mpi/mpi.h>
+#include <mpi.h>
 
 #include "../models/Config.h"
 #include "../models/Simulation.h"
@@ -7,22 +7,30 @@
 
 
 double getRuntimePerStep(double dt, int Np, int Ng, bool exp = false){
-    auto config = preset_configs::langmuir(Np,Ng/2,2,dt);
-    config.saveConfig.outputFilesDirectory = "./outputs/parallelScaling/dummy/";
-    config.saveConfig.saveAllTimes = true;
-    config.timeConfig.total = dt*10;
-    config.useExplicitScheme = exp;
-
-    Simulation<double,2,3> sim(config);
-    sim.initialise();
-    sim.run();
-
     int processId, numProcesses;
     int rankStatus = MPI_Comm_rank(MPI_COMM_WORLD, &processId);
     int sizeStatus = MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
     if(rankStatus != MPI_SUCCESS || sizeStatus != MPI_SUCCESS){
         throw std::runtime_error("Could not obtain MPI rank.");
     }
+
+    int steps = 10;
+    if(numProcesses > 10 && (Ng < 1000 || exp)){
+        steps = 100;
+    }
+    if(Ng > 2000 || (Np>1000000 && numProcesses < 10)){
+        steps = 2;
+    }
+
+    auto config = preset_configs::langmuir(Np,Ng/2,2,dt);
+    config.saveConfig.outputFilesDirectory = "./outputs/parallelScaling/dummy/";
+    config.saveConfig.saveAllTimes = true;
+    config.timeConfig.total = dt*steps;
+    config.useExplicitScheme = exp;
+
+    Simulation<double,2,3> sim(config);
+    sim.initialise();
+    sim.run();
 
     if(processId > 0){
         return 1;
@@ -39,7 +47,7 @@ double getRuntimePerStep(double dt, int Np, int Ng, bool exp = false){
     dummyRuntimes >> runTime;
     dummyRuntimes.close();
 
-    return runTime/10;
+    return runTime/steps;
 }
 
 
@@ -59,11 +67,11 @@ int main(int argc, char* argv[]){
 
     //Particle-heavy test:
     {
-        double runtimePerStep = getRuntimePerStep(0.1,1000000,90,false);
+        double runtimePerStep = getRuntimePerStep(0.1,10000000,90,false);
         int steps = 1.0/runtimePerStep;
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        auto config = preset_configs::langmuir(1000000,30,3,0.1);
+        auto config = preset_configs::langmuir(10000000,30,3,0.1);
         config.saveConfig.saveAllTimes = true;
         config.timeConfig.total = steps*0.1;
         std::stringstream ss;
@@ -77,11 +85,11 @@ int main(int argc, char* argv[]){
 
     //Balanced test:
     {
-        double runtimePerStep = getRuntimePerStep(0.1,1000000,3000,false);
+        double runtimePerStep = getRuntimePerStep(0.1,1000000,2000,false);
         int steps = 1.0/runtimePerStep;
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        auto config = preset_configs::langmuir(1000000,100,30,0.1);
+        auto config = preset_configs::langmuir(1000000,100,20,0.1);
         config.saveConfig.saveAllTimes = true;
         config.timeConfig.total = steps*0.1;
         std::stringstream ss;
@@ -113,11 +121,11 @@ int main(int argc, char* argv[]){
 
     //Explicit:
     {
-        double runtimePerStep = getRuntimePerStep(0.1,1000000,90,false);
+        double runtimePerStep = getRuntimePerStep(0.1,10000000,90,false);
         int steps = 5.0/runtimePerStep;
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        auto config = preset_configs::langmuir(100000,30,3,0.1);
+        auto config = preset_configs::langmuir(1000000,30,3,0.1);
         config.saveConfig.saveAllTimes = true;
         config.timeConfig.total = steps*0.1;
         std::stringstream ss;

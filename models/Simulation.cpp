@@ -3,7 +3,7 @@
 #include <vector>
 #include <array>
 #include <string>
-#include <mpi/mpi.h>
+#include <mpi.h>
 #include <chrono>
 #include <filesystem>
 

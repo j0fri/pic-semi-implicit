@@ -1,6 +1,6 @@
 #include <iostream>
 #include <boost/program_options.hpp>
-#include <mpi/mpi.h>
+#include <mpi.h>
 
 #include "models/Config.h"
 #include "models/Simulation.h"

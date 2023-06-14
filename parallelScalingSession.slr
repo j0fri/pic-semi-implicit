@@ -1,5 +1,7 @@
 #!/bin/bash
 
-for i in {1,2,4,6,8,12,16,20};
+module load oneapi/mpi/2021.4.0
+
+for i in {1,2,4,8,16,20};
   do mpirun --np $i --bind-to none ./parallelScaling;
 done;

@@ -1,6 +1,6 @@
 #include "Species.h"
 #include <iostream>
-#include <mpi/mpi.h>
+#include <mpi.h>
 
 template<typename T, unsigned int Nd, unsigned int Nv>
 Species<T, Nd, Nv>::Species(const typename Config<T,Nd,Nv>::SpeciesConfig& speciesConfig,

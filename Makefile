@@ -1,7 +1,7 @@
 default: sim
 all: sim
 
-CXX = mpic++
+CXX = mpicxx
 CXXFLAGS = -std=c++17 -Wall -O3 -g -I ./
 
 SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h models/Simulation.h models/Species1D1V.h\
@@ -9,6 +9,7 @@ SIMHDRS = models/Species.h models/Field.h models/Distribution.h models/Grid.h mo
 		  models/DistributionGrid.h models/Field2D3VExplicit.h
 
 SIMOBJS = models/Species.o models/Field.o models/Distribution.o models/Grid.o models/Simulation.o models/Species1D1V.o\
+		  models/Field1D1V.o models/Species2D3V.o models/Field2D3V.o models/Vector2.o models/Vector3.o\
 		  models/Field1D1V.o models/Species2D3V.o models/Field2D3V.o models/Vector2.o models/Vector3.o\
 		  models/DistributionGrid.o models/Field2D3VExplicit.o
 
