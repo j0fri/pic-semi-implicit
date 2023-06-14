@@ -138,6 +138,10 @@ optaccuracy: tests/optaccuracy.o $(SIMOBJS) $(TESTOBJS)
 tolerance: tests/tolerance.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: parallelScaling
+parallelScaling: tests/parallelScaling.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: standalone
 standalone: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -static -o sim $^ $(SIMLIBS)
