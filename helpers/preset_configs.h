@@ -22,6 +22,9 @@ namespace preset_configs {
     template <typename T>
     Config<T,2,3> landau2D3VX(unsigned int Nx, unsigned int Ny);
 
+    template <typename T>
+    Config<T,2,3> landau2D3VXCustomBounds(unsigned int Nx, unsigned int Ny, T T0, T zScore);
+
     //Same as previous case but initialised from file
     template <typename T>
     Config<T,2,3> landauFile();

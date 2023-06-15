@@ -1,3 +1,5 @@
+#include <iostream>
+
 template <typename T>
 std::vector<std::vector<T>> math_helper::cartesian(const std::vector<std::vector<T>>& s1, const std::vector<T>& s2){
 	int height1 = s1.size();
@@ -65,6 +67,6 @@ void math_helper::gemv(unsigned int M, unsigned int N, T alpha, const T* A, unsi
 }
 
 template <typename T>
-T math_helper::boltzmannBounds(T m, T Kb, T T0) {
-    return (T)10 * std::sqrt(Kb*T0/m);
+T math_helper::boltzmannBounds(T m, T Kb, T T0, T zScore) {
+    return zScore * std::sqrt(Kb*T0/m);
 }

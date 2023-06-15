@@ -18,7 +18,7 @@ struct Vector3 {
 
     Vector3<T> operator+(const Vector3<T>& other) const;
     Vector3<T> operator-(const Vector3<T>& other) const;
-    Vector3<T> operator*(double c) const;
+    Vector3<T> operator*(T c) const;
     Vector3<T>& operator+=(const Vector3<T>& other);
 
     T* operator[](const unsigned int& dim); //Returns pointer to the numbered dimension

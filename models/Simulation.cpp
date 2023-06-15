@@ -338,6 +338,7 @@ void Simulation<T,Nd,Nv>::save(){
                 throw std::runtime_error("Could not open field energy file.");
             }
             field->saveEnergy(fieldEnergyFile);
+            fieldEnergyFile << std::setprecision(15);
             fieldEnergyFile.close();
         }
         if(saveConfig.saveCurrent){
@@ -370,6 +371,7 @@ void Simulation<T,Nd,Nv>::save(){
     //Save species energy runs on all processes as all the particles are needed.
     if(saveConfig.saveSpeciesEnergy){
         std::ofstream speciesEnergyFile(saveConfig.outputFilesDirectory + saveConfig.speciesEnergyFileName + saveConfig.outputFilesSubscript, std::ios::app);
+        speciesEnergyFile << std::setprecision(15);
         if(!speciesEnergyFile.is_open()){
             throw std::runtime_error("Could not open species energy file.");
         }
@@ -446,7 +448,7 @@ void Simulation<T, Nd, Nv>::saveRuntime() {
             if(!runtimeFile.is_open()){
                 throw std::runtime_error("Could not open runtime file.");
             }
-            runtimeFile << std::setprecision(10) << initialisationTime << " " << simulationTime << " " << systemSolveTime << std::endl;
+            runtimeFile << std::setprecision(15) << initialisationTime << " " << simulationTime << " " << systemSolveTime << std::endl;
             runtimeFile.close();
         }
     }

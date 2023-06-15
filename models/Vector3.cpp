@@ -119,7 +119,7 @@ Vector3<T> Vector3<T>::operator-(const Vector3 &other) const {
 }
 
 template<typename T>
-Vector3<T> Vector3<T>::operator*(double c) const{
+Vector3<T> Vector3<T>::operator*(T c) const{
     Vector3<T> out(n);
     //Unoptimised code:
 //    for(unsigned int i = 0; i < n; ++i){

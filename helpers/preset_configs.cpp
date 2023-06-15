@@ -63,6 +63,28 @@ Config<T,2,3> preset_configs::landau2D3VX(unsigned int Nx, unsigned int Ny){
 }
 
 template <typename T>
+Config<T,2,3> preset_configs::landau2D3VXCustomBounds(unsigned int Nx, unsigned int Ny, T T0, T zScore){
+    Config<T,2,3> config{
+            std::vector<typename Config<T,2,3>::SpeciesConfig>{{
+                   preset_species::Uniform2D3VCustomBounds<T>(100000,1,-1,1,1,Nx,Ny,1,T0,zScore),
+                   preset_species::Uniform2D3VCustomBounds<T>(100000,2000,1,1,1,Nx,Ny,1,T0,zScore),
+            }},
+            preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
+            {10,0.1},
+            {false, false, false, false, true, true, true, true, true, false, true, 0.1, "outputs/"},
+            {
+                    {Config<T,2,3>::BC::Periodic}
+            },
+            true,
+            true
+    };
+    //Add perturbation in electrons
+    config.speciesConfig[0].xDist += preset_distributions::Sin<T,2>(0,0.4,(T)2*M_PI,0);
+
+    return config;
+}
+
+template <typename T>
 Config<T,2,3> preset_configs::landauFile(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
@@ -130,7 +152,7 @@ template <typename T>
 Config<T,2,3> preset_configs::constAccelerationX(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                    preset_species::TopHat2D3V<double>(50000, 1, 1,-0.2, 0.2,-0.2, 0.2)
+                    preset_species::TopHat2D3V<T>(50000, 1, 1,-0.2, 0.2,-0.2, 0.2)
             }},
             preset_fields::ConstE2D3V<T>(0,(T)1,20,20),
             {10,0.1},
@@ -148,7 +170,7 @@ template <typename T>
 Config<T,2,3> preset_configs::magneticGyration(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::TopHat2D3V<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7)
+                   preset_species::TopHat2D3V<T>(50000, 1, 1,-0.2, 0.2,0.3, 0.7)
            }},
             preset_fields::ConstB2D3V<T>(2,(T)1,20,20),
             {10,0.1},
@@ -167,7 +189,7 @@ template <typename T>
 Config<T,2,3> preset_configs::magneticGyrationX(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::TopHat2D3V<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7)
+                   preset_species::TopHat2D3V<T>(50000, 1, 1,-0.2, 0.2,0.3, 0.7)
             }},
             preset_fields::ConstB2D3V<T>(0,(T)1,20,20),
             {10,0.1},
@@ -186,7 +208,7 @@ template <typename T>
 Config<T,2,3> preset_configs::constPotentialWell(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::TopHat2D3VBoltzmann<double>(50000, 1, 1,-0.2, 0.2,0.3, 0.7,1,0.01)
+                   preset_species::TopHat2D3VBoltzmann<T>(50000, 1, 1,-0.2, 0.2,0.3, 0.7,1,0.01)
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
             {100,0.1},
@@ -207,7 +229,7 @@ template <typename T>
 Config<T,2,3> preset_configs::constPotentialWellFile(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                preset_species::fromFile<double>(50000,1,1,"./inputs/constPotentialWell/speciesPosition.txt",
+                preset_species::fromFile<T>(50000,1,1,"./inputs/constPotentialWell/speciesPosition.txt",
                                                  "./inputs/constPotentialWell/speciesVelocity.txt")
             }},
             preset_fields::ConstE2D3V<T>(0,(T)0,20,20),
@@ -242,9 +264,9 @@ Config<T,2,3> preset_configs::electronBeam(unsigned int Nx, unsigned int Ny) {
         100000,
         1,
         -1,
-        preset_distributions::Uniform<double,2>(1),
+        preset_distributions::Uniform<T,2>(1),
         Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,1,Nx},{-3,3,Ny}}}},
-        preset_distributions::Boltzmann<double,3>(1,1,1),
+        preset_distributions::Boltzmann<T,3>(1,1,1),
         Grid<T,3>{std::array<typename Grid<T,3>::Dim,3>{{
                 {(T)1,(T)1,1}, //Fixed x velocity = 1
                 {-math_helper::boltzmannBounds((T)1,(T)1,(T)0),math_helper::boltzmannBounds((T)1,(T)1,(T)0),100},
@@ -285,7 +307,7 @@ template <typename T>
 Config<T,2,3> preset_configs::fiveParticles(){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::fromFile<double>(5,(T)1,(T)1,"./inputs/fiveParticles/speciesPosition.txt",
+                   preset_species::fromFile<T>(5,(T)1,(T)1,"./inputs/fiveParticles/speciesPosition.txt",
                                                     "./inputs/fiveParticles/speciesVelocity.txt")
            }},
             preset_fields::Default2D3V((T)1, (T)1, 5, 5, (T)1, (T)1),
@@ -320,9 +342,9 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             Np/2,
             me,
             qe,
-            preset_distributions::Uniform<double,2>(1),
+            preset_distributions::Uniform<T,2>(1),
             Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,Lx,Nx},{-Ly/2,Ly/2,Ny}}}},
-            preset_distributions::ShiftedBoltzmann<double,3>(me,Kb,T0,{uex0,(T)0,(T)0}),
+            preset_distributions::ShiftedBoltzmann<T,3>(me,Kb,T0,{uex0,(T)0,(T)0}),
             Grid<T,3>{std::array<typename Grid<T,3>::Dim,3>{{
                     {-math_helper::boltzmannBounds(me,Kb,T0)+uex0,math_helper::boltzmannBounds(me,Kb,T0)+uex0,100},
                     {-math_helper::boltzmannBounds(me,Kb,T0),math_helper::boltzmannBounds(me,Kb,T0),100},
@@ -346,9 +368,9 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             Np/2,
             mi,
             qi,
-            preset_distributions::Uniform<double,2>(1),
+            preset_distributions::Uniform<T,2>(1),
             Grid<T,2>{std::array<typename Grid<T,2>::Dim,2>{{{0,Lx,Nx},{-Ly/2,Ly/2,Ny}}}},
-            preset_distributions::Boltzmann<double,3>(mi,Kb,T0),
+            preset_distributions::Boltzmann<T,3>(mi,Kb,T0),
             Grid<T,3>{std::array<typename Grid<T,3>::Dim,3>{{
                     {-math_helper::boltzmannBounds(mi,Kb,T0),math_helper::boltzmannBounds(mi,Kb,T0),100},
                     {-math_helper::boltzmannBounds(mi,Kb,T0),math_helper::boltzmannBounds(mi,Kb,T0),100},
@@ -400,7 +422,7 @@ Config<T,2,3> preset_configs::diode(unsigned int Np, T Lx, T Ly, unsigned int Nx
             {false, false, false, false, true, true, true, true, false, false, true, dt, "outputs/"},
             {
                     Config<T,2,3>::BC::Diode,
-                    Config<double, 2, 3>::BCConfig::Diode{(T)0}
+                    Config<double,2,3>::BCConfig::Diode{(T)0}
             },
             true,
             true
@@ -412,8 +434,8 @@ template <typename T>
 Config<T,2,3> preset_configs::langmuir(unsigned int Np, unsigned int Nx, unsigned int Ny, T dt){
     Config<T,2,3> config{
             std::vector<typename Config<T,2,3>::SpeciesConfig>{{
-                   preset_species::Uniform2D3V<T>(Np/2,1,-1,1,1,Nx,Ny,1,0.000000000000000000001),
-                   preset_species::Uniform2D3V<T>(Np/2,2000,1,1,1,Nx,Ny,1,0.000000000000000000001),
+                   preset_species::Uniform2D3V<T>(Np/2,1,-1,1,1,Nx,Ny,1,0.000001),
+                   preset_species::Uniform2D3V<T>(Np/2,2000,1,1,1,Nx,Ny,1,0.0000001),
             }},
             preset_fields::Default2D3V<T>(1,1,Nx,Ny,1,1),
             {10,dt},

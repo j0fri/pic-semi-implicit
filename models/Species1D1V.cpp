@@ -52,7 +52,7 @@ const T* Species1D1V<T>::getWgp() const{
 
 template <typename T>
 T Species1D1V<T>::getTotalKineticEnergy() const{
-    float output = 0;
+    T output = 0;
     for(int i = 0; i < this->Np; ++i){
         output += v[i]*v[i];
     }

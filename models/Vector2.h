@@ -20,7 +20,7 @@ struct Vector2 {
     Vector2<T> operator+(const Vector3<T>& other) const; //Third column is ignored
     Vector2<T> operator-(const Vector2<T>& other) const;
     Vector2<T> operator-(const Vector3<T>& other) const; //Third column is ignored
-    Vector2<T> operator*(double c) const;
+    Vector2<T> operator*(T c) const;
     Vector2<T>& operator+=(const Vector2<T>& other);
     Vector2<T>& operator+=(const Vector3<T>& other); //Third column is ignored
 

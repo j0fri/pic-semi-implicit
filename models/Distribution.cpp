@@ -69,7 +69,7 @@ std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(
             left[j] = gridPoints[i][j];
             right[j] = gridPoints[i][j] + spacings[j];
         }
-        cells[i] = {left, right, 0, 0};
+        cells[i] = {left, right, (T)0, (unsigned int)0};
     }
     return cells;
 }
@@ -102,7 +102,7 @@ Distribution<T, Nd>::generate(int Np, const Grid<T, Nd> &grid, T particleIncreas
         cells[i].objectiveNp *= Np * scaling * particleIncreaseGenerationFactor;
         cells[i].Np = std::floor(cells[i].objectiveNp); //Always add at least floor(Npdes)
         T remainder = cells[i].objectiveNp - cells[i].Np;
-        if((double)generate()/RAND_MAX < remainder){
+        if(((double)generate()/RAND_MAX) < (double)remainder){
             ++cells[i].Np; //Add 1 particle with remainder (decimal of Npdes) probability
         }
         totalParticles += cells[i].Np;
@@ -123,7 +123,7 @@ Distribution<T, Nd>::generate(int Np, const Grid<T, Nd> &grid, T particleIncreas
         for(unsigned int j = 0; j < cells[i].Np; ++j){
             out[particleCounter] = std::array<T,Nd>();
             for(unsigned int k = 0; k < Nd; ++k){
-                out[particleCounter][k] = (double)generate()/RAND_MAX*(right[k]-left[k])+left[k];
+                out[particleCounter][k] = (T)generate()/RAND_MAX*(right[k]-left[k])+left[k];
             }
             ++particleCounter;
         }

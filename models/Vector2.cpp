@@ -123,7 +123,7 @@ Vector2<T> Vector2<T>::operator-(const Vector3<T> &other) const {
 }
 
 template<typename T>
-Vector2<T> Vector2<T>::operator*(double c) const{
+Vector2<T> Vector2<T>::operator*(T c) const{
     Vector2<T> out(n);
     for(unsigned int i = 0; i < n; ++i){
         out.x[i] = c*x[i];
