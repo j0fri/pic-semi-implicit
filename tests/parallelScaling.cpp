@@ -15,12 +15,16 @@ double getRuntimePerStep(double dt, int Np, int Ng, bool exp = false){
     }
 
     int steps = 10;
-    if(numProcesses > 10 && (Ng < 1000 || exp)){
+    if(numProcesses > 20 && (Ng < 1000)){
         steps = 100;
     }
-    if(Ng > 2000 || (Np>1000000 && numProcesses < 10)){
+    if(Ng > 2000){
         steps = 2;
     }
+    if(Np>1000000 && numProcesses < 10){
+        steps = 2;
+    }
+
 
     auto config = preset_configs::langmuir(Np,Ng/2,2,dt);
     config.saveConfig = preset_save_configs::None<double,2,3>();
@@ -66,20 +70,17 @@ int main(int argc, char* argv[]){
         throw std::runtime_error("Could not obtain MPI rank.");
     }
 
-
     //Particle-heavy test:
     {
-        double runtimePerStep = getRuntimePerStep(0.1,10000000,90,false);
-        int steps = 1.0/runtimePerStep;
-        MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        int steps = numProcesses < 10 ? 10 : 100;
 
-        auto config = preset_configs::langmuir(10000000,30,3,0.1);
+        auto config = preset_configs::langmuir(1000000,30,3,1.0/steps);
         config.saveConfig = preset_save_configs::None<double,2,3>();
         config.saveConfig.saveRuntime = true;
         config.saveConfig.saveInterval = 0.1;
-        config.timeConfig.total = steps*0.1;
+        config.timeConfig.total = 1.0;
         std::stringstream ss;
-        ss << "./outputs/parallelScaling/particleHeavy/" << numProcesses << "/";
+        ss << "./outputs/parallelScaling/particleHeavy4/" << numProcesses << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
 
         Simulation<double,2,3> sim(config);
@@ -91,6 +92,7 @@ int main(int argc, char* argv[]){
     {
         double runtimePerStep = getRuntimePerStep(0.1,1000000,2000,false);
         int steps = 1.0/runtimePerStep;
+        steps = std::max(steps,10);
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(1000000,100,20,0.1);
@@ -111,6 +113,7 @@ int main(int argc, char* argv[]){
     {
         double runtimePerStep = getRuntimePerStep(0.1,25000,5000,false);
         int steps = 5.0/runtimePerStep;
+        steps = std::max(steps,10);
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(25000,100,50,0.1);
@@ -129,15 +132,13 @@ int main(int argc, char* argv[]){
 
     //Explicit:
     {
-        double runtimePerStep = getRuntimePerStep(0.1,10000000,90,false);
-        int steps = 5.0/runtimePerStep;
-        MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        int steps = numProcesses < 10 ? 10 : 100;
 
-        auto config = preset_configs::langmuir(1000000,30,3,0.1);
+        auto config = preset_configs::langmuir(1000000,30,3,1.0/steps);
         config.saveConfig = preset_save_configs::None<double,2,3>();
         config.saveConfig.saveRuntime = true;
         config.saveConfig.saveInterval = 0.1;
-        config.timeConfig.total = steps*0.1;
+        config.timeConfig.total = 1.0;
         std::stringstream ss;
         ss << "./outputs/parallelScaling/explicit/" << numProcesses << "/";
         config.saveConfig.outputFilesDirectory = ss.str();
