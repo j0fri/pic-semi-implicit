@@ -147,6 +147,10 @@ parallelScaling: tests/parallelScaling.o $(SIMOBJS) $(TESTOBJS)
 parallelScaling2: tests/parallelScaling2.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: parallelScaling3
+parallelScaling3: tests/parallelScaling3.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: highEnergy
 highEnergy: tests/highEnergy.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
