@@ -78,7 +78,7 @@ int main(int argc, char* argv[]){
     //Balanced test:
     {
         double runtimePerStep = getRuntimePerStep(0.1,10000000,3000,false);
-        int steps = 10.0/runtimePerStep;
+        int steps = 5.0/runtimePerStep;
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(10000000,100,30,0.1);
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]){
     //Grid-heavy test:
     {
         double runtimePerStep = getRuntimePerStep(0.1,250000,5000,false);
-        int steps = 50.0/runtimePerStep;
+        int steps = 2.0/runtimePerStep;
         MPI_Bcast(&steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         auto config = preset_configs::langmuir(250000,100,50,0.1);
