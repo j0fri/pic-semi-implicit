@@ -143,6 +143,14 @@ tolerance: tests/tolerance.o $(SIMOBJS) $(TESTOBJS)
 parallelScaling: tests/parallelScaling.o $(SIMOBJS) $(TESTOBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
 
+.PHONY: parallelScaling2
+parallelScaling2: tests/parallelScaling2.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
+.PHONY: highEnergy
+highEnergy: tests/highEnergy.o $(SIMOBJS) $(TESTOBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMLIBS)
+
 .PHONY: standalone
 standalone: main.o $(SIMOBJS)
 	$(CXX) $(CXXFLAGS) -static -o sim $^ $(SIMLIBS)
