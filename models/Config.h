@@ -17,6 +17,7 @@ struct Config{
         Grid<T,Nd> initialXGrid;
         Distribution<T,Nv> vDist;
         Grid<T,Nv> initialVGrid; //IMPORTANT: the grid must be appropriate to accurately represent the distribution
+
         //TODO: add file for each species
         bool initialisePositionFromFile{};
         std::string initialPositionFileName;

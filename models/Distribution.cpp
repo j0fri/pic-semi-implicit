@@ -77,7 +77,6 @@ std::vector<typename Distribution<T,Nd>::Cell> Distribution<T,Nd>::generateMesh(
 template<typename T, unsigned int Nd>
 std::vector<std::array<T, Nd>>
 Distribution<T, Nd>::generate(int Np, const Grid<T, Nd> &grid, T particleIncreaseGenerationFactor) const {
-    //TODO: move seeding to Simulation class
     static auto randEngine = std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()); //Only seed once
     std::uniform_int_distribution<int> distribution(0, RAND_MAX);
     auto generate = std::bind(distribution, randEngine);

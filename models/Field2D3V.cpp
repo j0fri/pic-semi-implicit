@@ -376,7 +376,6 @@ void Field2D3V<T>::solveAndAdvance(T dt) {
     unsigned int lda = 6*Ng;
     unsigned int eq = 0;
     while(eq < lda){
-        //TODO: consider if forced terms must be manually added
         if(!this->onlyForcedE){
             for(unsigned int dim = 0; dim < 3; ++dim){
                 fieldT[eq] = sol[eq];

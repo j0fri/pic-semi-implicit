@@ -27,8 +27,6 @@ private:
     Vector3<T> vBar;
 
 public:
-    //TODO: add move constructor and assignment operator
-    //TODO: actually implement these
     Species2D3V() = delete;
     explicit Species2D3V(const typename Config<T,2,3>::SpeciesConfig& speciesConfig,
                          const typename Config<T,2,3>::BCConfig& bcConfig);

@@ -3,7 +3,6 @@
 #include "math_helper.h"
 
 
-//TODO: ref: Statistical Physics (2nd Edition), F. Mandl, Manchester Physics, John Wiley & Sons, 2008, ISBN 9780471915331
 template <typename T, unsigned int Nd>
 Distribution<T,Nd> preset_distributions::Boltzmann(T m, T Kb, T T0){
     if constexpr (Nd == 0 || Nd > 3){

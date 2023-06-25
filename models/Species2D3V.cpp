@@ -78,7 +78,6 @@ T Species2D3V<T>::getTotalKineticEnergy() const {
 template<typename T>
 void Species2D3V<T>::advancePositions(T dt, const Field<T,2,3> *field) {
     //Algorithm step 1
-    //TODO: non-periodic boundary conditions + optimise
     pos += (vel * dt); //Advance vector
 
     //Boundary conditions:
@@ -185,8 +184,7 @@ void Species2D3V<T>::saveVelocity(std::ofstream &outputFile) const {
 
 template<typename T>
 void Species2D3V<T>::saveVelocityDistribution(std::ofstream &outputFile) const {
-    //TODO: implement
-    throw std::runtime_error("Not implemented yet.");
+    throw std::runtime_error("Velocity distribution saving not implemented for 2D3V.");
 }
 
 template<typename T>

@@ -28,7 +28,6 @@ protected:
     T* fieldT; //Field at half time step
     T* J; //Current is an array of length Nx*Ny*3, same structure as field with Jx,Jy,Jz
 
-    //TODO: mass matrices and current are assumed to be centred at the electric field locations, not magnetic
     T* Mg; //Mass matrix for cell with itself
     T* Mgdx; //Mass matrix for cell with cell + dx
     T* Mgdy; //Mass matrix for cell with cell + dy
